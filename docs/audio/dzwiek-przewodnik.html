@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dźwięk – przewodnik</title>
+<style>
+:root {
+	--bg: #f6f3ee;
+	--paper: #fffdf9;
+	--ink: #23201c;
+	--muted: #6b645b;
+	--line: #e2dbd0;
+	--accent: #8a4b2a;
+	--accent-soft: #f1e4d8;
+	--code-bg: #f1ece4;
+	--good: #2f6b3a;
+	--night: #1f2a44;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--bg: #15171c;
+		--paper: #1c1f26;
+		--ink: #e8e3da;
+		--muted: #a39c90;
+		--line: #333845;
+		--accent: #e0a070;
+		--accent-soft: #33291f;
+		--code-bg: #262a33;
+		--good: #8fcf98;
+		--night: #c9d4f0;
+	}
+}
+* { box-sizing: border-box; }
+html { font-size: 17px; }
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+	line-height: 1.6;
+}
+main {
+	max-width: 980px;
+	margin: 0 auto;
+	padding: 40px 20px 80px;
+}
+header.top {
+	border-bottom: 2px solid var(--accent);
+	padding-bottom: 18px;
+	margin-bottom: 28px;
+}
+h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; line-height: 1.25; }
+h1 { font-size: 2.1rem; margin: 0 0 6px; }
+.lead { color: var(--muted); margin: 0; font-size: 1.05rem; }
+h2 {
+	font-size: 1.45rem;
+	margin: 48px 0 12px;
+	padding-top: 10px;
+	border-top: 1px solid var(--line);
+}
+h3 { font-size: 1.12rem; margin: 26px 0 8px; }
+p { margin: 0 0 12px; }
+a { color: var(--accent); }
+nav.toc {
+	background: var(--paper);
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	padding: 14px 20px;
+	margin: 0 0 24px;
+}
+nav.toc ol { margin: 6px 0 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+nav.toc li { margin: 2px 0; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 14px 0 8px; }
+.card {
+	background: var(--paper);
+	border: 1px solid var(--line);
+	border-left: 4px solid var(--accent);
+	border-radius: 8px;
+	padding: 12px 14px;
+}
+.card b { display: block; font-family: Georgia, serif; font-size: 1.05rem; margin-bottom: 2px; }
+.card span { color: var(--muted); font-size: 0.92rem; }
+.table-wrap { overflow-x: auto; margin: 12px 0 18px; }
+table {
+	border-collapse: collapse;
+	width: 100%;
+	background: var(--paper);
+	border: 1px solid var(--line);
+	font-size: 0.93rem;
+}
+th, td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { background: var(--accent-soft); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+code, pre { font-family: "Cascadia Mono", Consolas, monospace; font-size: 0.86rem; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre {
+	background: var(--code-bg);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	padding: 12px 14px;
+	overflow-x: auto;
+	line-height: 1.45;
+}
+pre code { background: none; padding: 0; }
+.note {
+	background: var(--accent-soft);
+	border-radius: 8px;
+	padding: 12px 16px;
+	margin: 14px 0;
+}
+.note b:first-child { color: var(--accent); }
+ul { margin: 0 0 12px; padding-left: 22px; }
+li { margin: 3px 0; }
+figure { margin: 16px 0 20px; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
+.sub { color: var(--muted); font-size: 0.85em; }
+.svg-box { fill: var(--paper); stroke: var(--accent); stroke-width: 1.5; }
+.svg-box-dim { fill: var(--paper); stroke: var(--line); stroke-width: 1.5; }
+.svg-text { fill: var(--ink); font-family: Georgia, serif; font-size: 15px; }
+.svg-small { fill: var(--muted); font-family: "Segoe UI", sans-serif; font-size: 11.5px; }
+.svg-arrow { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.svg-head { fill: var(--muted); }
+@media (max-width: 640px) {
+	html { font-size: 16px; }
+	nav.toc ol { columns: 1; }
+	main { padding: 24px 16px 60px; }
+}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+	<h1>Dźwięk – przewodnik</h1>
+	<p class="lead">Nocna Zmiana: muzyka adaptacyjna (także warianty skrzydeł Piętra I i temat strażników), ambient stref, pogłos, kroki i katalog efektów Piętra I. Co gra, kiedy gra, jak to ustawić w poziomie i jak wszystko wygenerować od nowa.</p>
+</header>
+
+<nav class="toc">
+	<b>Spis treści</b>
+	<ol>
+		<li><a href="#przeglad">Przegląd</a></li>
+		<li><a href="#muzyka">Muzyka: utwory</a></li>
+		<li><a href="#stany">Muzyka: stany i przejścia</a></li>
+		<li><a href="#ambient">Ambient i strefy</a></li>
+		<li><a href="#poglos">Strefy pogłosu</a></li>
+		<li><a href="#kroki">Kroki i powierzchnie</a></li>
+		<li><a href="#glosnosc">Głośność</a></li>
+		<li><a href="#regeneracja">Regeneracja i testy</a></li>
+		<li><a href="#noc">Noc w lobby: przebieg nocy w dźwięku</a></li>
+		<li><a href="#integracja">Co zostało do wpięcia</a></li>
+		<li><a href="#pietro1">Piętro I: strefy, warianty, strażnicy, efekty</a></li>
+		<li><a href="#glos">Głos: Heniek, System, audioprzewodnik</a></li>
+	</ol>
+</nav>
+
+<section id="przeglad">
+<h2>1. Przegląd</h2>
+<p>Cały dźwięk poza efektami broni i potworów (te gra autoload <code>Sfx</code>) obsługują trzy nowe autoloady. Wszystkie pliki są syntetyzowane przez skrypty w <code>tools/music/</code> – żadnych próbek z zewnątrz.</p>
+<div class="cards">
+	<div class="card"><b>Music</b><span>muzyka adaptacyjna na szynie <code>Music</code> – stany, crossfade, warstwy (stemy), stingery</span></div>
+	<div class="card"><b>Ambience</b><span>tło pomieszczeń na szynie <code>Ambience</code>, dalekie dźwięki w 3D, strefy pogłosu, blackout</span></div>
+	<div class="card"><b>Foley</b><span>sam dokłada węzeł <code>Footsteps</code> strażnikowi i eksponatom</span></div>
+</div>
+<p>Szyny (<code>default_bus_layout.tres</code>): <code>Master</code> (limiter −0,5 dB) ← <code>SFX</code> (−4 dB), <code>Music</code>, <code>Ambience</code>, <code>UI</code>; nowe: <code>ReverbHall</code>, <code>ReverbRoom</code>, <code>ReverbCorridor</code> – same pogłosy (dry 0), wracają do <code>SFXReturn</code> (→ <code>Master</code>), a nie do <code>SFX</code>: na <code>SFX</code> siedzi pogłos słuchacza i ogon sali nie może przejść przez pogłos drugi raz. <code>Ambience</code> trzyma <code>SFXReturn</code> na głośności i wyciszeniu szyny <code>SFX</code> (przy każdej zmianie opcji), więc suwak efektów dalej obejmuje ogon. Poziomy istniejących szyn się nie zmieniły.</p>
+<div class="note"><b>Posłuchaj wszystkiego naraz:</b> <code>SOUND=1 bash tools/run_audio.sh</code> – w ok. 2 min przechodzi menu i prawdziwe <code>Museum</code>, do którego wchodzi prawdziwą zmianą sceny (pokoje i podłogi, marsz i bieg, awaria prądu, lot kryształu, T-Rex w dwóch fazach, zwycięstwo, godzina duchów, świt i sama przechodzi do następnej nocy, walka i jej wygasanie, śmierć); każdy ważny moment sprawdza i wypisuje „ok” albo „MISSED”. Pliki z <code>assets/music/</code> i <code>assets/ambience/</code> otworzy też każdy odtwarzacz.</div>
+<div class="note"><b>Testy i scenariusze:</b> w przebiegach testowych (<code>SavePaths.is_test_run()</code>) automatyka jest wyłączona (<code>enabled = false</code>) – zestaw testów zostaje cichy i bez wycieków. Testy dźwięku włączają ją same i sprzątają po sobie.</div>
+</section>
+
+<section id="muzyka">
+<h2>2. Muzyka: utwory</h2>
+<p>Tonacja d-moll, jeden motyw przewodni – kołysanka z pozytywki (A–D–F–E…) – wraca w każdym utworze w innym przebraniu: w menu jako pozytywka, w eksploracji jako daleki fortepian, w walce jako zdziczały „mosiądz” i pozytywka przepuszczona przez bitcrusher, przy śmierci jako pozytywka, której kończy się sprężyna. Pliki: <code>assets/music/*.ogg</code> – Ogg Vorbis, 44,1 kHz, stereo, ok. 160 kbit/s; pętle z <code>loop=true</code> od 0 (<code>loop_offset</code> 0). Pośrednie WAV-y powstają w <code>build/audio_src/</code> i nie trafiają do repozytorium.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Plik</th><th>Rola</th><th class="num">Tempo</th><th class="num">Długość</th><th class="num">LUFS</th><th class="num">Szczyt</th><th>Brzmienie</th></tr></thead>
+<tbody>
+<tr><td><code>menu</code></td><td>menu, ekran końca dema</td><td class="num">72, 3/4</td><td class="num">2:10</td><td class="num">−18,0</td><td class="num">−6,1</td><td>„Nokturn dozorcy”: pozytywka (melodia i arpeggio), czelesta, smyczki, wiolonczela, harfa w części B, miękki fortepian, zegar w hallu</td></tr>
+<tr><td><code>explore</code></td><td>obchód</td><td class="num">60, 4/4</td><td class="num">2:08</td><td class="num">−22,0</td><td class="num">−7,7</td><td>„Obchód”: burdon D, ciemne smyczki (B, Es, g, A nad pedałem D), daleki fortepian z motywem, zegar w sąsiedniej sali, dzwon „o złej godzinie”, szklane tony, wiatr w świetlikach</td></tr>
+<tr><td><code>explore_tension</code></td><td>warstwa napięcia</td><td class="num">60, 4/4</td><td class="num">2:08</td><td class="num">−22,0<br><span class="sub">razem −19,0</span></td><td class="num">−3,5</td><td>spiccato niskich smyczków na pedale D z frygijskim Es, pizzicato na palcach po słabych częściach taktu (skradanie z przymrużeniem oka), bicie serca, tykanie ósemkami, tremolo sul ponticello, niskie uderzenia, narastanie do początku pętli</td></tr>
+<tr><td><code>combat</code></td><td>walka (baza)</td><td class="num">140, 4/4</td><td class="num">1:50</td><td class="num">−18,0</td><td class="num">−5,6</td><td>stopa, werbel, „tykający zegar” zamiast hi-hatu, kotły, taiko w przełamaniu, przesterowane ostinato basu zdublowane smyczkami, dysonansowe stabby (b9), kompresja „pompująca” pod stopę</td></tr>
+<tr><td><code>combat_hi</code></td><td>walka (intensywność)</td><td class="num">140, 4/4</td><td class="num">1:50</td><td class="num">−19,9<br><span class="sub">razem −16,5</span></td><td class="num">−7,0</td><td>motyw na przesterowanym leadzie, pozytywka przez bitcrusher, kowadła (zbroje) na 2 i 4, dodatkowe tomy</td></tr>
+<tr><td><code>boss</code></td><td>T-Rex (baza)</td><td class="num">105, 4/4</td><td class="num">2:08</td><td class="num">−17,5</td><td class="num">−4,8</td><td>„Tyranozaur w rotundzie”: plemienne kotły i taiko, organy muzeum, niskie blachy z motywem T-Rexa (D–D–Es–D, C–B–A), w szarży stopa, werbel, bas i stabby</td></tr>
+<tr><td><code>boss_hi</code></td><td>T-Rex od fazy 2</td><td class="num">105, 4/4</td><td class="num">2:08</td><td class="num">−18,8<br><span class="sub">razem −16,0</span></td><td class="num">−6,0</td><td>chór „aa/oo”, „kościany” ksylofon (ukłon w stronę Danse macabre), tomy</td></tr>
+<tr><td><code>victory_sting</code></td><td>pokonanie T-Rexa</td><td class="num">–</td><td class="num">0:08</td><td class="num">−16,9</td><td class="num">−3,5</td><td>tremolo kotłów, akord D-dur (tercja pikardyjska: noc wygrana), motyw w dur na pozytywce</td></tr>
+<tr><td><code>death_sting</code></td><td>śmierć strażnika</td><td class="num">–</td><td class="num">0:05,5</td><td class="num">−18,5</td><td class="num">−7,3</td><td>pozytywka zwalnia i siada w stroju, stuk mechanizmu, ciemne smyczki (alarm 23:00 to osobny efekt)</td></tr>
+</tbody>
+</table></div>
+<p>Pętle są renderowane <b>kołowo</b>: to, co wybrzmiewa za końcem pętli (pogłos, wybrzmienia), jest dodawane na jej początek, a filtry, pogłos, kompresor i limiter pracują na pętli jak na pętli. Szew nie istnieje z konstrukcji; analiza to potwierdza (skok na szwie &lt; 0,6 typowego kroku próbki, brak impulsu wysokich częstotliwości). Każdy plik zaczyna się kilkadziesiąt ms <b>przed</b> taktem otwierającym, w najspokojniejszym miejscu ostatniego taktu – koder stratny traktuje pierwszą i ostatnią próbkę pliku jak krawędź i uderzenie dokładnie na szwie (np. tyknięcie zegara w menu) dostałoby od niego drobny trzask; obrót pętli niczego muzycznie nie zmienia. Po zakodowaniu szew sprawdza sam silnik: dekoder Godota za pętlą daje próbka w próbkę to samo co od początku pliku, długości zgadzają się co do ramki (Vorbis nie dopisuje ciszy), a skok na szwie nie odstaje od zwykłych kroków sygnału (test <code>test_audio_assets</code>, pełne porównanie z WAV-em: <code>tools/build_audio.sh check</code>). Stemy jednej rodziny mają identyczną długość co do próbki i startują w tej samej klatce – w grze są zsynchronizowane (zmierzone: 0,0 ms rozjazdu); co sekundę <code>Music.resync()</code> sprawdza je i w razie rozjazdu ponad 4 ms dociąga stemy do pierwszego.</p>
+</section>
+
+<section id="stany">
+<h2>3. Muzyka: stany i przejścia</h2>
+<figure>
+<svg viewBox="0 0 900 330" role="img" aria-label="Diagram stanów muzyki">
+	<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="svg-head"/></marker></defs>
+	<rect x="20" y="30" width="130" height="50" rx="10" class="svg-box-dim"/><text x="85" y="61" text-anchor="middle" class="svg-text">MENU</text>
+	<text x="85" y="100" text-anchor="middle" class="svg-small">menu, koniec dema</text>
+	<rect x="20" y="200" width="130" height="50" rx="10" class="svg-box-dim"/><text x="85" y="231" text-anchor="middle" class="svg-text">SILENT</text>
+	<text x="85" y="270" text-anchor="middle" class="svg-small">testy, śmierć, inne sceny</text>
+	<rect x="200" y="130" width="120" height="50" rx="10" class="svg-box"/><text x="260" y="161" text-anchor="middle" class="svg-text">EXPLORE</text>
+	<rect x="440" y="130" width="120" height="50" rx="10" class="svg-box"/><text x="500" y="161" text-anchor="middle" class="svg-text">TENSION</text>
+	<rect x="680" y="130" width="120" height="50" rx="10" class="svg-box"/><text x="740" y="161" text-anchor="middle" class="svg-text">COMBAT</text>
+	<rect x="440" y="232" width="120" height="50" rx="10" class="svg-box"/><text x="500" y="263" text-anchor="middle" class="svg-text">BOSS</text>
+	<rect x="680" y="232" width="120" height="50" rx="10" class="svg-box"/><text x="740" y="263" text-anchor="middle" class="svg-text">VICTORY</text>
+	<path d="M320,148 L438,148" class="svg-arrow" marker-end="url(#arr)"/><text x="380" y="140" text-anchor="middle" class="svg-small">czuwający eksponat</text>
+	<path d="M438,164 L322,164" class="svg-arrow" marker-end="url(#arr)"/><text x="380" y="180" text-anchor="middle" class="svg-small">+6 s spokoju</text>
+	<path d="M560,148 L678,148" class="svg-arrow" marker-end="url(#arr)"/><text x="620" y="140" text-anchor="middle" class="svg-small">trafienie, rana</text>
+	<path d="M678,164 L562,164" class="svg-arrow" marker-end="url(#arr)"/><text x="620" y="180" text-anchor="middle" class="svg-small">8 s bez walki</text>
+	<path d="M260,128 C260,48 740,48 740,128" class="svg-arrow" marker-end="url(#arr)"/><text x="500" y="62" text-anchor="middle" class="svg-small">walka prosto ze spokoju (trafienie, eksponat w zwarciu)</text>
+	<path d="M280,182 C280,257 360,257 438,257" class="svg-arrow" marker-end="url(#arr)"/><text x="345" y="280" text-anchor="middle" class="svg-small">boss_awakened</text>
+	<path d="M560,257 L678,257" class="svg-arrow" marker-end="url(#arr)"/><text x="620" y="249" text-anchor="middle" class="svg-small">boss_defeated</text>
+	<path d="M740,284 L740,302 L230,302 L230,184" class="svg-arrow" marker-end="url(#arr)"/><text x="485" y="320" text-anchor="middle" class="svg-small">po 7 s stingera z powrotem do obchodu</text>
+</svg>
+<figcaption>Stany <code>MusicDirector</code>. Z każdego stanu gry śmierć strażnika prowadzi do SILENT (stinger śmierci). Nowa scena zaczyna od nowa.</figcaption>
+</figure>
+<h3>Co decyduje</h3>
+<ul>
+	<li><b>Scena</b> (sygnał <code>SceneTree.scene_changed</code>): menu główne i ekran końca dema → MENU; scena ze strażnikiem (grupa <code>player</code>: muzeum, podglądy dev) → gra; wszystko inne → SILENT.</li>
+	<li><b>Zdarzenia z <code>Events</code></b>: <code>hit_landed</code>, <code>enemy_destroyed</code>, <code>player_damaged</code> (i <code>weapon_fired</code>, gdy ktoś czuwa w pobliżu) grzeją walkę; <code>player_died</code>, <code>boss_awakened</code> (plus sygnał <code>phase_changed</code> bossa), <code>boss_defeated</code>. <b>Nowych sygnałów nie trzeba było dodawać.</b></li>
+	<li><b>Otoczenie</b> (co 0,25 s): obudzone eksponaty z grupy <code>enemies</code> w promieniu 30 m od słuchacza to napięcie; w promieniu 9 m (albo atakujące) to walka. W kryjówce (<code>Haven.shelters</code>) łowcy się nie liczą, a walka wygasa dwa razy szybciej.</li>
+	<li><b>Intensywność</b> 0–1: trafienie +0,06, zabicie +0,14, rana +0,12; po 3 s bez zdarzeń opada o 0,08/s. Stem <code>combat_hi</code> wchodzi między 0,3 a 0,6. <code>boss_hi</code> gra od fazy 2 T-Rexa.</li>
+</ul>
+<h3>Przejścia i pauza</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Warstwa</th><th class="num">Wejście</th><th class="num">Wyjście</th><th>Uwagi</th></tr></thead>
+<tbody>
+<tr><td>menu</td><td class="num">2,5 s</td><td class="num">1,5 s</td><td>gra też w pauzie; wraca w miejscu, w którym przerwała</td></tr>
+<tr><td>explore</td><td class="num">3,0 s</td><td class="num">1,2 s</td><td>wraca w miejscu przerwania (nowa noc – od początku)</td></tr>
+<tr><td>explore_tension</td><td class="num">2,5 s</td><td class="num">5,0 s</td><td>zawsze w synchronie z explore</td></tr>
+<tr><td>combat / combat_hi</td><td class="num">0,35 / 1,5 s</td><td class="num">4,0 / 3,0 s</td><td>walka wchodzi od razu, schodzi powoli</td></tr>
+<tr><td>boss / boss_hi</td><td class="num">0,5 / 2,0 s</td><td class="num">3,0 s</td><td></td></tr>
+</tbody>
+</table></div>
+<p>Wzmocnienia idą po krzywej równej mocy (sinus), więc crossfade nie ma „dziury”. Muzyka gry pauzuje się razem z grą (odtwarzacze są <code>PAUSABLE</code>), a liczniki walki stają w miejscu; motyw menu gra dalej. Po śmierci wszystko gaśnie w 1 s pod stingerem (ambient cichnie razem z wygaszeniem obrazu); jeśli scena wskrzesza strażnika na miejscu (sandbox, podglądy dev), noc wraca sama.</p>
+<h3>API</h3>
+<pre><code>Music.state()                     # MusicDirector.State
+Music.state_changed               # sygnał (state)
+Music.hold(MusicDirector.State.TENSION)   # wymuś stan (scenka, jump scare)…
+Music.release()                   # …i oddaj sterowanie regułom
+Music.set_scene_kind(AudioContext.GAME)   # ręcznie (testy, narzędzia)
+Music.stop_all()</code></pre>
+</section>
+
+<section id="ambient">
+<h2>4. Ambient i strefy</h2>
+<p>Strefa to miks zapętlonych warstw (<code>assets/ambience/bed_*.ogg</code>, pętle 40 s; wszystkie warstwy i dalekie dźwięki ładują się przy starcie gry, nie w środku nocy). Zmiana strefy to 2-sekundowy crossfade. Co 10–24 s (w blackout 6–15 s) gdzieś 10–26 m od słuchacza, w 3D, rozlega się daleki dźwięk – przestrzeń jest w nim „wypalona”, więc omija strefy pogłosu.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Strefa</th><th>Warstwy (dB)</th><th>Dalekie dźwięki (wagi)</th></tr></thead>
+<tbody>
+<tr><td><code>grand_hall</code></td><td>hall_air 0 (powietrze sali + wiatr w świetlikach), mains_hum −6</td><td>łupnięcie 3, drzwi 2, upadek 1, skrzypnięcie 1, szkło 1</td></tr>
+<tr><td><code>gallery</code></td><td>gallery_room 0, hall_air −12, mains_hum −8</td><td>skrzypnięcie 4, szkło 2, upadek, łupnięcie, drzwi</td></tr>
+<tr><td><code>security</code></td><td>gallery_room −4, fluorescent 0 (brzęczenie świetlówek 100 Hz), cctv 0 (monitory, wentylatory, dysk), clock 0 (zegar ścienny)</td><td>drzwi 2, rury 2, skrzypnięcie, łupnięcie</td></tr>
+<tr><td><code>corridor</code></td><td>hvac 0 (wentylacja), gallery_room −6</td><td>rury 3, łupnięcie 2, drzwi, upadek</td></tr>
+<tr><td><code>secret</code></td><td>gallery_room +3, hall_air −16 (martwa cisza, daleki wiatr)</td><td>skrzypnięcie 2, łupnięcie</td></tr>
+</tbody>
+</table></div>
+<p><b>Blackout</b> (modyfikator nocy z <code>Events.night_started</code>, <code>RunState.modifier == &amp;"blackout"</code> sprawdzane na bieżąco, albo <code>Ambience.set_blackout(true)</code>): warstwy elektryczne (mains_hum, fluorescent, cctv, hvac) milkną, wchodzi <code>dread</code> – podbasowe dudnienie, kwaśny dudnień D/Es, jęki konstrukcji – a do losowania dochodzą jęki metalu 3, <i>cudze kroki</i> 1 i łupnięcia 2. Zegar tyka dalej: jest nakręcany, nie na prąd.</p>
+<h3>Która strefa gra</h3>
+<ol>
+	<li><code>Ambience.set_zone(&amp;"security")</code> – wybór ręczny wygrywa ze wszystkim (<code>set_zone(&amp;"")</code> wraca do automatu),</li>
+	<li>węzeł <code>AmbienceZone</code>, w którym stoi słuchacz (wyższy <code>priority</code> wygrywa),</li>
+	<li>pokój poziomu – jeśli poziom ma <code>room_at(punkt)</code> (LobbyLevel), mapa <code>Ambience.ROOM_ZONES</code>: hall i balkon → grand_hall; galeria, zbrojownia, diorama → gallery; korytarze i szyb → corridor; ochrona → security; schowek, tajne pokoje, podziemie i klatka schodowa w dół → secret,</li>
+	<li><code>gallery</code> domyślnie. Ambient gra tylko w scenach ze strażnikiem.</li>
+</ol>
+<h3>Jak postawić strefę</h3>
+<pre><code># w kodzie poziomu – prostopadłościan w metrach, podstawa na podłodze
+var zone := AmbienceZone.make(&amp;"security", AABB(Vector3(-5, 0, 54), Vector3(10, 3, 8)), 1)
+add_child(zone)
+
+# w edytorze: węzeł Area3D ze skryptem ambience_zone.gd, pole zone,
+# rozmiar w size albo własne dzieci CollisionShape3D z BoxShape3D</code></pre>
+<p>Strefa nie bierze udziału w fizyce (warstwa 0, maska 0, bez monitorowania) – <code>Ambience</code> sprawdza pozycję słuchacza w jej pudełkach sam, więc nie przeszkadza promieniom, strzałom ani wykrywaniu.</p>
+</section>
+
+<section id="poglos">
+<h2>5. Strefy pogłosu</h2>
+<p><code>ReverbZone</code> to <code>Area3D</code> z nadpisaniem szyny pogłosu: dźwięki przestrzenne (<code>AudioStreamPlayer3D</code>) w jej środku wysyłają część sygnału na szynę presetu.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Preset</th><th>Szyna</th><th class="num">Wysyłka</th><th>Pogłos (AudioEffectReverb)</th><th>Słuchacz na SFX</th></tr></thead>
+<tbody>
+<tr><td>HALL</td><td><code>ReverbHall</code></td><td class="num">0,45</td><td>room 0,88, damping 0,4, predelay 60 ms, wet 0,8</td><td>room 0,85, wet 0,16</td></tr>
+<tr><td>ROOM</td><td><code>ReverbRoom</code></td><td class="num">0,30</td><td>room 0,35, damping 0,6, predelay 12 ms</td><td>room 0,35, wet 0,07</td></tr>
+<tr><td>CORRIDOR</td><td><code>ReverbCorridor</code></td><td class="num">0,30</td><td>room 0,3, damping 0,25 (twarde ściany, jasno), predelay 8 ms, sprzężenie 0,45</td><td>room 0,28, wet 0,09</td></tr>
+</tbody>
+</table></div>
+<ul>
+	<li><b>Własna warstwa fizyki</b> <code>Layers.REVERB_ZONE</code> (warstwa 20, „reverb_zone”): nic z nią nie koliduje i żaden promień jej nie szuka, więc strzały (hitscan) i sonda „użyj” jej nie widzą. <code>Ambience</code> dopisuje tę warstwę do <code>area_mask</code> każdego głosu <code>Sfx.play_at</code> w chwili startu; kroki i ambient robią to same.</li>
+	<li><b>Pogłos słuchacza</b>: strefa, w której stoi kamera, dokłada odrobinę swojego pogłosu do szyny <code>SFX</code> (efekt dodawany w locie, płynne wejście/wyjście) – dzięki temu strzał strażnika (dźwięk 2D) też dzwoni w wielkiej sali. Ogony stref wracają obok niego (<code>SFXReturn</code>).</li>
+	<li><b>Automatycznie</b>: jeśli poziom opisuje pokoje (<code>level.layout.rooms</code> – lobby) i scena nie ma żadnej własnej <code>ReverbZone</code>, <code>Ambience</code> buduje strefy sam (po jednej na część pokoju, preset z <code>Ambience.ROOM_REVERB</code>: hall/balkon HALL 0,5/0,45; galeria, zbrojownia, diorama HALL ~0,3; korytarze, szyb i klatka schodowa w dół CORRIDOR; reszta ROOM). Dla pogłosu słuchacza balkon wygrywa z hallem pod nim (wyższy <code>priority</code>); dźwięk w 3D Godot wysyła do pierwszej znalezionej strefy (priorytetu nie czyta), więc nakładające się strefy powinny mieć ten sam preset.</li>
+</ul>
+<pre><code># ręcznie: jedna strefa na pomieszczenie (AABB w metrach świata)
+add_child(ReverbZone.make(ReverbZone.Preset.CORRIDOR, AABB(Vector3(30, 0, 14.5), Vector3(4, 3.5, 15.5))))</code></pre>
+</section>
+
+<section id="kroki">
+<h2>6. Kroki i powierzchnie</h2>
+<p><code>Footsteps</code> to węzeł-dziecko dowolnego <code>CharacterBody3D</code>. Nie dotyka skryptu ciała: co klatkę fizyki czyta <code>get_real_velocity()</code> i <code>is_on_floor()</code>. Autoload <code>Foley</code> dokłada go sam: strażnik → <code>guard</code>, <code>WaxFigure</code> → <code>wax</code>, <code>Wolf</code> → <code>wolf</code>, <code>Knight</code> → <code>knight</code>, <code>Raptor</code> → <code>raptor</code>. Popiersia lewitują, portrety wiszą na ścianach, a T-Rex ma własne kroki (<code>trex_step</code> w <code>Sfx</code>) – nie dostają nic. Ciało, które ma już węzeł o nazwie <code>Footsteps</code>, zostaje w spokoju.</p>
+<ul>
+	<li><b>Kadencja</b>: krok co długość kroku; <code>krok = stride · √(prędkość / speed)</code>, więc bieg jest i szybszy, i dłuższy. Strażnik: 2,3 kroku/s idąc (5,5 m/s), 2,8 kroku/s w biegu (8,5 m/s). Pierwszy krok zaraz po ruszeniu.</li>
+	<li><b>Strażnik</b> słyszy się płasko (2D); w biegu dzwoni pęk kluczy przy pasku, skok to odbicie i szelest, lądowanie rośnie z prędkością upadku (od 3,5 m/s).</li>
+	<li><b>Eksponaty</b> brzmią w 3D (do 35 m, strefy pogłosu działają): wosk ciągnie lepką stopę, wilk stuka pazurami (na dywanie same poduszki), zbroja rycerza chrzęści blachami nad ciężkim krokiem, szkielet raptora stuka kością i pazurami. Wosk i rycerz dokładają cicho dźwięk podłogi pod sobą.</li>
+	<li>Losowe ujęcie (nigdy dwa razy to samo pod rząd), ±6 % wysokości.</li>
+</ul>
+<h3>Konwencja powierzchni</h3>
+<p>Powierzchnie: <code>stone</code> (marmur, wapień, płyty kamienne, lastryko, beton, płytki, linoleum), <code>wood</code> (parkiet, deski), <code>carpet</code> (dywany, chodniki), <code>metal</code> (kraty, szyby wentylacyjne). Pod każdym krokiem krótki promień w dół (warstwa <code>WORLD</code>) znajduje podłogę; <code>Surface.of()</code> bierze pierwsze trafienie:</p>
+<ol>
+	<li>metadana <code>surface</code> na kolizorze podłogi albo jednym z dwóch rodziców: <code>floor.set_meta(&amp;"surface", &amp;"wood")</code>,</li>
+	<li>nazwa materiału fizycznego: <code>physics_material_override.resource_name = "carpet"</code>,</li>
+	<li>grupa <code>surface_&lt;nazwa&gt;</code> (np. <code>surface_metal</code>) na kolizorze lub rodzicu,</li>
+	<li>element zestawu <code>LevelKit</code> (<code>kit</code> = <code>balcony</code> → kamień: to wapienna płyta holu, <code>grate</code> → metal),</li>
+	<li>pokój poziomu (<code>Surface.ROOM_SURFACES</code>, zapisane materiałem tak, jak podłogi kafluje zestaw modułowy lobby – <code>ArtKit.ROOMS</code>, pole <code>floor</code>; aliasy tłumaczą je na dźwięk): hall i galeria – marmur, balkon – wapień, zbrojownia i podziemie – płyty kamienne, przed dioramą – lastryko, korytarze techniczne, szyb i klatka w dół – beton, korytarz personelu i ochrona – wytarte linoleum, ukryte pokoje – deski. Wszystko poza deskami brzmi jak twarda posadzka (zestaw kroków ma cztery materiały); test <code>test_night_soundtrack</code> pilnuje zgodności z <code>ArtKit</code>,</li>
+	<li>kamień.</li>
+</ol>
+<p>Aliasy (<code>marble</code>, <code>limestone</code>, <code>flagstone</code>, <code>terrazzo</code>, <code>concrete</code>, <code>linoleum</code>, <code>parquet</code>, <code>rug</code>, <code>grate</code>…) są tłumaczone same.</p>
+</section>
+
+<section id="glosnosc">
+<h2>7. Głośność</h2>
+<ul>
+	<li><b>Muzyka</b>: ok. −18 LUFS zintegrowanej głośności (eksploracja celowo ciszej, −22; z napięciem −19; walka −18, pełna −16,5; boss −17,5, pełny −16), szczyty poniżej −1,5 dBFS (zmierzone: −3,5 do −7,7 dBFS, true peak tak samo). Muzyka jest cichsza niż efekty: strzał pistoletu ma szczyt ok. −5 dB na wyjściu szyny SFX, muzyka walki ok. −8,5 dB.</li>
+	<li><b>Ambient</b>: warstwy −31 do −41 LUFS (hall −31, pokój −37, szum sieci −41, świetlówki −34, monitory −38, zegar −35, wentylacja −32, dread −31) – słychać je w ciszy, znikają pod muzyką.</li>
+	<li><b>Kroki</b>: próbki normalizowane do szczytu (kamień −3, dywan −9, metal −2 dBFS), głośność w profilach (strażnik −7 dB, bieg +2 dB).</li>
+</ul>
+<p>Zmierzone w grze (scenariusz audio, szczyt/średnia wskazań szyn): muzyka menu −12/−19 dB, eksploracja −14/−17, walka −8,5/−13, boss −8/−12; ambient −15…−24/−25…−28; kroki strażnika do −18 dB w biegu.</p>
+<div class="note"><b>Jak to mierzymy:</b> <code>tools/music/analyze.py</code> liczy głośność wg ITU-R BS.1770-4 (filtr K, bramkowanie), szczyt i true peak (nadpróbkowanie ×4), udział pasm widma, korelację kanałów i szew pętli. Z opcją <code>--png=KATALOG</code> rysuje spektrogram – do oglądania nut, rytmu i sekcji, skoro słuchać się nie da.</div>
+</section>
+
+<section id="regeneracja">
+<h2>8. Regeneracja i testy</h2>
+<p>Skrypty są deterministyczne (każdy utwór i warstwa ma własne ziarno) i potrzebują tylko numpy – ma go Python dołączony do Blendera; kodowanie do Ogg Vorbis robi moduł <code>aud</code> samego Blendera (FFmpeg/libvorbis). Całość jednym poleceniem:</p>
+<pre><code>bash tools/build_audio.sh          # render → Ogg → import → sprawdzenie szwów (ok. 10 min)
+bash tools/build_audio.sh encode   # tylko kodowanie i sprawdzenie (WAV-y już są w build/audio_src/)
+bash tools/build_audio.sh check    # tylko sprawdzenie szwów
+
+# pojedyncze kroki:
+PY="D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe"
+"$PY" tools/music/gen_music.py [menu explore combat boss victory death]   # WAV → build/audio_src/music/
+"$PY" tools/music/gen_ambience.py                                          # WAV → build/audio_src/ambience/
+"$PY" tools/music/gen_foley.py                                             # kroki → assets/sfx/steps/*.wav
+".../blender.exe" -b --factory-startup --python tools/music/encode_ogg.py  # Ogg + .import → assets/
+"$PY" tools/music/analyze.py build/audio_src/music/*.wav --png=tests/_out/spec</code></pre>
+<ul>
+	<li><code>dsp.py</code> – oscylatory z ograniczonym pasmem, filtry FFT (zerowa faza, także zmienne w czasie), szum okresowy, syntetyczne odpowiedzi impulsowe i splot, kompresor, sidechain, limiter z wyprzedzeniem, pomiar LUFS i true peak.</li>
+	<li><code>instruments.py</code> – pozytywka (mody belki wspornikowej 1 : 6,27 : 17,55), czelesta (FM), harfa i pizzicato (Karplus-Strong z filtrem strat dobieranym na nutę, żeby czas wybrzmienia był ten sam w każdym rejestrze), fortepian (niecałkowite alikwoty, podwójne wygaszanie), dzwon, kotły i bębny (mody membrany), smyczki, blachy, organy, chór (formanty), ksylofon.</li>
+	<li><code>encode_ogg.py</code> + <code>godot_import.py</code> – koduje (muzyka 160 kbit/s, tła 112/80 kbit/s, dalekie dźwięki 80 kbit/s) i zapisuje <code>.import</code>: pętle <code>loop=true</code>, <code>loop_offset=0</code>, reszta bez pętli; uid zostaje.</li>
+	<li><code>ogg_serial.py</code> – koder losuje numer seryjny strumienia, więc ten sam WAV dawał co raz inny plik. Po kodowaniu każda strona Ogg dostaje stały numer (CRC-32 ścieżki pod <code>assets/</code>, np. <code>music/explore.ogg</code>) i przeliczoną sumę kontrolną; dźwięk bez zmian. Ponowne kodowanie tych samych WAV-ów daje teraz bajt w bajt te same pliki (sprawdzone), a <code>test_audio_assets</code> pilnuje numerów. Samodzielnie: <code>python tools/music/ogg_serial.py [pliki]</code>.</li>
+	<li><code>tests/support/decode_loops.gd</code> + <code>analyze.py --seams</code> – dekodują każdą pętlę przez silnik wokół punktu pętli i porównują z WAV-em: długość co do ramki, to samo wyrównanie przed szwem, po szwie i od początku (stałe opóźnienie dekodera Godota, 2 próbki, jest jednakowe wszędzie, więc nieszkodliwe), poziom błędu i jego ewentualny skok na szwie.</li>
+	<li>Testy: <code>bash tools/run_tests.sh</code> (m.in. <code>test_music_director</code>, <code>test_music</code>, <code>test_ambience</code>, <code>test_footsteps</code>, <code>test_audio_assets</code>, <code>test_night_mood</code>, <code>test_night_soundtrack</code>). Scenariusz: <code>bash tools/run_audio.sh</code> – przechodzi noce w prawdziwym muzeum i mierzy szyny (cicho; <code>SOUND=1</code>, żeby usłyszeć), raport w <code>tests/_out/audio/report.txt</code>; kończy się błędem, gdy któryś moment jest „MISSED”.</li>
+</ul>
+<div class="note"><b>Rozmiar:</b> w repozytorium są tylko pliki Ogg (muzyka ok. 16 MB, ambient ok. 4 MB; Piętro I: §11) i kroki jako krótkie WAV-y (1,7 MB, jak reszta <code>assets/sfx</code>). Pośrednie WAV-y (ok. 200 MB) żyją w <code>build/audio_src/</code> – katalog jest w <code>.gitignore</code>, a <code>.gdignore</code> nie pozwala Godotowi ich importować.</div>
+</section>
+
+<section id="noc">
+<h2>9. Noc w lobby: przebieg nocy w dźwięku</h2>
+<p>Muzeum ogłasza przebieg nocy przez <code>Events</code> (<code>Museum</code>, jego <code>NightObjective</code> i <code>NightWatch</code>); <code>Music</code> i <code>Ambience</code> słuchają tych sygnałów same – każdy trzyma swój <code>NightMood</code> (numer i modyfikator nocy, etap celu, godzina duchów, świt). Kod gry nie woła dźwięku wprost. Jedyny dopisek poza <code>src/audio</code>: <code>NightWatch</code> przy nocy wznowionej po 3:00 wysyła <code>witching_hour</code>, żeby jej warstwa wróciła.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Moment</th><th>Sygnał</th><th>Muzyka</th><th>Ambient</th></tr></thead>
+<tbody>
+<tr><td>Początek nocy</td><td><code>objective_changed(FUSES)</code>, <code>night_started(noc, modyfikator)</code></td><td>EXPLORE; noc 1 i noc „spokojna” ciszej (explore 0,45 ≈ −4 dB); pełnia: stem napięcia pod obchodem (0,3 ≈ −7 dB)</td><td>noc z blackoutem: bez prądu i z <code>dread</code> od pierwszej chwili, w każdej strefie</td></tr>
+<tr><td>Bezpieczniki włożone</td><td><code>objective_changed(PULSING)</code>, <code>power_cut</code></td><td>w 0,5 s prawie cisza (0,05) na 3 s, potem TENSION: obchód + stem napięcia 0,5 (≈ −3 dB) aż do końca celu</td><td>w hallu i na balkonie warstwy elektryczne gasną w 0,4 s, zostaje cienki szum obwodu awaryjnego (mains_hum −9 dB), wchodzi <code>dread</code>, dalekie dźwięki częściej (jęki, cudze kroki); reszta muzeum ma prąd. Trzask przekaźnika i bicie kryształu to efekty <code>Sfx</code>.</td></tr>
+<tr><td>Lot kryształu</td><td><code>objective_changed(FLIGHT)</code></td><td>stem napięcia na pełno</td><td>–</td></tr>
+<tr><td>T-Rex się budzi</td><td><code>boss_awakened</code>, <code>phase_changed</code> T-Rexa</td><td>BOSS; <code>boss_hi</code> od fazy 2 (sygnał fazy był już wpięty)</td><td>–</td></tr>
+<tr><td>T-Rex pokonany</td><td><code>objective_changed(DESCEND)</code>, <code>boss_defeated</code></td><td>stinger zwycięstwa (7 s), potem cichy obchód bez napięcia (księżyc i godzina duchów też odpuszczają)</td><td>hall zostaje ciemny</td></tr>
+<tr><td>3:00</td><td><code>witching_hour</code></td><td>do końca nocy stem napięcia pod obchodem (0,45 ≈ −4 dB); dzwon z wieży (<code>witching_bell</code>) gra <code>NightWatch</code></td><td>dalekie dźwięki częściej (co 7–17 s)</td></tr>
+<tr><td>6:00</td><td><code>dawn_broke</code></td><td>wszystko gaśnie przez 4 s i milczy do następnej nocy; łagodny akord świtu to <code>dawn_chime</code> (<code>Sfx</code>, gra go <code>Museum</code>)</td><td><code>dread</code> odchodzi, dalekie dźwięki milkną, po 1,2 s raz dalekie ptaki za świetlikami (<code>dawn_birds</code>, −12 dB)</td></tr>
+<tr><td>Śmierć</td><td><code>player_died</code></td><td>bez zmian: stinger śmierci, cisza (skamieniałe o świcie eksponaty nie liczą się już jako walka)</td><td>cichnie pod ekranem śmierci</td></tr>
+<tr><td>Koniec dema</td><td>scena <code>DemoEnd</code></td><td>motyw menu</td><td>–</td></tr>
+</tbody>
+</table></div>
+<ul>
+	<li><b>Noc wznowiona</b> ogłasza przy starcie swój etap (i godzinę duchów po 3:00): hall wraca ciemny, muzyka od razu w TENSION, bez wyciszenia – to nie jest chwila awarii.</li>
+	<li><b>Zmiana sceny</b>: muzeum ogłasza noc w swoim <code>_ready()</code>, tuż przed <code>scene_changed</code>. Nastrój zostaje tylko dla sceny, która go właśnie ogłosiła (ta sama klatka, najwyżej jedna później); menu, podglądy dev i każda inna scena zaczynają bez nocy.</li>
+	<li>Ptaki świtu (<code>assets/sfx/dawn_birds.wav</code>) generuje <code>tools/sfx/gen_sfx.py</code> (własne ziarno; stare pliki bajt w bajt bez zmian). Dzwon 3:00 i akord świtu już były.</li>
+	<li>Strojenie: stałe w <code>MusicDirector</code> (<code>QUIET_WALK</code>, <code>MOON_TENSION</code>, <code>WITCHING_TENSION</code>, <code>POWER_TENSION</code>, <code>HUSH_LEVEL</code>, <code>HUSH_TIME</code>), <code>Music.HUSH_FADE</code>, <code>Music.DAWN_FADE</code> i w <code>Ambience</code> (<code>POWER_CUT_ZONES</code>, <code>EMERGENCY_LAYERS</code>, <code>CUT_FADE</code>, <code>WITCHING_GAP</code>, <code>DAWN_BIRDS_*</code>).</li>
+</ul>
+</section>
+
+<section id="integracja">
+<h2>10. Co zostało do wpięcia</h2>
+<ul>
+	<li><b>Lobby w muzeum</b>: wpięte i sprawdzone w prawdziwym <code>Museum</code> (test <code>test_night_soundtrack</code> i scenariusz audio) – strefy ambientu, powierzchnie kroków i strefy pogłosu (po jednej na każdą z 20 części pokojów) biorą się z <code>room_at()</code> i <code>layout.rooms</code>. Sandbox gra strefę <code>gallery</code> bez pogłosu.</li>
+	<li><b>Blackout na żywo</b>: podgląd lobby (F7) gasi światła, ale nie zmienia <code>RunState.modifier</code> – jedna linia <code>Ambience.set_blackout(...)</code> w <code>lobby_dev.gd</code>, jeśli ma być słychać.</li>
+	<li><b>Kroki strażnika</b>: dokłada <code>Foley</code> automatycznie; własne podłogi poziomu wystarczy otagować (<code>set_meta(&amp;"surface", …)</code>), gdy mapa pokojów to za mało (np. dywan w części sali).</li>
+	<li><b>Scenki</b>: <code>Music.hold()</code>/<code>release()</code>; strefy ręczne: <code>Ambience.set_zone()</code>.</li>
+	<li>Zmiany w istniejącym kodzie: <code>Sfx</code> ma sygnał <code>quitting</code> (emitowany w <code>quit_cleanly()</code>), żeby muzyka, ambient i kroki zatrzymały się przed wyjściem bez „wycieków”; warstwa fizyki 20 ma nazwę <code>reverb_zone</code> w <code>project.godot</code> i stałą <code>Layers.REVERB_ZONE</code>.</li>
+</ul>
+</section>
+
+<section id="pietro1">
+<h2>11. Piętro I: strefy, warianty muzyki, strażnicy</h2>
+<p>Muzyka i ambient same idą za strażnikiem po strefach Piętra I. Jedynym źródłem jest sygnał <code>Events.room_entered(room, zone, first_visit)</code> (identyfikatory stref z <code>Floor1Plan</code>: <code>court</code>, <code>entrance</code>, <code>booth</code>, <code>egypt</code>, <code>assyria</code>, <code>greece</code>, <code>enlightenment</code>, <code>asia</code>, <code>americas</code>, <code>north_hall</code>, <code>basement</code>, <code>roof</code>). Kod poziomu nie woła dźwięku wprost – wystarczy, że ogłasza wejście do sali.</p>
+
+<h3>Warianty obchodu: ta sama kołysanka w sześciu skalach</h3>
+<p>Każde skrzydło ma własny obchód (rodzina <code>explore_&lt;skrzydło&gt;</code> + <code>explore_&lt;skrzydło&gt;_tension</code>, pętle ok. 96 s, ta sama głośność co „Obchód”: −22 LUFS, z napięciem −19). Wszystkie stoją na tonice D, więc przejście z jednego skrzydła do drugiego to zwykłe przenikanie. Dziedziniec, hol wejściowy, kanciapa, korytarz północny, podziemia i dach grają dotychczasowy „Obchód” z lobby.</p>
+<div class="table-wrap"><table>
+<tr><th>Skrzydło</th><th>Skala</th><th>Tempo</th><th>Obchód</th><th>Napięcie</th></tr>
+<tr><td>Egipt – „Piaski nocy”</td><td>D frygijska dominantowa (hidżaz)</td><td class="num">70, 4/4</td><td>burdon D–A, nej z kołysanką (ozdobniki, podjazdy), harfa, ciemne smyczki, szklane tony</td><td>maksum na darbuce, niski bęben ramowy, sistrum, smyczki D–Es, tremolo</td></tr>
+<tr><td>Asyria – „Lwy Niniwy”</td><td>D frygijska (kurd)</td><td class="num">72, 4/4</td><td>lira z kołysanką, lament duduka, ciche bębny ramowe, burdon</td><td>bębny ramowe (doum/tek), wielki bęben, brąz, smyczki D–Es</td></tr>
+<tr><td>Grecja – „Marmur i księżyc”</td><td>D dorycka</td><td class="num">60, 4/4</td><td>kithara, powietrzny chór „uu”, fletnia z kołysanką, szkło</td><td>tympanon, kotły, smyczki z dorycką sekstą (H), tremolo</td></tr>
+<tr><td>Oświecenie – „Menuet dla automatów”</td><td>d-moll harmoniczna (barok)</td><td class="num">90, 3/4</td><td>menuet: klawesyn (bas i akordy), pozytywka z oryginalną kołysanką, smyczki, wahadła</td><td>spiccato, kotły, zegary ósemkami, zdziczała pozytywka, przebiegi klawesynu</td></tr>
+<tr><td>Azja – „Ogród w nocy”</td><td>pentatonika d-moll (+ barwy skali <i>in</i>)</td><td class="num">60, 4/4</td><td>koto (oshide: D dociśnięte do Es), shakuhachi z kołysanką (meri na końcach fraz), sho, misy</td><td>taiko, „pon” małego bębna, tremolo koto, smyczki</td></tr>
+<tr><td>Ameryki – „Węże i ogień”</td><td>D eolska</td><td class="num">6/8 (ćw. z kr. 70)</td><td>marimba w hemioli 3+3 / 2+2+2, gliniany flet z kołysanką, bębny szczelinowe, grzechotki</td><td>bębny szczelinowe ósemkami, huehuetl, grzechotki, muszla w oddali</td></tr>
+</table></div>
+<ul>
+	<li><b>Przejście</b>: nowa strefa musi utrzymać się <code>MusicDirector.VARIANT_SETTLE</code> (1 s), zanim obchód zmieni wariant – próg drzwi nie miga muzyką. Gdy obchód jeszcze nie gra (start nocy, walka, strażnik), wariant zmienia się od razu. Przenikanie trwa <code>Music.CROSSFADE</code> (3,5 s) po krzywej równej mocy.</li>
+	<li><b>Bez restartów</b>: każda rodzina obchodu zapamiętuje miejsce i wraca z niego; szybki powrót do skrzydła w ogóle go nie zatrzymuje. Nowa noc zaczyna obchody od początku.</li>
+	<li><b>Walka</b> (<code>combat</code>) jest wspólna dla wszystkich skrzydeł; po niej wraca napięcie i obchód <i>tego</i> skrzydła.</li>
+</ul>
+
+<h3>Temat strażników i sygnały</h3>
+<p>Jedna kompozycja („Strażnik skrzydła”, 120 BPM, 32 takty = 64 s: przebudzenie, riff, kołysanka w 4/4, kulminacja, nawrót) zapisana w stopniach skali; każde skrzydło gra ją we własnej skali i instrumentach. Baza <code>guardian_&lt;skrzydło&gt;</code> (−18 LUFS) i warstwa <code>guardian_&lt;skrzydło&gt;_hi</code> (razem −16,5): prowadzenie, chór, perkusja.</p>
+<div class="table-wrap"><table>
+<tr><th>Id strażnika</th><th>Skrzydło</th><th>Baza</th><th>Warstwa hi</th></tr>
+<tr><td><code>colossus</code></td><td>Egipt</td><td>darbuka, wielki bęben, harfa, smyczki, blachy</td><td>mizmar (podwójny stroik), chór „aa”, sistrum</td></tr>
+<tr><td><code>lamassu</code></td><td>Asyria</td><td>niskie bębny ramowe, lira, niskie blachy</td><td>duduk + mizmar oktawę wyżej, chór „oo”, brąz</td></tr>
+<tr><td><code>centaur</code></td><td>Grecja</td><td>kotły, tympanon, kithara</td><td>trąbka (salpinx), fletnia, chór, talerze</td></tr>
+<tr><td><code>orrery</code></td><td>Oświecenie</td><td>kotły, werbel, arpeggia klawesynu, smyczki</td><td>organy, zdziczała pozytywka, chór, tykanie</td></tr>
+<tr><td><code>samurai</code></td><td>Azja</td><td>taiko, koto, smyczki</td><td>shakuhachi, obłok sho, misa</td></tr>
+<tr><td><code>serpent</code></td><td>Ameryki</td><td>huehuetl, bębny szczelinowe, marimba</td><td>gliniany flet, muszla, grzechotki</td></tr>
+</table></div>
+<ul>
+	<li><code>Events.guardian_awakened(węzeł, id)</code> → stan <code>GUARDIAN</code>. Skrzydło: id z tabeli, id z jej przedrostkiem (<code>colossus_ramses</code>), id będące nazwą skrzydła, a gdy nieznane – skrzydło bieżącej strefy. Warstwa hi wchodzi od fazy 2 (sygnał <code>phase_changed(phase)</code> węzła, jeśli go ma) albo w gorącej walce.</li>
+	<li><code>Events.guardian_defeated(id)</code> → <code>guardian_sting</code> (frygijskie westchnienie Es → D i otwarte D-dur z kołysanką na czeleście, 6 s), potem obchód. Węzeł zniknął bez porażki (koniec nocy) → po prostu obchód.</li>
+	<li>Strażnik, który dla paska HUD ogłosi też <code>boss_awakened</code>, dalej gra własny temat (nie T-Reksa), w dowolnej kolejności sygnałów. T-Rex wygrywa ze strażnikiem.</li>
+	<li><b>Sygnały nakładane</b> (muzyka cichnie pod nimi o <code>Music.DUCK_DB</code> = 8 dB): <code>seal_sting</code> przy <code>seal_collected</code> i <code>shard_collected</code> (oba naraz = jeden sygnał), <code>gate_sting</code> przy <code>gate_opened</code>, <code>wing_sting_&lt;skrzydło&gt;</code> – instrument skrzydła woła głowę kołysanki, gdy pierwsza sala skrzydła jest odwiedzona po raz pierwszy (nie w walce; skrzydła z zapisu: <code>Music.director.remember_wings([...])</code>). Podczas sygnału upadku strażnika nakładane czekają w kolejce.</li>
+</ul>
+<pre><code>Music.play_overlay(&amp;"seal_sting")          # ręcznie (zwraca false poza nocą)
+Music.director.remember_wings([&amp;"egypt"])  # skrzydła znane z zapisu: bez sygnału odkrycia
+Music.director.variant / .zone             # co gra teraz
+Music.track(&amp;"explore", &amp;"asia")           # → &amp;"explore_asia"</code></pre>
+
+<h3>Ambient stref Piętra I</h3>
+<p>17 nowych warstw (pętle 40 s, okresowe z konstrukcji) i 15 rodzajów dalekich dźwięków (po 2–3 ujęcia). Kolejność wyboru strefy: <code>Ambience.set_zone()</code> &gt; węzeł <code>AmbienceZone</code> &gt; strefa z <code>room_entered</code> &gt; <code>room_at()</code> lobby &gt; domyślna. Podstrefę wybiera słowo w id sali (<code>Ambience.SUB_ZONES</code>): <code>…garden…</code>/<code>…tea…</code> w Azji → <code>asia_garden</code>, <code>…clock…</code>/<code>…automat…</code> w Oświeceniu → <code>enlightenment_clocks</code>, <code>…tomb…</code>/<code>…burial…</code> w Egipcie → <code>egypt_tomb</code>, <code>…boiler…</code> w podziemiach → <code>basement_boiler</code>. Te same strefy da się postawić węzłem <code>AmbienceZone</code>.</p>
+<div class="table-wrap"><table>
+<tr><th>Strefa</th><th>Warstwy (dB)</th><th>Dalekie dźwięki (wagi)</th></tr>
+<tr><td><code>court</code></td><td>glass_wind 0 (wiatr na szklanym dachu, śpiewające tafle, tykanie stali), hall_air −4, city_hum −6 (miasto nocą), mains_hum −12</td><td>szkło 3, skrzypnięcie, łupnięcie, drzwi, samochód, szyba</td></tr>
+<tr><td><code>entrance</code></td><td>gallery_room −2, city_hum −2, hall_air −10, mains_hum −9</td><td>samochód 3, drzwi 2, skrzypnięcie, łupnięcie</td></tr>
+<tr><td><code>booth</code></td><td>jak dotychczasowa <code>security</code>: świetlówki, monitory, zegar</td><td>drzwi 2, rury 2, skrzypnięcie, łupnięcie</td></tr>
+<tr><td><code>egypt</code> / <code>egypt_tomb</code></td><td>stone_deep 0 (rezonans kamiennych sal), crack_wind −2 (wiatr w szczelinach), sand_trickle −3 (sypiący się piasek) / w grobowcu więcej piasku i krople</td><td>piasek 3, kamień 2, skrzypnięcie, łupnięcie, upadek / piasek, kamień, jęk</td></tr>
+<tr><td><code>assyria</code></td><td>cedar_creak 0 (cedrowe belki), stone_deep −3, fire −7 (pochodnie)</td><td>belka 3, kamień 2, żar, łupnięcie</td></tr>
+<tr><td><code>greece</code></td><td>airy_hall 0 (prawie cisza, wysoki oddech marmuru), drips −5 (dalekie krople z echem)</td><td>kropla 3, szkło, skrzypnięcie, kamień</td></tr>
+<tr><td><code>enlightenment</code> / <code>enlightenment_clocks</code></td><td>library 0 (ciepłe drewno, kartki), clocks −5 (zegary w swoich tempach) / w Sali Zegarów zegary +3</td><td>kartki 3, bicie zegara 2 (raz kukułka), skrzypnięcie 2, upadek</td></tr>
+<tr><td><code>asia</code> / <code>asia_garden</code></td><td>paper_rustle 0 (lampiony), chimes −3 (dzwonki wietrzne, pentatonika), garden −10 / w ogrodzie: garden 0 (woda z bambusa, świerszcze pod niebem), chimes 0, wiatr</td><td>dzwonki, dzwon świątynny, shishi-odoshi, skrzypnięcie / shishi-odoshi 3</td></tr>
+<tr><td><code>americas</code></td><td>far_drums 0 (bębny szczelinowe w oddali, frazami), fire −3, stone_deep −8</td><td>bęben 2, żar 2, skrzypnięcie, kamień</td></tr>
+<tr><td><code>north_hall</code></td><td>gallery_room 0, hvac −5, hall_air −12</td><td>rury 2, drzwi 2, kroki, skrzypnięcie</td></tr>
+<tr><td><code>basement</code> / <code>basement_boiler</code></td><td>boiler −2 (palnik, pompa, tykające rury, bulgot), fluorescent −4, drips −4, hvac −9 / w kotłowni kocioł +3</td><td>rury 3, para 2, kropla 2, jęk metalu, łupnięcie</td></tr>
+<tr><td><code>roof</code></td><td>roof_wind 0 (porywy, gwiżdżące odciągi, grzechoczące szyby), city_hum −2, glass_wind −6</td><td>szyba 3, samochód 2, szkło</td></tr>
+</table></div>
+<p>Warstwy elektryczne (<code>mains_hum</code>, <code>fluorescent</code>, <code>cctv</code>, <code>hvac</code>) gasną w blackoucie jak dotąd; kocioł i miasto nie są na prąd.</p>
+
+<h3>Presety pogłosu Piętra I</h3>
+<div class="table-wrap"><table>
+<tr><th>Preset</th><th>Szyna</th><th>Wysyłka</th><th>Pogłos</th><th>Gdzie</th></tr>
+<tr><td><code>VAST</code></td><td>ReverbVast</td><td class="num">0,5</td><td>room 0,97, damping 0,22 (szkło odbija góry), predelay 95 ms, sprzężenie 0,35</td><td>szklany dziedziniec, rotunda</td></tr>
+<tr><td><code>GALLERY</code></td><td>ReverbGallery</td><td class="num">0,42</td><td>room 0,82, damping 0,48, predelay 45 ms, sprzężenie 0,5 (echo między równoległymi ścianami)</td><td>długie kamienne galerie: Egipt, Asyria, Ameryki</td></tr>
+<tr><td><code>LIBRARY</code></td><td>ReverbLibrary</td><td class="num">0,25</td><td>room 0,45, damping 0,85 (książki i drewno chłoną), predelay 14 ms</td><td>Oświecenie, biblioteki</td></tr>
+<tr><td><code>GARDEN</code></td><td>ReverbGarden</td><td class="num">0,2</td><td>room 0,22, damping 0,7, predelay 35 ms (odpowiada kilka ścian)</td><td>ogród japoński, dach</td></tr>
+<tr><td><code>CONCRETE</code></td><td>ReverbConcrete</td><td class="num">0,35</td><td>room 0,5, damping 0,12 (twardo, jasno), predelay 10 ms, sprzężenie 0,4</td><td>podziemia, kotłownia</td></tr>
+</table></div>
+<p>Automatyczne strefy pogłosu z <code>layout.rooms</code>: najpierw <code>ROOM_REVERB</code> (lobby), potem słowo w id sali (<code>ROOM_WORD_REVERB</code>: garden, corridor, boiler, stair, library, rotunda), potem pole <code>zone</code> sali (<code>ZONE_REVERB</code>: dziedziniec VAST, hol HALL, kanciapa ROOM, Egipt/Asyria/Ameryki GALLERY, Grecja HALL, Oświecenie LIBRARY, Azja ROOM, korytarz północny CORRIDOR, podziemia CONCRETE, dach GARDEN). Funkcja: <code>Ambience.reverb_for(room_id, zone)</code>. Nowe presety dopisane na końcu enumu (stare wartości bez zmian).</p>
+
+<h3>Efekty Piętra I – katalog dla budowniczych</h3>
+<p>43 efektów (mono WAV, generowane: <code>tools/sfx/floor1_sfx.py</code>, uruchamiane przez <code>gen_sfx.py floor1</code>; ziarno z nazwy, stare pliki bajt w bajt bez zmian). Wszystkie są w <code>Sfx.SOUNDS</code> (ładowane z góry). Dźwięki broni robi osobny budowniczy.</p>
+<pre><code>Sfx.play_at(&amp;"mummy_groan", global_position)       # efekt w 3D (eksponat, zamek, strażnik)
+Sfx.play(&amp;"lock_power_on")                          # płasko (np. przełącznik przy strażniku)
+# pętle (Sfx.LOOPING): na własnym odtwarzaczu - Sfx.play() ucięłoby je po jednym przebiegu
+var swarm := AudioStreamPlayer3D.new()
+swarm.stream = Sfx.stream_of(&amp;"scarab_swarm")      # loop_mode forward z .import
+swarm.bus = &amp;"SFX"
+add_child(swarm)
+swarm.play()</code></pre>
+<div class="table-wrap"><table>
+<tr><th>Nazwa</th><th class="num">Długość</th><th>Co to jest / kiedy</th></tr>
+<tr><th colspan="3">Zamki (bramy Piętra I, §4.2)</th></tr>
+<tr><td><code>lock_chain_break</code></td><td class="num">1,9 s</td><td>Łańcuch: kłódka pęka, łańcuch zsuwa się i układa na posadzce. Trafienie bez zerwania: dotychczasowy <code>chain_clank</code>.</td></tr>
+<tr><td><code>lock_boards_hit</code></td><td class="num">0,6 s</td><td>Deski: cios – deski dudnią i drżą na gwoździach (każdy z 5 ciosów pięścią).</td></tr>
+<tr><td><code>lock_boards_splinter</code></td><td class="num">1,8 s</td><td>Deski puszczają: trzask drewna, gwoździe piszczą, deski spadają.</td></tr>
+<tr><td><code>lock_wall_crack</code></td><td class="num">0,9 s</td><td>Spękany mur trafiony: kamienny trzask i strużka gruzu.</td></tr>
+<tr><td><code>lock_wall_collapse</code></td><td class="num">2,8 s</td><td>Spękany mur się wali: huk, toczące się kamienie, osiadający pył.</td></tr>
+<tr><td><code>lock_seal_insert</code></td><td class="num">2,5 s</td><td>Pieczęć osadzona we wgłębieniu: ciężkie kamienne kliknięcie, budzi się niskie buczenie (D–A).</td></tr>
+<tr><td><code>lock_seal_grind</code></td><td class="num">4,5 s</td><td>Wrota pieczęci: kamień trze o kamień, wrota obracają się i osiadają z łoskotem.</td></tr>
+<tr><td><code>lock_shutter_roll</code></td><td class="num">3,9 s</td><td>Żaluzja przeciwpożarowa: trzask przekaźnika, buczenie silnika, grzechot lameli, stop.</td></tr>
+<tr><td><code>lock_power_on</code></td><td class="num">2,1 s</td><td>Zasilanie wraca (rozdzielnia): przekaźnik, narastające buczenie sieci, sygnał lampki.</td></tr>
+<tr><td><code>lock_bolt_slide</code></td><td class="num">0,7 s</td><td>Zasuwa odsunięta (drzwi „od środka”, skróty): zgrzyt żelaza i stuknięcie.</td></tr>
+<tr><td><code>lock_rope_snap</code></td><td class="num">0,9 s</td><td>Lina pęka: włókna puszczają coraz szybciej, trzask jak z bicza, świst końca.</td></tr>
+<tr><td><code>lock_counterweight</code></td><td class="num">4,4 s</td><td>Przeciwwaga spada w oddali: świst, ciężkie uderzenie, łańcuch, dzwon.</td></tr>
+<tr><td><code>lock_hook_pull</code></td><td class="num">2,4 s</td><td>Hak / żelazne ucho: lina skrzypi pod obciążeniem, ciężar sunie po posadzce, drewno jęczy.</td></tr>
+<tr><th colspan="3">Wrogowie skrzydeł (§5, §7.3)</th></tr>
+<tr><td><code>mummy_groan</code></td><td class="num">1,8 s</td><td>Mumia: suchy, chrapliwy jęk spod bandaży (zauważenie, atak).</td></tr>
+<tr><td><code>mummy_lash</code></td><td class="num">0,7 s</td><td>Bicz z bandaży: łopot płótna, świst, trzask – zagrać na początku zapowiedzi (0,6 s).</td></tr>
+<tr><td><code>scarab_swarm</code></td><td class="num">2,0 s <b>pętla</b></td><td>Rój skarabeuszy: chitynowe kliknięcia, drapanie, brzęczenie skrzydeł.</td></tr>
+<tr><td><code>relief_crack</code></td><td class="num">1,4 s</td><td>Wojownik z reliefu odkleja się: kamień pęka, w szczelinie narasta światło (zapowiedź).</td></tr>
+<tr><td><code>relief_scrape</code></td><td class="num">1,3 s</td><td>Relief wchodzi w ścianę albo z niej wychodzi: kamień sunie po kamieniu.</td></tr>
+<tr><td><code>book_flap</code></td><td class="num">0,4 s</td><td>Latająca księga: klapnięcie okładki i szelest kartek (nurkowanie).</td></tr>
+<tr><td><code>book_flock</code></td><td class="num">2,0 s <b>pętla</b></td><td>Stadko ksiąg: pięć ksiąg bije okładkami.</td></tr>
+<tr><td><code>fu_roar</code></td><td class="num">2,2 s</td><td>Pies Fu: ryk przez wydrążony brąz, który dzwoni (zapowiedź ogłuszenia).</td></tr>
+<tr><td><code>totem_spit</code></td><td class="num">0,5 s</td><td>Totem pluje odłamkiem: głuchy drewniany „ptuu” i świst.</td></tr>
+<tr><td><code>jaguar_snarl</code></td><td class="num">1,2 s</td><td>Wojownik-jaguar: syczące warknięcie i skrzypienie rzeźbionych stawów.</td></tr>
+<tr><td><code>hoplite_shield</code></td><td class="num">1,2 s</td><td>Tarcza hoplity: brązowy hoplon dudni i dzwoni (blok, falanga).</td></tr>
+<tr><td><code>hoplite_thrust</code></td><td class="num">0,6 s</td><td>Pchnięcie włócznią: krótki twardy świst i błysk grotu.</td></tr>
+<tr><th colspan="3">Strażnicy (§7.4)</th></tr>
+<tr><td><code>colossus_grind</code></td><td class="num">3,6 s</td><td>Kolos obraca się na tronie: granit trze o granit, z barków sypie się żwir.</td></tr>
+<tr><td><code>colossus_slam</code></td><td class="num">2,2 s</td><td>Uderzenie dłonią: głęboki cios, trzask, gruz.</td></tr>
+<tr><td><code>colossus_charge</code></td><td class="num">2,1 s</td><td>Ładowanie promienia słońca: rosnący, dudniący akord światła (1,4 s ≈ zapowiedź 1,2 s).</td></tr>
+<tr><td><code>colossus_beam</code></td><td class="num">2,2 s</td><td>Promień słońca: syczący ryk światła z buczeniem pod spodem.</td></tr>
+<tr><td><code>lamassu_gust</code></td><td class="num">1,4 s</td><td>Podmuch skrzydeł: wielki niski poryw z szelestem piór.</td></tr>
+<tr><td><code>lamassu_stomp</code></td><td class="num">2,2 s</td><td>Tupnięcie: uderzenie kopyta, trzask, toczący się podmuch fali uderzeniowej.</td></tr>
+<tr><td><code>lamassu_charge</code></td><td class="num">2,2 s</td><td>Szarża: trzykrotne grzebanie kopytem, potem ryk byka.</td></tr>
+<tr><td><code>centaur_gallop</code></td><td class="num">1,2 s <b>pętla</b></td><td>Galop kentaura: marmurowe kopyta, dwa kroki na pętlę.</td></tr>
+<tr><td><code>centaur_javelin</code></td><td class="num">0,9 s</td><td>Rzut oszczepem: narastający świst.</td></tr>
+<tr><td><code>orrery_gears</code></td><td class="num">2,0 s <b>pętla</b></td><td>Mechanizm Planetarium: zapadki, zęby kół, buczenie napędu.</td></tr>
+<tr><td><code>orrery_sweep</code></td><td class="num">1,9 s</td><td>Zamach mosiężnego ramienia: ogromny świst z buczeniem (Doppler).</td></tr>
+<tr><td><code>samurai_glint</code></td><td class="num">0,8 s</td><td>Błysk ostrza – zapowiedź cięcia (0,6 s): wysokie stalowe „szing”.</td></tr>
+<tr><td><code>samurai_slash</code></td><td class="num">0,6 s</td><td>Cięcie z doskoku: szybki świst i dzwonienie klingi.</td></tr>
+<tr><td><code>samurai_volley</code></td><td class="num">1,6 s</td><td>Salwa strzał z dachu herbaciarni: brzęk cięciw, świst strzał.</td></tr>
+<tr><td><code>serpent_hiss</code></td><td class="num">1,4 s</td><td>Dwugłowy Wąż syczy (zapowiedź kąsania).</td></tr>
+<tr><td><code>serpent_rattle</code></td><td class="num">1,3 s</td><td>Grzechot mozaiki: turkusowe płytki łusek klekoczą seriami.</td></tr>
+<tr><td><code>guardian_wake</code></td><td class="num">2,6 s</td><td>Przebudzenie strażnika (wspólne): jęk kamienia i brązu, pył, niski chór.</td></tr>
+<tr><td><code>guardian_crumble</code></td><td class="num">3,4 s</td><td>Rozpad strażnika (wspólny, „kinematyczny rozpad”): bloki pękają, sypią się odłamki, gruz osiada.</td></tr>
+</table></div>
+
+<h3>Regeneracja Piętra I</h3>
+<pre><code>PY="D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe"
+"$PY" tools/music/gen_music.py wings                      # 6 obchodów, 6 strażników, sygnały (ok. 25 min; równolegle szybciej)
+"$PY" tools/music/gen_music.py explore_asia guardian_greece stings   # pojedynczo
+"$PY" tools/music/gen_ambience.py floor1                  # 17 warstw i 37 dalekich dźwięków Piętra I
+"$PY" tools/sfx/gen_sfx.py floor1                         # 43 efektów (kilka sekund)
+".../blender.exe" -b --factory-startup --python tools/music/encode_ogg.py   # muzyka Piętra I 128 kbit/s
+bash tools/build_audio.sh check                           # import + szwy przez silnik</code></pre>
+<ul>
+	<li><code>gen_wings.py</code> – kompozycje skrzydeł i strażników; <code>Mix</code> wyrównuje każdą szynę do jej głośności (LUFS) zamiast ręcznych wzmocnień, a <code>check_line()</code> wypisuje dłuższe nuty melodii, które na mocnej części taktu zgrzytają z akordem (półton albo tryton) – „uszy”, których nie mamy. Zostawione zgrzyty są zamierzone (np. Es nad D-dur w hidżazie).</li>
+	<li><code>modes.py</code> – skale skrzydeł i kołysanka w stopniach skali. <code>instruments.py</code> – nowe głosy: flet (nej, shakuhachi, gliniany, fletnia), podwójny stroik (mizmar, duduk), lira i kithara, koto z dociśnięciem struny, klawesyn (8′ + 4′), marimba, bęben szczelinowy, bęben ramowy (doum/tek/slap), grzechotka i sistrum, misa, muszla, sho.</li>
+	<li>Długość tematu strażników (64 s) jest dobrana tak, żeby silnik raportował ją co do próbki (przy 112 BPM, 68,57 s, test szwu przesuwał się o próbkę).</li>
+	<li>Testy: <code>test_music_wings</code> (dyrektor: strefy, warianty, strażnicy, sygnał odkrycia; <code>Music</code>: przenikanie, powrót bez restartu, temat i upadek strażnika, przyciszanie), <code>test_ambience_floor1</code> (strefy, podstrefy, priorytety, presety i szyny, pogłos ze strefy), <code>test_floor1_sounds</code>, <code>test_audio_assets</code> (długości i szwy wszystkich pętli).</li>
+</ul>
+<div class="note"><b>Rozmiar Piętra I:</b> muzyka ok. 29 MB (24 pętle + 9 sygnałów, 128 kbit/s), ambient ok. 10 MB (17 warstw + 37 ujęć), efekty ok. 6,7 MB WAV.</div>
+
+<h3>Do wpięcia przez budowniczych Piętra I</h3>
+<ul>
+	<li>Poziom emituje <code>Events.room_entered</code> przy wejściu do każdej sali (także sali startowej nocy, najlepiej w tej samej klatce co ustawienie sceny – wtedy strefa przetrwa zmianę sceny). Sale nazwane słowami z <code>SUB_ZONES</code> / <code>ROOM_WORD_REVERB</code> dostają podstrefy i pogłos same; <code>RoomSpec.zone</code> daje pogłos całej strefy.</li>
+	<li>Strażnik: <code>guardian_awakened(self, &amp;"colossus")</code>, opcjonalnie sygnał <code>phase_changed(phase: int)</code> na węźle, <code>guardian_defeated(&amp;"colossus")</code>; efekty z tabeli przy zapowiedziach ataków.</li>
+	<li>Postęp: <code>seal_collected</code>, <code>shard_collected</code>, <code>gate_opened</code> wystarczą dla sygnałów; zapis może przekazać odkryte skrzydła do <code>Music.director.remember_wings()</code>.</li>
+</ul>
+</section>
+<section id="glos">
+<h2>12. Głos: Heniek, System, audioprzewodnik</h2>
+<p>Gra mówi po angielsku (Kokoro-82M nie ma polskiego), napisy są w języku gry. Mówią dwie postacie „przez urządzenie”: <b>Heniek</b> przez krótkofalówkę i <b>System</b> (Wirtualny Kustosz) z głośników ściennych oraz przy stojakach audioprzewodnika. Projekt: <code>docs/superpowers/specs/2026-10-08-glos-projekt.md</code>; etap G1 (szkielet) w <code>docs/superpowers/plans/2026-10-08-glos-g1-szkielet.md</code>, treść kwestii to etap G2.</p>
+<h3>Kanały</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Szyna</th><th>Wysyłka</th><th>Efekty</th><th>Kto</th></tr></thead>
+<tbody>
+<tr><td><code>Voice</code></td><td>Master</td><td>— (suwak „Głosy”, <code>volume_voice</code>)</td><td>rodzic obu poniżej</td></tr>
+<tr><td><code>VoiceRadio</code></td><td>Voice</td><td>HighPass 320 Hz, LowPass 3200 Hz, Distortion (overdrive, drive 0,18), Compressor (−18 dB, 4:1)</td><td>Heniek (2D) + kliknięcia <code>radio_click_in/out</code></td></tr>
+<tr><td><code>VoiceSystem</code></td><td>Voice</td><td>bez efektów; pogłos ze stref przez <code>area_mask</code> odtwarzaczy 3D (ogon wraca przez <code>SFXReturn</code>, jak efekty – <b>znany kompromis</b>: przy „Głosy” = 0 ogon pogłosu głośników i stojaków wciąż słychać; poprawka w G2: własna szyna powrotu pogłosu głosu pod <code>Voice</code>)</td><td>głośniki, stojaki, awaryjny odtwarzacz 2D</td></tr>
+<tr><td><code>Music</code>, <code>Ambience</code></td><td>—</td><td><code>AudioEffectAmplify</code> o nazwie <code>VoiceDuck</code> (0 dB w spoczynku)</td><td>przyciszanie pod mową: tylko ten efekt, głośności szyn należą do <code>Settings</code></td></tr>
+</tbody>
+</table></div>
+<h3>Jak dodać kwestię</h3>
+<ol>
+	<li>Klucz <code>VO_HENIEK_*</code> / <code>VO_SYSTEM_*</code> / <code>VO_GUIDE_*</code> w <code>locale/strings.csv</code> (kolumny <code>pl</code>, <code>en</code>; jeden wiersz, co najmniej 20 znaków EN – Kokoro słabo radzi sobie z bardzo krótkimi kwestiami; polskie nazwy własne do <code>data/voice/lexicon.json</code> w IPA).</li>
+	<li>Reguła w <code>data/voice/lines.json</code> (pola niżej); mówiący i głos Kokoro w <code>data/voice/speakers.json</code>.</li>
+	<li><code>bash tools/tts/build_voice.sh</code> – Kokoro → <code>build/audio_src/voice/&lt;mówiący&gt;/&lt;klucz&gt;.wav</code> → Ogg 24 kHz mono 64 kbit/s w <code>assets/voice/</code> + <code>manifest.json</code> (skrót SHA-256 z „głos|tempo|stopień|wersja obróbki|tekst EN”). Generowane są tylko kwestie, których skrót się zmienił.</li>
+	<li><code>bash tools/run_tests.sh --filter=voice_data</code> – zmiana tekstu bez ponownego wygenerowania = czerwony test (ten sam skrót liczy <code>VoiceCatalog.hash_of</code>).</li>
+</ol>
+<div class="table-wrap"><table>
+<thead><tr><th>Pole reguły</th><th>Znaczenie</th></tr></thead>
+<tbody>
+<tr><td><code>speaker</code></td><td><code>heniek</code> (kanał radio) albo <code>system</code> (głośniki; ze <code>station</code> – stojak)</td></tr>
+<tr><td><code>event</code></td><td>sygnał <code>Events</code>: <code>night_started</code>, <code>power_cut</code>, <code>witching_hour</code>, <code>dawn_broke</code>, <code>room_entered</code> (tylko pierwsze wejście), <code>guardian_awakened</code>, <code>guardian_defeated</code>, <code>shard_collected</code>, <code>seal_collected</code>, <code>gate_opened</code>, <code>boss_awakened</code>, <code>boss_defeated</code> – albo pseudo-zdarzenie reżysera: <code>death</code> (komentarz po śmierci na początku następnej nocy, na zmianę Heniek/System, najwyżej raz na noc), <code>destroyed</code> (próg liczby zniszczonych eksponatów, <code>count</code>), <code>stall</code> (zastój, <code>goal</code>), <code>night_time</code> (<code>at</code> sekund od startu nocy)</td></tr>
+<tr><td><code>night</code>, <code>night_min</code>, <code>zone</code>, <code>guardian</code>, <code>count</code>, <code>goal</code></td><td>warunki dopasowania (<code>VoiceRules</code>); brak pola = nie filtruje</td></tr>
+<tr><td><code>delay</code></td><td>sekundy przed wejściem do kolejki</td></tr>
+<tr><td><code>priority</code></td><td>0 uwaga poboczna, 1 zwykła (domyślnie), 2 wydarzenie; audioprzewodnik (3) wchodzi od razu</td></tr>
+<tr><td><code>once</code></td><td>raz na grę (domyślnie <code>true</code>; zapis w <code>GameState.voice_heard</code>)</td></tr>
+<tr><td><code>level</code>, <code>speed</code></td><td>stopień obróbki Systemu 0–2, tempo nadpisujące mówiącego</td></tr>
+<tr><td><code>station</code>, <code>variant</code>, <code>after_guardian</code> / <code>after_witching</code></td><td>stanowisko przewodnika: wersja <code>a</code> (dzienna) i <code>b</code> (nocna, po pokonaniu strażnika albo po godzinie duchów)</td></tr>
+</tbody>
+</table></div>
+<h3>Reżyser</h3>
+<p><code>VoiceDirector</code> (autoload, po <code>Foley</code>) słucha wyłącznie <code>Events</code>; kolejka <code>VoiceQueue</code> i dopasowanie <code>VoiceRules</code> to czysta logika. Naraz mówi jeden głos; kwestia czeka na spokój (4 s bez łowcy w pobliżu i bez trafienia), kwestia wydarzenia najwyżej 10 s; uwaga poboczna przepada po 60 s; 180 s między uwagami pobocznymi; 20 s ciszy po każdej kwestii; zastój 360 s, podpowiedź najwyżej co 600 s. Stojak przerywa Heńka/System – przerwana kwestia wraca na początek kolejki i gra od nowa; przerwane nie liczy się jako wysłuchane. Przyciszanie: Music −6 dB, Ambience −4 dB, wejście 0,25 s, powrót 0,8 s. Pauza gry wstrzymuje głos (czas idzie przez <code>advance()</code>, więc testy sterują nim bez dźwięku; w testach reżyser jest wyłączony – <code>VoiceDirector.enabled = true</code> włącza go).</p>
+<h3>Głośniki i stojaki</h3>
+<ul>
+	<li><b>Głośnik ścienny</b> (<code>Loudspeaker</code>, model <code>loudspeaker</code>): marker <code>loudspeaker_&lt;strefa&gt;_&lt;n&gt;</code> w pliku strefy, ok. 3,2 m nad posadzką, tyłem do ściany, przodem (−Z) do sali. System gra z najwyżej 3 najbliższych w 45 m, każdy z przesunięciem = różnica odległości / 343 m/s (echo wielkiej hali); bez głośnika w zasięgu – odtwarzacz 2D o −6 dB. Grupa <code>loudspeakers</code>.</li>
+	<li><b>Stojak audioprzewodnika</b> (<code>AudioguideStand</code>, <code>Interactable</code>, model <code>audioguide_stand</code> z osobną częścią <code>button</code>): marker <code>audioguide_&lt;stanowisko&gt;</code>, pulpit przodem do gracza; E włącza nagranie stanowiska, drugie E je zatrzymuje, odejście powyżej 12 m też.</li>
+	<li><code>WorldFeatures._build_voice_props()</code> stawia oba z markerów; w G1: dwa głośniki na Dziedzińcu, jeden w Przedsionku Rosetty i stojak przy Kamieniu.</li>
+</ul>
+<h3>Napisy i opcje</h3>
+<p><code>SubtitleBar</code> (dziecko reżysera, warstwa 13, nad paskiem podpowiedzi HUD): nazwa mówiącego w kolorze (Heniek bursztyn, System błękit) i tekst w języku gry; kwestia dłuższa niż 110 znaków idzie w częściach proporcjonalnie do długości. Opcje: „Głosy” (<code>volume_voice</code> → szyna <code>Voice</code>) i „Napisy” (<code>subtitles</code>, domyślnie włączone).</p>
+<h3>Narzędzia (tools/tts; poza gitem: .venv, modele)</h3>
+<pre><code>bash tools/tts/setup.sh &lt;folder neuron-spike&gt;   # raz: venv 3.11 na D:, model Kokoro ONNX fp16, 11 głosów-kandydatów
+bash tools/tts/build_voice.sh [--all]           # kwestie → WAV → Ogg → import Godota
+cd tools/tts &amp;&amp; .venv/Scripts/python.exe voice_samples.py   # próbki głosów dla właściciela: build/voice-samples/index.html
+cd tools/tts &amp;&amp; .venv/Scripts/python.exe -m unittest -v     # testy Pythona (synteza, obróbka, dane)</code></pre>
+<ul>
+	<li><code>kokoro_tts.py</code> – tekst EN → 24 kHz mono (fonemy espeak-ng, słowniczek IPA, cięcie na zdania do ~300 fonemów, obejście NaN grafu fp16).</li>
+	<li><code>system_fx.py</code> – głos Systemu: czysty numpy (śledzenie wysokości YIN + TD-PSOLA), bo pyworld nie da się zbudować bez Windows SDK; <code>resynthesize()</code> to jedyny szew, w który wszedłby WORLD. Stopień 1: intonacja ściśnięta do 25 % i skwantowana do półtonów + metaliczny grzebień; stopień 2: dodatkowo skoki wysokości, zacięcia i ubytki (ziarno z klucza kwestii – deterministycznie).</li>
+	<li>Głośność kwestii: RMS mowy −20 dB, szczyt −1 dBFS, 60 ms ciszy przed i 120 ms po.</li>
+	<li><b>Po każdej zmianie brzmienia w <code>system_fx.py</code> podbij <code>fx_version</code> w <code>data/voice/speakers.json</code></b> – skróty wszystkich kwestii się zmienią i <code>build_voice.sh</code> wygeneruje je na nowo (inaczej test <code>voice_data</code> nie zauważy przestarzałych nagrań).</li>
+	<li>Głosy wybrane przez właściciela (8.10): Heniek <code>am_michael</code> (radio robi szyna), System <code>af_nicole</code> ze stopniem 2 na co dzień (ASMR z zacięciami – zamierzone; brzmienia <code>system_fx.py</code> nie „czyścić”).</li>
+</ul>
+<p>Testy: <code>test_voice_buses</code>, <code>test_voice_data</code>, <code>test_voice_queue</code>, <code>test_voice_director</code>, <code>test_subtitle_bar</code>, <code>test_voice_props</code>; zapis w <code>test_game_state</code> (<code>voice_heard</code>, <code>voice_state</code>).</p>
+</section>
+</main>
+</body>
+</html>

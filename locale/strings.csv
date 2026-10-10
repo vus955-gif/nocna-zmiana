@@ -1,0 +1,1141 @@
+keys,pl,en
+HUD_HEALTH,ZDROWIE  %d,HEALTH  %d
+HUD_RELOADING,PRZEŁADOWANIE,RELOADING
+HUD_GUARD_DOWN,STRAŻNIK PADŁ,GUARD DOWN
+HUD_FPS,%d FPS,%d FPS
+HUD_HELP_CONTROLS,"STEROWANIE
+WSAD — ruch     Shift — sprint     Ctrl / boczny przycisk myszy — unik
+Spacja — skok     LPM — strzał     PPM / V — cios pięścią
+R — przeładowanie     1–5, kółko — broń     F — latarka     E — użyj
+F1 — pomoc     F11 — pełny ekran     Esc — pauza","CONTROLS
+WASD — move     Shift — sprint     Ctrl / side mouse button — dash
+Space — jump     LMB — fire     RMB / V — punch
+R — reload     1–5, wheel — weapon     F — flashlight     E — use
+F1 — help     F11 — fullscreen     Esc — pause"
+HUD_HELP_SANDBOX,"PIASKOWNICA
+7 — figury woskowe     8 — wilki     9 — rycerz     0 — usuń wrogów","SANDBOX
+7 — wax figures     8 — wolves     9 — knight     0 — remove enemies"
+HUD_HELP_TIPS,"Paralizator ogłusza, a pięść dobija ogłuszonego i leczy.
+Rycerza obejdź albo ogłusz: prąd przechodzi przez tarczę.","The taser stuns; a punch finishes a stunned exhibit and heals you.
+Flank the knight or stun him: the current goes through his shield."
+WEAPON_FISTS,Pięści,Fists
+WEAPON_TASER,Paralizator,Taser
+WEAPON_PISTOL,Pistolet,Pistol
+WEAPON_SHOTGUN,Strzelba,Shotgun
+MENU_CONTINUE,Kontynuuj,Continue
+MENU_NEW_GAME,Nowa gra,New game
+MENU_OPTIONS,Opcje,Options
+MENU_QUIT,Wyjście,Quit
+LANG_PL,Polski,Polski
+LANG_EN,English,English
+PROMPT_USE,Użyj,Use
+HUD_AMMO_BUCKSHOT,ŚRUT,BUCKSHOT
+HUD_AMMO_SLUG,SLUG,SLUG
+CAT_GUARD,Strażnik,Guard
+UPG_HEALTH_NAME,Kondycja,Fitness
+UPG_HEALTH_DESC,+20 do maksymalnego zdrowia na każdy poziom.,+20 maximum health per level.
+UPG_STAMINA_NAME,Wytrwałość,Endurance
+UPG_STAMINA_DESC,"+20 wytrzymałości i o 15% szybsza regeneracja na każdy poziom.","+20 stamina and 15% faster recovery per level."
+UPG_BATTERY_NAME,Bateria latarki,Flashlight battery
+UPG_BATTERY_DESC,Latarka świeci o 50% dłużej na każdy poziom.,The flashlight lasts 50% longer per level.
+UPG_FISTS_NAME,Twarde pięści,Hard knuckles
+UPG_FISTS_DESC,"Pięść bije o 40% mocniej, a dobicie leczy o 25% więcej na każdy poziom.","Punches hit 40% harder and finishers heal 25% more per level."
+UPG_TASER_CHARGE_NAME,Szybsze ładowanie,Quick charge
+UPG_TASER_CHARGE_DESC,"Bateria paralizatora ładuje się 1,6 raza szybciej.",The taser battery recharges 1.6 times faster.
+UPG_TASER_CHAIN_NAME,Przeskok łuku,Arc jump
+UPG_TASER_CHAIN_DESC,Łuk elektryczny przeskakuje na drugiego wroga w promieniu 5 m.,The electric arc jumps to a second enemy within 5 m.
+UPG_PISTOL_DAMAGE_NAME,Amunicja wzmocniona,Hot loads
+UPG_PISTOL_DAMAGE_DESC,Pistolet zadaje o 30% więcej obrażeń.,The pistol deals 30% more damage.
+UPG_PISTOL_MAG_NAME,Powiększony magazynek,Extended magazine
+UPG_PISTOL_MAG_DESC,Magazynek pistoletu mieści 18 naboi.,The pistol magazine holds 18 rounds.
+UPG_SHOTGUN_SPREAD_NAME,Dławik,Choke
+UPG_SHOTGUN_SPREAD_DESC,Rozrzut śrutu mniejszy o 35%.,Buckshot spread is 35% tighter.
+UPG_SHOTGUN_SLUG_NAME,Pocisk „slug”,Slugs
+UPG_SHOTGUN_SLUG_DESC,"Przytrzymaj R, aby przełączyć śrut na slug: jeden ciężki pocisk (70 obrażeń), słaby punkt ×2.","Hold R to switch buckshot to slugs: one heavy round (70 damage), weak point ×2."
+PROMPT_TERMINAL,Terminal ulepszeń,Upgrade terminal
+TERMINAL_SUBTITLE,Terminal ochrony,Security terminal
+TERMINAL_TITLE,Ulepszenia,Upgrades
+TERMINAL_DUST,Pył,Dust
+TERMINAL_LEVEL,Poziom %d z %d,Level %d of %d
+TERMINAL_BUY,KUP  ·  %d,BUY  ·  %d
+TERMINAL_MAXED,Maksymalny poziom,Maximum level
+TERMINAL_MAX_SHORT,MAKS.,MAX
+TERMINAL_SHORT,Brakuje %d Pyłu.,You are %d Dust short.
+TERMINAL_NEEDS_WEAPON,"Zadziała, gdy znajdziesz: %s.",Takes effect once you find the %s.
+TERMINAL_INSTALLED,Zainstalowano.,Installed.
+TERMINAL_HINT_SELECT,↑ ↓  Wybór,↑ ↓  Select
+TERMINAL_HINT_BUY,Enter  Kup,Enter  Buy
+TERMINAL_HINT_CLOSE,Esc / E  Zamknij,Esc / E  Close
+DEATH_NIGHT,Noc %d,Night %d
+DEATH_LANTERN,"Twoja latarka została tam, gdzie padłeś. Czeka w niej %d Pyłu.","Your flashlight lies where you fell, with %d Dust in it."
+DEATH_NOTHING,Tym razem kieszenie były puste.,Your pockets were empty this time.
+MENU_TAGLINE,Dyżur zaczyna się o 23:00.,Your shift starts at 11 p.m.
+MENU_CONTINUE_INFO,Noc %d  ·  %d Pyłu przy sobie,Night %d  ·  %d Dust carried
+MENU_VERSION,Wersja demonstracyjna  ·  Lobby,Demo build  ·  The Lobby
+MENU_HINTS,Enter — wybierz     Esc — wstecz,Enter — select     Esc — back
+MENU_SAVE_CORRUPT,Zapis gry był uszkodzony. Odłożono go jako save.json.bad — zaczynasz od nowa.,The save file was damaged. It was set aside as save.json.bad — you start anew.
+MENU_SAVE_CORRUPT_KEPT,"Zapis gry jest uszkodzony, a nie udało się go odłożyć na bok. Plik został nietknięty; „Nowa gra” go nadpisze.","The save file is damaged and could not be set aside. It was left untouched; “New game” will overwrite it."
+MENU_SAVE_UNREADABLE,"Nie można otworzyć zapisu gry (może używa go inny program). Plik został nietknięty — uruchom grę ponownie za chwilę.","The save file cannot be opened (another program may be using it). It was left untouched — restart the game in a moment."
+MENU_SAVE_NEWER,"Zapis pochodzi z nowszej wersji gry, więc nie został wczytany. Plik został nietknięty.","The save comes from a newer version of the game, so it was not loaded. It was left untouched."
+CONFIRM_NEW_GAME,Zacząć nową grę?,Start a new game?
+CONFIRM_NEW_GAME_DETAIL,"Obecny zapis zostanie nadpisany: ulepszenia, znalezione bronie i numer nocy przepadną.","The current save will be overwritten: upgrades, found weapons and the night count will be lost."
+CONFIRM_NEW_GAME_YES,"Tak, nowa gra","Yes, new game"
+CONFIRM_NO,Anuluj,Cancel
+PAUSE_TITLE,Pauza,Paused
+PAUSE_INFO,Noc %d  ·  Pył %d,Night %d  ·  Dust %d
+PAUSE_RESUME,Wznów,Resume
+PAUSE_QUIT_TO_MENU,Wyjdź do menu,Quit to menu
+PAUSE_QUIT_GAME,Wyjdź z gry,Quit game
+PAUSE_NOTES,Notatki,Notes
+PAUSE_NOTES_CAPTION,Znalezione kartki,Papers found
+OPT_TITLE,Opcje,Options
+OPT_SUBTITLE,Ustawienia,Settings
+OPT_SECTION_CONTROLS,Sterowanie,Controls
+OPT_SECTION_VIDEO,Obraz,Video
+OPT_SECTION_AUDIO,Dźwięk,Sound
+OPT_SECTION_INTERFACE,Interfejs,Interface
+OPT_SENSITIVITY,Czułość myszy,Mouse sensitivity
+OPT_INVERT_Y,Odwrócona oś Y,Invert Y axis
+OPT_FOV,Pole widzenia,Field of view
+OPT_WINDOW_MODE,Tryb okna,Window mode
+OPT_WINDOW_WINDOWED,Okno,Windowed
+OPT_WINDOW_MAXIMIZED,Okno zmaksymalizowane,Maximized window
+OPT_WINDOW_FULLSCREEN,Pełny ekran,Fullscreen
+OPT_WINDOW_EXCLUSIVE,Pełny ekran (wyłączny),Exclusive fullscreen
+OPT_VSYNC,Synchronizacja pionowa,Vertical sync
+OPT_MAX_FPS,Limit klatek,Frame limit
+OPT_FPS_UNLIMITED,Bez limitu,Unlimited
+OPT_RENDER_SCALE,Skala renderu 3D,3D render scale
+OPT_UPSCALER,Skalowanie,Upscaling
+OPT_UPSCALER_BILINEAR,Dwuliniowe,Bilinear
+OPT_UPSCALER_FSR,AMD FSR 1.0,AMD FSR 1.0
+OPT_UPSCALER_FSR2,AMD FSR 2.2,AMD FSR 2.2
+OPT_GRAPHICS,Jakość grafiki,Graphics quality
+OPT_GRAPHICS_LOW,Niska,Low
+OPT_GRAPHICS_MEDIUM,Średnia,Medium
+OPT_GRAPHICS_HIGH,Wysoka,High
+OPT_GRAPHICS_ULTRA,Najwyższa,Ultra
+OPT_VOLUME_MASTER,Głośność ogólna,Master volume
+OPT_VOLUME_SFX,Efekty,Effects
+OPT_VOLUME_MUSIC,Muzyka,Music
+OPT_VOLUME_AMBIENCE,Otoczenie,Ambience
+OPT_VOLUME_UI,Dźwięki menu,Menu sounds
+OPT_LANGUAGE,Język,Language
+OPT_SHOW_FPS,Licznik klatek,Frame counter
+OPT_ON,Wł.,On
+OPT_OFF,Wył.,Off
+OPT_RESET,Przywróć domyślne,Restore defaults
+OPT_BACK,Wstecz,Back
+OPT_HINTS,↑ ↓ wybór     ← → zmiana     Esc wstecz,↑ ↓ select     ← → change     Esc back
+SECRET_FOUND,Sekret odkryty (%d/%d),Secret found (%d/%d)
+SECRET_PAINTING,Przejście za obrazem,The passage behind the painting
+SECRET_VENT,Szyb wentylacyjny,The ventilation shaft
+SECRET_PLAQUE,Ściana za tabliczką,The wall behind the plaque
+SECRET_CASE,Gablota na kłódkę,The padlocked case
+SECRET_NOTES,Notatki nocnej zmiany,The night shift's notes
+SECRET_CLOSET,Składzik na miotły,The broom cupboard
+HAVEN_FOUND,Nowa przystań,New haven
+HAVEN_CLOSET,Składzik na miotły,The broom cupboard
+HAVEN_FOUND_DETAIL,Stąd też można zacząć noc. Pachnie pastą do podłóg.,Nights can start here too. It smells of floor polish.
+PROMPT_SECRET_PAINTING,Zajrzyj za obraz,Look behind the painting
+PROMPT_SECRET_GRILLE,Odkręć kratkę,Unscrew the grille
+PROMPT_SECRET_GRILLE_OUT,Wypchnij kratkę,Push the grille out
+PROMPT_SECRET_PANEL,Opukaj panel,Knock on the panel
+PROMPT_SECRET_PLAQUE,Wyprostuj krzywą tabliczkę,Straighten the crooked plaque
+PLAQUE_ARMOR,"ZBROJA PŁYTOWA
+Norymberga, ok. 1540
+Prosimy nie dotykać","PLATE ARMOUR
+Nuremberg, c. 1540
+Please do not touch"
+PROMPT_READ_NOTE,Przeczytaj notatkę,Read the note
+NOTE_READER_HINT,%s / %s / klik — odłóż,%s / %s / click — put it down
+NOTES_SET_PROGRESS,Notatki nocnej zmiany · %d/%d,The night shift's notes · %d/%d
+NOTE_KEY_TITLE,Młody!,Kid!
+NOTE_KEY_BODY,"Klucz od szafki z bronią zostawiłem w kasie. W szufladzie. Nie pytaj.
+
+PS Nie zostawiaj włączonego czajnika. I nie odwracaj się plecami do holu.","I left the gun locker key in the ticket booth. In the drawer. Don't ask.
+
+PS Don't leave the kettle on. And don't turn your back on the hall."
+NOTE_KEY_SIGN,— Heniek,— Heniek
+NOTE_1_TITLE,Zasady nocnej zmiany,Night shift rules
+NOTE_1_BODY,"1. Obchód co godzinę. Latarka zawsze naładowana.
+2. Jeśli coś się ruszyło, to się nie ruszyło. Do zeszytu wpisz: „bez zdarzeń”.
+3. Figury woskowe nie mrugają. Jeśli któraś mrugnęła, patrz jej w oczy i cofaj się do kanciapy.
+4. Do kanciapy nic nie wchodzi. Nie wiem czemu. Nie sprawdzaj.
+5. Pył, który zostaje po… no, wiesz po czym, zbieraj. Automat przy biurku coś za niego daje.
+6. O szóstej wszystko wraca na swoje miejsce. Ty też.","1. Rounds every hour. Torch always charged.
+2. If something moved, it didn't. Write “nothing to report” in the log.
+3. Wax figures don't blink. If one blinked, hold its gaze and back off to the booth.
+4. Nothing comes into the security booth. Don't ask me why. Don't test it.
+5. The dust left after… well, you know after what, pick it up. The machine by the desk gives you something for it.
+6. At six everything goes back to its place. So do you."
+NOTE_1_SIGN,— H.,— H.
+NOTE_2_TITLE,Skarga (nieoficjalna),Complaint (unofficial)
+NOTE_2_BODY,"Do kierownictwa.
+Oficjalnie nic się nie stało. Nieoficjalnie: woskowy Napoleon z wystawy czasowej gra w oczko i oszukuje. Asy trzyma w kapeluszu. Przegrałem z nim dwie pensje i zegarek po dziadku.
+Rycerz ze zbrojowni wszystko widział, ale nic nie powie — nie ma głowy do takich spraw.
+Proszę o przeniesienie na zmianę dzienną. Albo chociaż o nową talię.","To the management.
+Officially, nothing happened. Unofficially: the wax Napoleon from the temporary exhibition plays blackjack, and he cheats. He keeps the aces in his hat. I have lost two months' pay and my grandfather's watch to him.
+The knight from the armoury saw everything, but he won't say a word — he hasn't got the head for it.
+I request a transfer to the day shift. Or at least a new deck."
+NOTE_2_SIGN,St. Mazur,S. Mazur
+NOTE_3_TITLE,Nie wyrzucać,Do not throw away
+NOTE_3_BODY,"Ten kamień w gablocie. „Minerał nieznanego pochodzenia, dar anonimowy”. Przyszedł pocztą, bez nadawcy. Kustosz był zachwycony.
+Od tamtej pory Rex patrzy. Wiem, że to czaszka i że tam nie ma oczu. Ale kiedy świecę latarką w oczodoły, coś świeci z powrotem. Na czerwono. Tak samo jak ten kamień, kiedy myśli, że nikt nie widzi.
+Jeśli to znalazłeś: nie wkładaj bezpieczników do skrzynki przy kracie. Ja włożyłem.","That stone in the display case. “Mineral of unknown origin, anonymous donation”. It came by post, no sender. The curator was delighted.
+Ever since, Rex watches. I know it's a skull and there are no eyes in there. But when I shine the torch into the sockets, something shines back. Red. Just like that stone, when it thinks nobody is looking.
+If you've found this: don't put the fuses in the box by the grate. I did."
+NOTE_3_SIGN,(bez podpisu),(unsigned)
+NOTE_CHAMBER_TITLE,"Do tego, kto tu wszedł",To whoever got in here
+NOTE_CHAMBER_BODY,"Jeśli to czytasz, znalazłeś mój schowek. Tę komnatę zamurowano w trzydziestym dziewiątym, żeby ukryć przed okupantem najcenniejsze płótna. Płótna dawno wróciły na ściany. Zostało miejsce na rzeczy, które nie powinny wisieć na widoku.
+Weź, co tu leży — mnie się już nie przyda. Tylko nie mów dyrekcji. I zasuń za sobą obraz, bo w galerii ciągnie.","If you are reading this, you have found my hiding place. This chamber was bricked up in thirty-nine to keep the finest canvases from the occupiers. The canvases went back on the walls long ago. What remained was room for things that should not hang in plain sight.
+Take what lies here — I shan't need it any more. Only don't tell the director. And slide the painting back behind you; the gallery gets draughty."
+NOTE_CHAMBER_SIGN,"dr A. Wróblewski, kustosz","Dr A. Wróblewski, curator"
+NOTE_NICHE_TITLE,"Instrukcja dla stróża nocnego, 1912","Orders for the night watchman, 1912"
+NOTE_NICHE_BODY,"§ 1. Strzelbę trzymać nabitą, lecz za ścianą, by nie niepokoić zwiedzających.
+§ 2. Śrut drobny na gołębie i włóczęgów. Na to, co nocą schodzi z cokołów, lepszy gruby.
+§ 3. Tabliczkę przy ścianie wieszać krzywo. Krzywej tabliczki nikt nie tknie, prócz tego, kto wie.
+§ 4. Pod żadnym pozorem nie odpowiadać, gdy zbroja zapyta o godzinę.","§ 1. Keep the shotgun loaded, but behind the wall, so as not to alarm the visitors.
+§ 2. Fine shot for pigeons and vagrants. For whatever climbs down off the plinths at night, coarse shot serves better.
+§ 3. Hang the plaque by the wall crooked. Nobody touches a crooked plaque, save the one who knows.
+§ 4. On no account answer when the armour asks the time."
+NOTE_NICHE_SIGN,Stróż nocny J. Kopeć,"J. Kopeć, night watchman"
+NOTE_VENT_TITLE,Zlecenie serwisowe nr 117,Work order no. 117
+NOTE_VENT_BODY,"Przegląd szybu wentylacyjnego: wykonany.
+Filtry: wymienione.
+Drożność: zachowana.
+Uwagi: coś tu mieszka. Nie gryzie, ale zjadło mi kanapkę i pół latarki. Zostawiłem mu na podeście herbatniki.
+Kratka na antresoli odkręca się też od środka. W razie czego tędy najkrócej z dioramy na górę.","Ventilation shaft inspection: done.
+Filters: replaced.
+Airflow: unobstructed.
+Remarks: something lives in here. It doesn't bite, but it ate my sandwich and half my torch. I left it some biscuits on the landing.
+The balcony grille unscrews from the inside too. If need be, it's the shortest way from the diorama up to the balcony."
+NOTE_VENT_SIGN,Konserwator R. Gil,"R. Gil, maintenance"
+NOTE_CLOSET_TITLE,MÓJ składzik,MY cupboard
+NOTE_CLOSET_BODY,"To jest mój składzik. Moje miotły, moje wiadra, mój czajnik. Spać tu wolno, bo tu nic nie wchodzi — sprawdziłem na własnej skórze.
+Mopa nie ruszać. Mop pamięta.
+Klucz do wszystkich drzwi w tym muzeum noszę przy sobie. A jak go zgubiłem, to leży w jakiejś gablocie — tam w końcu wszystko trafia.","This is my cupboard. My brooms, my buckets, my kettle. You may sleep here, because nothing gets in — I learnt that the hard way.
+Leave the mop alone. The mop remembers.
+I carry the key to every door in this museum. And if I've lost it, it's lying in some display case — that's where everything ends up in the end."
+NOTE_CLOSET_SIGN,Woźny Zdzisław,"Zdzisław, janitor"
+PROMPT_DRAWER,Otwórz szufladę kasy,Open the till drawer
+DRAWER_TITLE,Szuflada kasy,The till drawer
+DRAWER_EMPTY,Bilety ulgowe z 1987 roku i jeden guzik.,Concession tickets from 1987 and a single button.
+KEY_FOUND,Znaleziono,Found
+KEY_LOCKER,Klucz do szafki na broń,The gun locker key
+KEY_LOCKER_DETAIL,Szafka stoi w kanciapie ochrony.,The locker stands in the security booth.
+PROMPT_LOCKER,Otwórz szafkę na broń,Open the gun locker
+PROMPT_LOCKER_KEY,Otwórz szafkę kluczem,Unlock the gun locker
+LOCKER_LOCKED,Zamknięte na klucz,Locked
+LOCKER_LOCKED_DETAIL,Heniek coś pisał o kluczu…,Heniek wrote something about a key…
+LOCKER_LABEL,BROŃ,ARMS
+NOTE_FORM_HEADER,Muzeum Miejskie · Dział Techniczny,City Museum · Maintenance Department
+ARTIFACT_CAPTION,Artefakt nocy,Artifact of the night
+PROMPT_TAKE_ARTIFACT,Weź: %s,Take: %s
+ARTIFACT_SCARAB,Skarabeusz,Scarab
+ARTIFACT_SCARAB_EFFECT,Dobicia leczą dwa razy mocniej.,Finishers heal twice as much.
+ARTIFACT_SCARAB_FLAVOR,"Egipski, podobno. Na spodzie ktoś wydrapał „Radom 1978”.","Egyptian, allegedly. Someone scratched “Radom 1978” on the underside."
+ARTIFACT_MONOCLE,Monokl kustosza,The curator's monocle
+ARTIFACT_MONOCLE_EFFECT,Słabe punkty eksponatów świecą.,Exhibits' weak points glow.
+ARTIFACT_MONOCLE_FLAVOR,"Przez to szkło widać, co jest kruche. Kustosz widział tak wszystko.","Through this glass you see what is fragile. The curator saw everything that way."
+ARTIFACT_FOUNTAIN_COIN,Moneta z fontanny,Fountain coin
+ARTIFACT_FOUNTAIN_COIN_EFFECT,Pyłu jest o połowę więcej.,Half as much Dust again.
+ARTIFACT_FOUNTAIN_COIN_FLAVOR,Ktoś kiedyś wrzucił ją z życzeniem. Życzenie wciąż działa.,Someone once tossed it in with a wish. The wish still works.
+ARTIFACT_CANDLE_STUB,Ogarek świecy,Candle stub
+ARTIFACT_CANDLE_STUB_EFFECT,Ogłuszenie trwa o połowę dłużej.,Stuns last half as long again.
+ARTIFACT_CANDLE_STUB_FLAVOR,Z nocnego obchodu w 1931 roku. Nie gaśnie. Próbowaliśmy.,From a night round in 1931. It won't go out. We tried.
+ARTIFACT_WOLF_TOOTH,Ząb wilka,Wolf's tooth
+ARTIFACT_WOLF_TOOTH_EFFECT,Sprint o 20% szybszy.,Sprint 20% faster.
+ARTIFACT_WOLF_TOOTH_FLAVOR,Wilk z dioramy chce go z powrotem. Biegnij.,The wolf in the diorama wants it back. Run.
+ARTIFACT_JANITOR_KEY,Klucz woźnego,The janitor's key
+ARTIFACT_JANITOR_KEY_EFFECT,Otwiera zamknięte tej nocy drzwi i kłódkę gabloty.,Opens tonight's locked door and the case's padlock.
+ARTIFACT_JANITOR_KEY_FLAVOR,Pan Zdzisław znowu go zgubił.,Mr Zdzisław has lost it again.
+PROMPT_PADLOCK,Szarpnij kłódkę,Yank the padlock
+PROMPT_PADLOCK_KEY,Otwórz kłódkę kluczem woźnego,Open the padlock with the janitor's key
+CASE_PADLOCK,Kłódka trzyma mocno,The padlock holds fast
+CASE_PADLOCK_DETAIL,Ale to tylko kłódka…,"Still, it's only a padlock…"
+PROMPT_DOOR_LOCKED,Szarpnij klamkę,Try the handle
+PROMPT_DOOR_KEY,Otwórz kluczem woźnego,Unlock with the janitor's key
+DOOR_LOCKED,Zamknięte na klucz,Locked
+DOOR_LOCKED_DETAIL,Klucz do wszystkich drzwi nosi przy sobie woźny.,The janitor carries the key to every door.
+PROMPT_CCTV,Przeglądaj kamery,Watch the cameras
+CCTV_TITLE,Monitoring · Muzeum Miejskie,Surveillance · City Museum
+CCTV_CAM_LABEL,Kam %d,Cam %d
+CCTV_CAM_HALL,Hol główny,Main hall
+CCTV_CAM_GALLERY,Galeria rzeźby,Sculpture gallery
+CCTV_CAM_ARMORY,Zbrojownia,Armoury
+CCTV_CAM_DIORAMA,Diorama przyrody,Nature diorama
+CCTV_CAM_BALCONY,Antresola,Balcony
+CCTV_CAM_STAFF,Korytarz służbowy,Staff corridor
+CCTV_REC,● REC,● REC
+CCTV_MOTION,Ruch,Motion
+CCTV_MOTION_LONG,Ruch w kadrze,Motion in frame
+CCTV_HINT,1–6 · ← → · kółko — kamera          %s / %s — wyjdź,1–6 · ← → · wheel — camera          %s / %s — leave
+CCTV_STATUS_NIGHT,Noc %d,Night %d
+CCTV_STATUS_CAMERAS,Kamery %d/%d,Cameras %d/%d
+CCTV_STATUS_MOTION,Ruch:,Motion:
+CCTV_STATUS_QUIET,spokój,all quiet
+CCTV_STATUS_MORE,+%d więcej,+%d more
+DEMO_SUBTITLE,Koniec wersji demonstracyjnej,End of the demo
+DEMO_THANKS,Dziękujemy za grę,Thank you for playing
+DEMO_NIGHTS,Noce,Nights
+DEMO_DEATHS,Śmierci,Deaths
+DEMO_TIME,Czas gry,Time played
+DEMO_DUST,Zebrany Pył,Dust gathered
+DEMO_SECRETS,Sekrety,Secrets
+DEMO_BACK,Wróć do menu,Back to the menu
+HUD_NIGHT,Noc %d,Night %d
+HUD_HELP_HINT,%s — sterowanie,%s — controls
+HUD_SAVED,Gra zapisana,Game saved
+HUD_SAVE_FAILED,Nie udało się zapisać gry,The game could not be saved
+HAVEN_SIGN_SECURITY,OCHRONA,SECURITY
+PROMPT_TAKE_PISTOL,Weź pistolet,Take the pistol
+PROMPT_TAKE_SHOTGUN,Weź strzelbę,Take the shotgun
+WEAPON_GATLING,Kartaczownica,Gatling gun
+WEAPON_FLARE,Rakietnica,Flare gun
+PROMPT_TAKE_GATLING,Weź kartaczownicę,Take the gatling gun
+PROMPT_TAKE_FLARE,Weź rakietnicę,Take the flare gun
+PROMPT_CHAINED,Zamknięte na łańcuch,Chained shut
+PROMPT_SMASH_GLASS,Zbij szybkę,Smash the glass
+EXHIBIT_GATLING_PLAQUE,"KARTACZOWNICA, 1871","GATLING GUN, 1871"
+EXHIBIT_FIRE_CABINET,"W RAZIE POŻARU
+ZBIĆ SZYBKĘ","IN CASE OF FIRE
+BREAK GLASS"
+UPG_POCKETS_NAME,Pojemne kieszenie,Deep pockets
+UPG_POCKETS_DESC,"Każdy poziom to o 25% większy zapas każdej broni — i o 25% więcej amunicji na start nocy oraz z każdego pudełka.","Each level lets every weapon carry 25% more spare ammo, and gives you 25% more at the start of a night and from every ammo box."
+UPG_SECOND_WIND_NAME,Drugi oddech,Second wind
+UPG_SECOND_WIND_DESC,"Raz na noc śmiertelny cios zostawia ci 1 punkt zdrowia i sekundę nietykalności.","Once a night, a killing blow leaves you at 1 health with a second of invulnerability."
+UPG_DUST_MAGNET_NAME,Magnes na Pył,Dust magnet
+UPG_DUST_MAGNET_DESC,"Pył leci do ciebie z większej odległości: 6 → 9 → 12 m.","Dust flies to you from farther away: 6 → 9 → 12 m."
+UPG_KEEN_EAR_NAME,Czujne ucho,Keen ear
+UPG_KEEN_EAR_DESC,"Gdy eksponat poza twoim polem widzenia zaczyna atak, wskaźnik przy celowniku pokazuje, skąd nadchodzi.","When an exhibit out of your sight starts an attack, a marker by the crosshair shows where it is coming from."
+UPG_GATLING_SPIN_NAME,Nasmarowana korba,Greased crank
+UPG_GATLING_SPIN_DESC,"Kartaczownica rozkręca się w 0,2 s zamiast 0,45 s.",The gatling gun spins up in 0.2 s instead of 0.45 s.
+UPG_GATLING_BELT_NAME,Dłuższa taśma,Longer belt
+UPG_GATLING_BELT_DESC,"Pojemnik kartaczownicy mieści 200 naboi zamiast 120, a kolejna taśma wchodzi bez przerwy w ogniu.","The gatling gun's ammo box holds 200 rounds instead of 120, and the next belt feeds in without a break in fire."
+UPG_FLARE_BURN_NAME,Magnezja,Magnesium
+UPG_FLARE_BURN_DESC,Raca pali trafionego 8 s zamiast 5 i świeci 20 s zamiast 12.,A flare burns what it hits for 8 s instead of 5 and glows for 20 s instead of 12.
+UPG_FLARE_TWIN_NAME,Podwójna lufa,Twin barrel
+UPG_FLARE_TWIN_DESC,Rakietnica mieści dwie race: dwa strzały przed przeładowaniem.,The flare gun holds two flares: two shots before each reload.
+HUD_HELP_CONTENT,"ZAWARTOŚĆ
+4 — kartaczownica     5 — rakietnica     6 — stado raptorów     P — nowe portrety
+G — pełna amunicja     L — światło / ciemność     7 / 8 / 9 — figury, wilki, rycerz     0 — usuń","CONTENT
+4 — gatling gun     5 — flare gun     6 — raptor pack     P — new portraits
+G — full ammo     L — lights on / off     7 / 8 / 9 — figures, wolves, knight     0 — clear"
+NIGHT_START_TIME,23:00,11 p.m.
+NIGHT_START_DETAIL,Dyżur się zaczyna. Muzeum nie śpi.,Your shift begins. The museum is not asleep.
+NIGHT_MOD_BLACKOUT,Awaria prądu,Blackout
+NIGHT_MOD_BLACKOUT_DETAIL,Świecą tylko lampy awaryjne. Oszczędzaj baterię latarki.,Only the emergency lamps are on. Mind the flashlight's battery.
+NIGHT_MOD_FULL_MOON,Pełnia,Full moon
+NIGHT_MOD_FULL_MOON_DETAIL,"Eksponaty są silniejsze, ale zostawiają więcej Pyłu.","The exhibits are stronger, but they leave more Dust."
+NIGHT_MOD_CALM,Spokojna noc,A quiet night
+NIGHT_MOD_CALM_DETAIL,Tej nocy ożyło mniej eksponatów.,Fewer exhibits have woken tonight.
+NIGHT_OBJ_FUSES,Bezpieczniki: %d/2,Fuses: %d/2
+NIGHT_OBJ_FUSES_HINT,"Jeden w galerii rzeźby, drugi w zbrojowni","One in the sculpture gallery, one in the armory"
+NIGHT_OBJ_FUSE_BOX,Włóż bezpieczniki do skrzynki przy kracie,Put the fuses in the fuse box by the grate
+NIGHT_OBJ_PULSE,Znajdź źródło pulsowania,Find the source of the pulsing
+NIGHT_OBJ_FOLLOW,Podążaj za kryształem,Follow the crystal
+NIGHT_OBJ_BOSS,Pokonaj strażnika holu,Defeat the guardian of the hall
+NIGHT_OBJ_DESCEND,Zejdź do podziemi,Go down into the undercroft
+NIGHT_WITCHING,Godzina duchów,The witching hour
+NIGHT_WITCHING_DETAIL,Eksponaty są szybsze i groźniejsze.,The exhibits grow faster and fiercer.
+NIGHT_DAWN,Świt,Dawn
+NIGHT_DAWN_SURVIVED,Przetrwałeś noc %d.,You made it through night %d.
+NIGHT_DAWN_DUST,Pył przy sobie: %d,Dust carried: %d
+NIGHT_DAWN_LOST,Bezpieczniki i kryształ wróciły na swoje miejsca.,The fuses and the crystal are back where they were.
+PROMPT_TAKE_FUSE,Weź bezpiecznik,Take the fuse
+PROMPT_FUSE_BOX,Włóż bezpieczniki,Insert the fuses
+PROMPT_FUSE_BOX_EMPTY,Skrzynka bezpieczników,Fuse box
+HUD_FUSE_TAKEN,Bezpiecznik %d/2,Fuse %d/2
+HUD_NO_FUSES,Nie masz bezpieczników,You have no fuses
+HUD_FUSE_IN,Bezpiecznik na miejscu (%d/2),Fuse in place (%d/2)
+HUD_POWER_OUT,Światła gasną…,The lights die…
+HUD_BOSS_NAME,Szkielet tyranozaura,Tyrannosaurus skeleton
+HUD_HALL_SEALED,Drzwi holu się zatrzasnęły,The hall doors slam shut
+HUD_NO_REST_BOSS,"Nie teraz — T-Rex nie śpi","Not now — the T-Rex is awake"
+HUD_GRATE_OPEN,Krata do podziemi stoi otworem,The undercroft grate stands open
+HUD_HINT_FLASHLIGHT,"%s — latarka. Bateria ładuje się, gdy jest wyłączona.",%s — flashlight. The battery recharges while it is off.
+HUD_HINT_INTERACT,"%s — użyj: szuflady, szafki, skrzynki, terminale.","%s — use drawers, lockers, boxes and terminals."
+HUD_HINT_FUSES,"Znajdź dwa bezpieczniki: jeden w galerii rzeźby, drugi w zbrojowni.","Find the two fuses: one in the sculpture gallery, one in the armory."
+WEAPON_RIFLE_HUNT,Sztucer ekspedycyjny,Expedition rifle
+WEAPON_HARPOON,Harpunnik,Harpoon gun
+WEAPON_HWACHA,Ognista skrzynia,Fire-arrow chest
+PROMPT_TAKE_RIFLE_HUNT,Weź sztucer,Take the rifle
+PROMPT_TAKE_HARPOON,Weź harpunnik,Take the harpoon gun
+PROMPT_TAKE_HWACHA,Weź ognistą skrzynię,Take the fire-arrow chest
+HUD_VOLLEY,%d RAKIET,%d ROCKETS
+HUD_HELP_CONTROLS_P1,"STEROWANIE
+WSAD — ruch     Shift — sprint     Ctrl / boczny przycisk myszy — unik
+Spacja — skok     LPM — strzał     PPM / V — cios pięścią
+R — przeładowanie     1–8, kółko — broń     F — latarka     E — użyj
+F1 — pomoc     F11 — pełny ekran     Esc — pauza","CONTROLS
+WASD — move     Shift — sprint     Ctrl / side mouse button — dash
+Space — jump     LMB — fire     RMB / V — punch
+R — reload     1–8, wheel — weapon     F — flashlight     E — use
+F1 — help     F11 — fullscreen     Esc — pause"
+HUD_HELP_SANDBOX_P1,"PIASKOWNICA
+F5 — figury woskowe     F6 — wilki     F7 — rycerz     F8 — usuń wrogów","SANDBOX
+F5 — wax figures     F6 — wolves     F7 — knight     F8 — remove enemies"
+HUD_HELP_CONTENT_P1,"ZAWARTOŚĆ
+4 — kartaczownica     5 — rakietnica     F9 — stado raptorów     P — nowe portrety
+G — pełna amunicja     L — światło / ciemność     F5 / F6 / F7 — figury, wilki, rycerz     F8 — usuń","CONTENT
+4 — gatling gun     5 — flare gun     F9 — raptor pack     P — new portraits
+G — full ammo     L — lights on / off     F5 / F6 / F7 — wax, wolves, knight     F8 — remove"
+HUD_HELP_WEAPONS_DEV,"BRONIE I ZAMKI
+6 — sztucer     7 — harpunnik     8 — ognista skrzynia     G — pełna amunicja
+K — nowe zamki i eksponaty     U — wszystkie ulepszenia (wykończenie mistrzowskie)     J — bez ulepszeń","WEAPONS AND LOCKS
+6 — rifle     7 — harpoon gun     8 — fire-arrow chest     G — full ammo
+K — fresh locks and exhibits     U — every upgrade (master finish)     J — no upgrades"
+LOCK_CHAIN_PROMPT,"Łańcuch — rozbij czymś ciężkim (strzelba, pięści)","Chain — break it with something heavy (shotgun, fists)"
+LOCK_BOARDS_PROMPT,"Zabite deskami — rozbij (strzelba, pięści, wybuch)","Boarded up — smash through (shotgun, fists, a blast)"
+LOCK_CRACKED_PROMPT,"Spękany mur — potrzeba wybuchu (ognista skrzynia, raca z bliska)","Cracked wall — it needs a blast (fire-arrow chest, a flare up close)"
+LOCK_ROPE_PROMPT,"Lina — za daleko, żeby sięgnąć: celny strzał (sztucer, pistolet z bliska)","Rope — too far to reach: a precise shot (rifle, pistol up close)"
+LOCK_ROPE_FAR,"Za daleko na pistolet — podejdź bliżej albo użyj sztucera","Too far for the pistol — get closer or use the rifle"
+LOCK_HOOK_PROMPT,"Żelazne ucho — za ciężkie, żeby pociągnąć ręką (harpun)","Iron ring — too heavy to pull by hand (harpoon)"
+LOCK_BOLT_OPEN,Odsuń zasuwę,Draw the bolt
+LOCK_BOLT_PROMPT,Zaryglowane z drugiej strony,Bolted from the other side
+LOCK_POWER_PROMPT,Brak zasilania,No power
+LOCK_POWER_HINT,"Brak zasilania — przywróć prąd w rozdzielni","No power — restore it at the switchboard"
+LOCK_CREAKS,Trzeszczy… (%d/%d),It gives a little… (%d/%d)
+UPG_RIFLE_BOLT_NAME,Lżejszy zamek,Lighter bolt
+UPG_RIFLE_BOLT_DESC,"Zamek sztucera chodzi lżej: cykl 0,7 s zamiast 1,0 s.","A lighter bolt: the rifle cycles in 0.7 s instead of 1.0 s."
+UPG_RIFLE_EXPAND_NAME,Kula ekspansywna,Expanding bullet
+UPG_RIFLE_EXPAND_DESC,"Trafienie sztucera w słaby punkt zadaje ×4 zamiast ×3.",A rifle hit on a weak point deals ×4 instead of ×3.
+UPG_HARPOON_REEL_NAME,Kołowrotek,Reel
+UPG_HARPOON_REEL_DESC,"Lina wraca na kołowrotek: przeładowanie 0,7 s zamiast 1,2 s.","The line winds back onto a reel: reloading takes 0.7 s instead of 1.2 s."
+UPG_HARPOON_BARBS_NAME,Zadziory,Barbs
+UPG_HARPOON_BARBS_DESC,"Harpun przyszpila do ściany eksponaty do 90 zdrowia (zamiast 60).",The harpoon pins exhibits with up to 90 health to the wall (instead of 60).
+UPG_HWACHA_FUSE_NAME,Szybki lont,Quick fuse
+UPG_HWACHA_FUSE_DESC,"Mosiężne zapalniki: skrzynia ładuje się 1,5 s zamiast 2,2 s.",Brass igniters: the chest reloads in 1.5 s instead of 2.2 s.
+UPG_HWACHA_VOLLEY_NAME,Większa salwa,Bigger volley
+UPG_HWACHA_VOLLEY_DESC,"Dodatkowy rząd rur: salwa 9 rakiet zamiast 6.",An extra row of tubes: a volley of 9 rockets instead of 6.
+LOCK_BOARDS_SIGN,REMONT,UNDER REPAIR
+ZONE_COURT,Wielki Dziedziniec,Great Court
+ZONE_ENTRANCE,Hol wejściowy,Entrance Hall
+ZONE_BOOTH,Kanciapa ochrony,Security Booth
+ZONE_NORTH_HALL,Korytarz północny,North Corridor
+ZONE_EGYPT,Egipt,Egypt
+ZONE_ASSYRIA,Asyria,Assyria
+ZONE_GREECE,Grecja,Greece
+ZONE_ENLIGHTENMENT,Oświecenie,The Enlightenment
+ZONE_ASIA,Azja,Asia
+ZONE_AMERICAS,Ameryki i Oceania,The Americas and Oceania
+ZONE_BASEMENT,Podziemia,Basement
+ZONE_ROOF,Dach,Roof
+SEAL_SUN,Pieczęć Słońca,Seal of the Sun
+SEAL_WING,Pieczęć Skrzydła,Seal of the Wing
+SEAL_OWL,Pieczęć Sowy,Seal of the Owl
+SEAL_STAR_KEY,Klucz Gwiazd,Star Key
+GATE_CHAIN,"Łańcuch — rozbij czymś ciężkim (strzelba, pięści)","Chain — smash it with something heavy (shotgun, fists)"
+GATE_BOARDS,"Zabite deskami — rozbij je (strzelba, pięści, wybuch)","Boarded up — break through (shotgun, fists, a blast)"
+GATE_SEAL_SUN,Brama zapieczętowana — potrzebna: Pieczęć Słońca,Sealed gate — needs the Seal of the Sun
+GATE_SEAL_WING,Wrota zapieczętowane — potrzebna: Pieczęć Skrzydła,Sealed doors — need the Seal of the Wing
+GATE_SEAL_OWL,Ekspozycja zapieczętowana — potrzebna: Pieczęć Sowy,Sealed exhibition — needs the Seal of the Owl
+GATE_STAR_KEY,Brama Północna — potrzebny: Klucz Gwiazd,North Gate — needs the Star Key
+GATE_POWER,Brak zasilania — żaluzja ani drgnie,No power — the shutter will not budge
+GATE_CRACKED,Spękany mur — tu przydałby się wybuch,Cracked wall — a blast would do it
+GATE_ROPE,"Lina — za daleko, żeby sięgnąć",A rope — too far to reach
+GATE_HOOK,Żelazne ucho,An iron ring
+GATE_BOLT,Zaryglowane z drugiej strony,Bolted from the other side
+GATE_GRATE,Krata — zamknięta na głucho,The grate — shut fast
+HAVEN_SECURITY_ROOM,Kanciapa ochrony,The security booth
+HAVEN_CONSERVATOR,Pokój konserwatora,The conservator's room
+HAVEN_LIBRARIAN,Gabinet bibliotekarza,The librarian's office
+HAVEN_WORKSHOP,Warsztat renowacji,The restoration workshop
+HAVEN_TEAHOUSE,Herbaciarnia,The tea house
+HAVEN_CAST_STORE,Magazyn odlewów,The cast store
+GUARDIAN_COLOSSUS,Kolos Ramzesa,The Colossus of Ramesses
+GUARDIAN_COLOSSUS_TITLE,Strażnik Egiptu,Guardian of Egypt
+GUARDIAN_LAMASSU,Lamassu,The Lamassu
+GUARDIAN_LAMASSU_TITLE,Strażnik Asyrii,Guardian of Assyria
+GUARDIAN_CENTAUR,Kentaur z metopy,The Centaur of the Metope
+GUARDIAN_CENTAUR_TITLE,Strażnik Grecji,Guardian of Greece
+GUARDIAN_PLANETARIUM,Wielkie Planetarium,The Great Orrery
+GUARDIAN_PLANETARIUM_TITLE,Strażnik Oświecenia,Guardian of the Enlightenment
+GUARDIAN_GENERAL,Generał samurajów,The Samurai General
+GUARDIAN_GENERAL_TITLE,Strażnik Azji,Guardian of Asia
+GUARDIAN_SERPENT,Dwugłowy Wąż,The Double-Headed Serpent
+GUARDIAN_SERPENT_TITLE,Strażnik Ameryk i Oceanii,Guardian of the Americas and Oceania
+GUARDIAN_TREX,Szkielet T-Reksa,The T-Rex skeleton
+GUARDIAN_TREX_TITLE,Pan Wielkiego Dziedzińca,Lord of the Great Court
+ITEM_SHARD,Odłamek kryształu,Crystal shard
+ITEM_FUSE,Bezpiecznik,Fuse
+GOAL_TICKET_KEY,Klucz do szafki z bronią: kasa w holu wejściowym,The gun locker key: the ticket desk in the entrance hall
+GOAL_PISTOL,Zdobądź broń: szafka w kanciapie,Get a gun: the locker in the security booth
+GOAL_FLARE,Szafka pożarowa w holu wejściowym: rakietnica,The fire cabinet in the entrance hall: a flare gun
+GOAL_SHOTGUN,Egipt: w obozie ekspedycji leży strzelba,Egypt: a shotgun lies in the expedition camp
+GOAL_GUARDIAN_EGYPT,Strażnik Egiptu czeka w Sali Kolosa,The Guardian of Egypt waits in the Colossus hall
+GOAL_RIFLE,Oświecenie: sztucer w Gabinecie Historii Naturalnej,The Enlightenment: a rifle in the natural history cabinet
+GOAL_GUARDIAN_ENLIGHTENMENT,Planetarium: zestrzel linę i zmierz się ze strażnikiem,The Planetarium: shoot the rope down and face its guardian
+GOAL_GUARDIAN_ASSYRIA,Brama Chorsabadu stoi otworem: strażnik Asyrii czeka,The Khorsabad Gate stands open: the Guardian of Assyria waits
+GOAL_GUARDIAN_GREECE,Grecja: strażnik czeka w Galerii Partenonu,Greece: the guardian waits in the Parthenon gallery
+GOAL_GATLING,Pieczęć Sowy otwiera Czytelnię: kartaczownica,The Seal of the Owl opens the Reading Room: the gatling gun
+GOAL_FUSE_BASEMENT,Bezpiecznik: kotłownia w podziemiach,A fuse: the boiler room in the basement
+GOAL_FUSE_ASSYRIA,Bezpiecznik: Galeria Pałacu Nimrud w Asyrii,A fuse: the Nimrud palace gallery in Assyria
+GOAL_POWER,"Rozdzielnia w podziemiach: włóż bezpieczniki, przywróć zasilanie",The basement switchboard: fit the fuses and restore the power
+GOAL_HWACHA,Azja: ognista skrzynia w Sali Koreańskiej,Asia: the fire chest in the Korea hall
+GOAL_GUARDIAN_ASIA,Za spękanym murem ogród japoński: strażnik Azji,"Past the cracked wall, the Japanese garden: the Guardian of Asia"
+GOAL_HARPOON,Ameryki: harpunnik w Galerii Pacyfiku,The Americas: a harpoon gun in the Pacific gallery
+GOAL_GUARDIAN_AMERICAS,Most z czółna prowadzi do Świątyni Węża,The canoe bridge leads to the Serpent Temple
+GOAL_ASTROLABE,Odłamki 6/6: astrolabium w Czytelni,Shards 6/6: the astrolabe in the Reading Room
+GOAL_TREX,Pokonaj T-Reksa pod szklanym dachem,Defeat the T-Rex under the glass roof
+GOAL_DESCEND,Krata w korytarzu północnym stoi otworem: zejdź w ciemność,The grate in the north corridor stands open: go down into the dark
+GOAL_EXPLORE,Rozejrzyj się: muzeum ma jeszcze zamknięte drzwi,Look around: the museum still has locked doors
+GOAL_EPILOGUE,Muzeum należy do ciebie: szukaj sekretów,The museum is yours: hunt for its secrets
+GOAL_SHARDS,Odłamki: %d/%d,Shards: %d/%d
+ROOM_BOOTH_CORRIDOR,Korytarz służbowy,Staff corridor
+ROOM_BOOTH_SECURITY,Kanciapa ochrony,Security booth
+ROOM_SERVICE_STAIRS,Schody służbowe,Service stairs
+ROOM_ENTRANCE_HALL,Hol wejściowy,Entrance hall
+ROOM_COURT,Wielki Dziedziniec,Great Court
+ROOM_COURT_READING,Czytelnia,Reading Room
+ROOM_NORTH_HALL,Korytarz północny,North corridor
+ROOM_CRYPT,Krypta,The crypt
+ROOM_EGYPT_VESTIBULE,Przedsionek Rosetty,Rosetta vestibule
+ROOM_EGYPT_GALLERY,Galeria Rzeźby Egipskiej,Egyptian Sculpture Gallery
+ROOM_EGYPT_COLOSSUS,Sala Kolosa,Colossus hall
+ROOM_EGYPT_TOMB,Grobowce,The tombs
+ROOM_EGYPT_CONSERVATOR,Pokój konserwatora,Conservator's room
+ROOM_ASSYRIA_GATE,Brama Chorsabadu,Khorsabad Gate
+ROOM_ASSYRIA_NIMRUD,Galeria Pałacu Nimrud,Nimrud palace gallery
+ROOM_ASSYRIA_LIONS,Sala Lwów z Niniwy,Nineveh Lion Hunt hall
+ROOM_ASSYRIA_BALAWAT,Wrota z Balawat,Balawat Gates
+ROOM_ASSYRIA_COURTYARD,Dziedziniec Pałacu,Palace courtyard
+ROOM_GREECE_VASES,Sala Waz,Vase room
+ROOM_GREECE_NEREID,Pomnik Nereid,Nereid Monument
+ROOM_GREECE_PARTHENON,Galeria Partenonu,Parthenon gallery
+ROOM_GREECE_CAST_STORE,Magazyn odlewów,Cast store
+ROOM_ENLIGHTENMENT_LIBRARY,Biblioteka Królewska,King's Library
+ROOM_ENLIGHTENMENT_CLOCKS,Sala Zegarów i Automatów,Clocks and automata
+ROOM_ENLIGHTENMENT_PLANETARIUM,Rotunda Planetarium,Planetarium rotunda
+ROOM_ENLIGHTENMENT_CABINET,Gabinet Historii Naturalnej,Natural history cabinet
+ROOM_ENLIGHTENMENT_PORTRAITS,Galeria Portretów Kolekcjonerów,Collectors' portrait gallery
+ROOM_ENLIGHTENMENT_LIBRARIAN,Gabinet bibliotekarza,Librarian's office
+ROOM_AMERICAS_PACIFIC,Galeria Pacyfiku,Pacific gallery
+ROOM_AMERICAS_MOAI,Sala Moai,Moai room
+ROOM_AMERICAS_TEMPLE,Świątynia Węża,Serpent Temple
+ROOM_AMERICAS_NORTH,Sala Ameryki Północnej,North America hall
+ROOM_ASIA_CHINA,Sala Chin i Azji Południowej,China and South Asia hall
+ROOM_ASIA_PORCELAIN,Galeria Porcelany,Porcelain gallery
+ROOM_ASIA_KOREA,Sala Koreańska,Korea hall
+ROOM_ASIA_ARMOR,Sala Zbroi,Armour hall
+ROOM_ASIA_GARDEN,Ogród japoński,Japanese garden
+ROOM_ASIA_TEAHOUSE,Herbaciarnia,Tea house
+ROOM_BASEMENT_RING,Korytarze służbowe,Service corridors
+ROOM_BASEMENT_WORKSHOP,Warsztat renowacji,Restoration workshop
+ROOM_BASEMENT_SWITCHBOARD,Rozdzielnia,Switchboard room
+ROOM_BASEMENT_BOILER,Kotłownia,Boiler room
+ROOM_ROOF_CATWALK,Kładki na dachu,Roof catwalks
+ROOM_EGYPT_TOMB_PASSAGE,Korytarz grobowy,Tomb passage
+ROOM_EGYPT_SARCOPHAGI,Sala Sarkofagów,Sarcophagus hall
+ROOM_EGYPT_SERDAB,Serdab,The serdab
+ROOM_EGYPT_PRIEST,Grób kapłana Amona,Tomb of a priest of Amun
+ROOM_EGYPT_CACHE,Skład ekspedycji 1898,The 1898 expedition's store
+ROOM_GREECE_PODIUM,Podium Pomnika Nereid,Nereid Monument podium
+ROOM_GREECE_BASSAE,Sala z Bassae,Bassae room
+ROOM_GREECE_BASSAE_GALLERY,Antresola fryzu z Bassae,Bassae frieze mezzanine
+ROOM_GREECE_LOFT,Strych nad Bassae,The loft above Bassae
+ROOM_GREECE_POTTERY,Magazyn skorup,Potsherd store
+ROOM_GREECE_METOPES,Sala Metop,Metope room
+ROOM_GREECE_CELLAR,Zaplecze pracowni odlewów,Cast workshop backroom
+ROOM_GREECE_UNDERCROFT,Korytarz pod Galerią Partenonu,Passage under the Parthenon gallery
+ROOM_EGYPT_UNDERCROFT,Magazyn pod galerią,Store under the gallery
+ROOM_BOOTH_STAFF,Pokój socjalny,Staff room
+ROOM_BOOTH_WATCH,Stróżówka (1912),The night-watch room (1912)
+ROOM_ENTRANCE_GALLERY,Galeria nad wejściem,Gallery over the entrance
+ROOM_ENTRANCE_CLOAKROOM,Szatnia,Cloakroom
+ROOM_ENTRANCE_COAT_STORE,Schowek szatni,The cloakroom store
+ROOM_COURT_BALCONY,Balkon Czytelni,Reading Room balcony
+ROOM_NORTH_LODGE,Stara portiernia,The old porter's lodge
+ROOM_NORTH_CRYPT_STAIRS,Schody do krypty,Stairs down to the crypt
+PROMPT_DRAW_BOLT,Odsuń zasuwę,Draw the bolt
+PROMPT_SEAL_PLACE,Osadź: %s,Set in: %s
+SWITCHBOARD_ON,Rozdzielnia — zasilanie działa,Switchboard — the power is on
+SWITCHBOARD_FIT,Włóż bezpieczniki i przywróć zasilanie,Fit the fuses and restore the power
+SWITCHBOARD_NEED,Rozdzielnia — brak bezpieczników (%d/%d),Switchboard — fuses missing (%d/%d)
+HUD_POWER_ON,Zasilanie wraca: żaluzje korytarza północnego idą w górę,The power is back: the north corridor's shutters roll up
+HAVEN_FOUND_FLOOR_DETAIL,"Terminal, apteczka i spokój. Stąd też można zacząć noc.","A terminal, a first-aid kit and quiet. Nights can start here too."
+PROMPT_TAKE_ITEM,Weź: %s,Take: %s
+CHESS_PIECE,Figura szachowa z Lewis,A Lewis chess piece
+HUD_ARENA_SEALED,Drzwi się zatrzasnęły,The doors slam shut
+GUARDIAN_DEFEATED,Strażnik pokonany,Guardian defeated
+HUD_FUSE_FOUND,Bezpiecznik (%d/%d) — rozdzielnia w podziemiach,A fuse (%d/%d) — the switchboard is in the basement
+CCTV_CAM_ENTRANCE,Hol wejściowy,Entrance hall
+CCTV_CAM_COURT_SOUTH,Dziedziniec — południe,Great Court — south
+CCTV_CAM_COURT_NORTH,Dziedziniec — północ,Great Court — north
+CCTV_CAM_READING,Czytelnia,Reading Room
+CCTV_CAM_NORTH,Korytarz północny,North corridor
+CCTV_CAM_CORRIDOR,Korytarz służbowy,Staff corridor
+CHESS_FOUND,Figura szachowa z Lewis (%d/%d),Lewis chess piece (%d/%d)
+CHESS_DETAIL,Ktoś je tu pochował. Zbierz wszystkie.,Someone hid them here. Collect them all.
+SECRET_CACHE_PROMPT,Coś tu luźno siedzi…,Something here is loose…
+ASTROLABE_WAITS,Astrolabium — odłamki kryształu %d/%d,The astrolabe — crystal shards %d/%d
+ASTROLABE_FILL,Osadź sześć odłamków w astrolabium,Set the six shards in the astrolabe
+ASTROLABE_TITLE,Astrolabium,The astrolabe
+ASTROLABE_FILLED,Kryształ się scala,The crystal mends
+ASTROLABE_FILLED_DETAIL,Pulsuje jak serce. Coś pod szklanym dachem na niego czeka.,It beats like a heart. Something under the glass roof is waiting for it.
+END_FLOOR1_SUBTITLE,Koniec Piętra I — Wielki Dziedziniec,The end of Floor I — the Great Court
+END_FLOOR1_COMPLETION,Ukończenie,Completion
+END_FLOOR1_CHESS,Szachy z Lewis,Lewis chessmen
+END_FLOOR1_NEXT,Ciąg dalszy nastąpi: Piętro −1,To be continued: Floor −1
+HUD_COURT_SEALED,Kraty opadają — dziedziniec zamknięty,The grilles drop — the court is shut
+LOCK_ROPE_RIFLE,"Za daleko na pistolet — tę linę przetnie tylko sztucer","Too far for the pistol — only the rifle can cut this rope"
+ROOM_ENLIGHTENMENT_GALLERY,Galeria regałów,Upper gallery of bookcases
+ROOM_ENLIGHTENMENT_OBSERVATORY,Galeria obserwatorów,Observers' gallery
+ROOM_ENLIGHTENMENT_ATTIC,Strych biblioteki,Library loft
+ROOM_ENLIGHTENMENT_STACKS,Magazyn zamknięty,Closed stacks
+ROOM_ENLIGHTENMENT_ARCHIVE,Archiwum zapieczętowane,Sealed archive
+ROOM_ENLIGHTENMENT_BINDERY,Introligatornia,Bindery
+ROOM_ENLIGHTENMENT_STUDY,Ukryty gabinet kolekcjonera,The collector's hidden study
+ROOM_ASIA_VAULT,Skarbiec płatnerza,Armourer's vault
+ROOM_ASIA_SHRINE,Kapliczka z dzwonem,Bell shrine
+ROOM_ASIA_CRATES,Skład wyprawy 1910,The 1910 expedition's store
+ROOM_ASSYRIA_LIONS_GALLERY,Galeria nad jamą lwów,Gallery over the lion pit
+ROOM_ASSYRIA_LIBRARY,Biblioteka Assurbanipala,Library of Ashurbanipal
+ROOM_ASSYRIA_FREIGHT,Schody i winda towarowa,Freight stairs and lift
+ROOM_ASSYRIA_TABLETS,Magazyn tabliczek klinowych,Cuneiform tablet store
+ROOM_ASSYRIA_LION_CAGE,Klatka lwów królewskich,The royal lion cage
+ROOM_ASSYRIA_LIFT,Kabina windy towarowej,The freight lift car
+ROOM_AMERICAS_TOTEMS,Sala Totemów,Totem pole hall
+ROOM_AMERICAS_PIT,Zapadnięta podłoga,The collapsed floor
+ROOM_AMERICAS_UNDERCROFT,Magazyn pod Salą Totemów,Store under the totem hall
+ROOM_AMERICAS_HIDEOUT,Kryjówka za moai,The hideout behind the moai
+ROOM_AMERICAS_WORKSHOP,Pracownia rzeźbiarzy totemów,The totem carvers' workshop
+ROOM_AMERICAS_STORE,Magazyn zabity deskami,The boarded-up store
+ROOM_BASEMENT_CORRIDOR_NORTH,Korytarz północny podziemi,North service corridor
+ROOM_BASEMENT_CORRIDOR_WEST,Korytarz zachodni podziemi,West service corridor
+ROOM_BASEMENT_CORRIDOR_EAST,Korytarz wschodni podziemi,East service corridor
+ROOM_BASEMENT_CORRIDOR_SOUTH,Korytarz południowy podziemi,South service corridor
+ROOM_BASEMENT_TUNNEL,Tunel pod Salą Kolosa,The tunnel under the Colossus hall
+ROOM_BASEMENT_CATWALK,Pomost nad kotłami,The boiler gantry
+ROOM_BASEMENT_CROSSING,Fundamenty Czytelni,The Reading Room's foundations
+ROOM_BASEMENT_SPINE,Korytarz poprzeczny,Cross corridor
+ROOM_BASEMENT_WORKSHOP_CORRIDOR,Korytarz warsztatowy,Workshop corridor
+ROOM_BASEMENT_PLINTHS,Magazyn cokołów i gablot,Plinth and showcase store
+ROOM_BASEMENT_OLD_CELLAR,Piwnica Montagu House,The Montagu House cellar
+ROOM_BASEMENT_RESERVE,Magazyn zbiorów,Reserve collection store
+ROOM_BASEMENT_ARCHIVE,Archiwum,The archive
+ROOM_BASEMENT_CAGE,Klatka depozytowa,The deposit cage
+ROOM_BASEMENT_STAFF,Korytarz pod holem,Corridor under the hall
+ROOM_BASEMENT_GUARDS,Magazyn straży,The guards' store
+ROOM_BASEMENT_SHELTER,Schron przeciwlotniczy,The air-raid shelter
+ROOM_ROOF_PLANT,Taras techniczny,The plant deck
+ROOM_ROOF_LOFT,Gołębnik,The pigeon loft
+ROOM_ROOF_SHED,Szopa dekarzy,The roofers' shed
+NOTE_BASEMENT_1_TITLE,Lista prac — pracownia renowacji,Job list — restoration workshop
+NOTE_BASEMENT_1_BODY,"1. Tors Apolla — klej schnie trzy doby. NIE dotykać. Wczoraj ktoś go dotykał. Od środka.
+2. Głowa woskowego Kopernika — przyszyć z powrotem. Szuka jej po nocach, słychać, jak stuka po stołach.
+3. Urna z Ur — 214 kawałków. Było 213.
+4. Tarcza samuraja — wyklepana. Samuraj prosił, żeby poprawić też uchwyt. Nie pytałam, kiedy prosił.
+Kto bierze stąd lampę, niech ją odda. To jedyne miejsce w piwnicy, gdzie nic cię nie zaczepia.","1. Apollo's torso — the glue needs three days. DO NOT touch. Somebody touched it yesterday. From the inside.
+2. The wax Copernicus's head — sew it back on. He looks for it at night; you can hear him knocking along the tables.
+3. The urn from Ur — 214 pieces. There were 213.
+4. The samurai's shield — beaten out. The samurai asked for the strap to be fixed too. I didn't ask when he asked.
+Whoever takes a lamp from here, bring it back. This is the only place down here where nothing bothers you."
+NOTE_BASEMENT_1_SIGN,"— M. Lis, konserwatorka","— M. Lis, conservator"
+NOTE_BASEMENT_2_TITLE,Dziennik kotłowni,Boiler room log
+NOTE_BASEMENT_2_BODY,"Pon. — Kocioł wschodni gwiżdże. Zawór przy pomoście syczy jak kot. Zapasowy bezpiecznik do rozdzielni położyłem na końcu pomostu, w skrzynce, żeby był pod ręką.
+Wt. — Bezpiecznik dalej na pomoście. Ja nie.
+Śr. — Coś śpi za kotłem zachodnim. Ciepło mu. Nie budzę.
+Czw. — Kto weźmie bezpiecznik, niech się nie ogląda i schodzi szybko. Barierki na końcu nie ma. Nigdy nie było.","Mon. — The east boiler whistles. The valve by the gantry hisses like a cat. I left the switchboard's spare fuse at the end of the gantry, in the box, so it's to hand.
+Tue. — The fuse is still on the gantry. I'm not.
+Wed. — Something sleeps behind the west boiler. It likes the warmth. I'm not waking it.
+Thu. — Whoever takes the fuse: don't look back and get down fast. There's no railing at the end. There never was."
+NOTE_BASEMENT_2_SIGN,— palacz Z. Węgiel,"— Z. Węgiel, stoker"
+NOTE_BASEMENT_3_TITLE,Rozdzielnia — UWAGA,Switchboard — NOTICE
+NOTE_BASEMENT_3_BODY,"Żaluzje przeciwpożarowe korytarza północnego (Ameryki, Azja) stoją bez prądu. Brakuje DWÓCH bezpieczników:
+— jeden zapasowy: kotłownia, pomost (pytać palacza),
+— drugi wykręciła ekipa od oświetlenia Galerii Nimrud w Asyrii i oczywiście nie oddała.
+Oba w gniazda, dźwignia w górę. Nie dotykać mokrymi rękami. Zbroja w kącie idzie do kasacji, nie przestawiać — nie lubi.","The north corridor's fire shutters (the Americas, Asia) have no power. TWO fuses missing:
+— one spare: the boiler room, the gantry (ask the stoker),
+— the other was taken out by the lighting crew of the Nimrud Gallery in Assyria, and of course they never brought it back.
+Both into the sockets, lever up. Do not touch with wet hands. The armour in the corner is for scrapping, do not move it — it doesn't like that."
+NOTE_BASEMENT_3_SIGN,— elektryk R. Gil,"— R. Gil, electrician"
+NOTE_ROOF_1_TITLE,Zeszyt dekarzy,The roofers' book
+NOTE_ROOF_1_BODY,"Szyby nad dziedzińcem myjemy od rynny do kopuły, nigdy odwrotnie. Po szkle nie chodzić — ono pamięta.
+Gołębie wróciły do gołębnika. Klapę trzyma lina, sama się nie otworzy.
+Z kładki północnej widać dinozaura z góry. W pełnię odwraca łeb. Nie pokazywać praktykantom.
+Szopa zabita deskami do odwołania (decyzja dyrekcji po incydencie z popiersiem).","The panes over the court are washed from the gutter to the dome, never the other way. Don't walk on the glass — it remembers.
+The pigeons are back in the loft. The hatch is held by a rope; it won't open by itself.
+From the north catwalk you can see the dinosaur from above. On a full moon it turns its head. Don't show the apprentices.
+Shed boarded up until further notice (management's decision after the incident with the bust)."
+NOTE_ROOF_1_SIGN,— brygada dekarska nr 2,— roofing crew no. 2
+NOTE_BOOTH_1_TITLE,"Dziennik stróża nocnego, październik 1912","The night watchman's log, October 1912"
+NOTE_BOOTH_1_BODY,"3 X. Obchód o północy. Bez zdarzeń. Skrzydlaty byk spod asyryjskiej bramy obszedł Czytelnię dookoła i wrócił na swoje miejsce. Bez zdarzeń.
+7 X. Mumia z sali egipskiej znów siedzi na moim krześle. Wyniosłem. Ognia nie lubią — wystarczy zapałka do bandaża.
+11 X. Łańcuch na tych drzwiach zakładam ja. Puszcza, kiedy się w niego porządnie walnie, więc proszę nie walić.
+12 X. Drzwi do piwnic ryglują się od strony sal. Z dołu nie otworzysz, z góry owszem. Tak kazali fundatorzy.
+15 X. Spod krypty stuka. Równo, jak zegar albo serce. Kiedy stuka głośniej, eksponaty chodzą śmielej.
+17 X. Fundatorzy kazali nie schodzić niżej krypty. Fundatorzy leżą w krypcie i niczego już nie każą.
+17 X, trzecia w nocy. Schodzę. Schody idą dalej, niż powinny. Na dole ktoś zostawił zapalone światło.
+Dopisek inną ręką: stróż nocny J. Kopeć nie zdał służby 18 X o szóstej rano. Nie odnaleziony. Jego latarni też nie odnaleziono.","3 Oct. Midnight round. Nothing to report. The winged bull from the Assyrian gate walked once round the Reading Room and went back to its place. Nothing to report.
+7 Oct. The mummy from the Egyptian room is sitting in my chair again. Carried it out. They don't care for fire — a match to the bandages will do.
+11 Oct. The chain on this door is mine to put on. It gives if you hit it properly hard, so kindly don't.
+12 Oct. The cellar doors bolt from the gallery side. From below you will never open them; from above you will. The founders' orders.
+15 Oct. Something knocks under the crypt. Steady, like a clock or a heart. When it knocks louder, the exhibits walk bolder.
+17 Oct. The founders said never to go lower than the crypt. The founders lie in the crypt and give no more orders.
+17 Oct, three in the morning. Going down. The stairs go on further than they should. Someone down there has left a light on.
+Added in another hand: night watchman J. Kopeć did not hand over his watch at six in the morning on 18 Oct. Not found. Nor was his lantern."
+NOTE_BOOTH_1_SIGN,Stróż nocny J. Kopeć,"J. Kopeć, night watchman"
+NOTE_ENTRANCE_1_TITLE,Do nocnej zmiany — z kasy,To the night shift — from the ticket desk
+NOTE_ENTRANCE_1_BODY,"Panie Heniu, albo kto tam teraz za Pana siedzi.
+Szuflada się zacina: szarpnąć i lekko unieść. I proszę tam więcej nie zostawiać klucza od szafki, rano liczę utarg, a nie klucze.
+Szafka pożarowa przy drzwiach służbowych to nie Pana prywatna zbrojownia. Jak Pan zbije szybkę, oni usłyszą. Wszyscy w holu. A raca podobno topi wosk jak świeczkę. Ja tam nie wiem, ja sprzedaję bilety.
+Tylna ściana szatni znowu popękała. Pan Gil mówi, że za nią jest stary schowek: trzy race z bliska i ściana puści. Proszę nie rozwalać. A jak już, to posprzątać.
+Drzwi główne otwieram o szóstej. Nawet jak Pan będzie pukał od środka, a ktoś inny od zewnątrz.","Dear Heniek — or whoever is sitting in for you now.
+The drawer sticks: yank it and lift a little. And please stop leaving your locker key in there; in the morning I count the takings, not keys.
+The fire cabinet by the staff door is not your private armoury. Break the glass and they'll hear it. Everyone in the hall. And that flare, they say, melts wax like a candle. I wouldn't know, I sell tickets.
+The back wall of the cloakroom has cracked again. Mr Gil says there's an old store behind it: three flares from close up and the wall will go. Please don't. And if you do, sweep up.
+I open the main doors at six. Even if you're knocking from the inside and someone else from the outside."
+NOTE_ENTRANCE_1_SIGN,"B. Wierzbicka, kasa biletowa","B. Wierzbicka, ticket desk"
+NOTE_COURT_1_TITLE,"Młody, przeczytaj przy kawie","Kid, read this over coffee"
+NOTE_COURT_1_BODY,"Ekspres działa, jak się go kopnie z lewej. Mleko jest moje.
+Ten kamień, co przyszedł pocztą bez nadawcy — kustosz wsadził go w astrolabium w Czytelni. Tamtej nocy trzasnął jak szklanka z zamrażarki i rozleciał się w sześć czerwonych smug, do sześciu skrzydeł. W każdym coś dużego połknęło odłamek i teraz pilnuje. Na drzwiach wyrosły zamki w kształcie słońca, skrzydła, sowy i gwiazdy. Nikt ich nie montował.
+Rex czeka pod szklanym dachem. Jak szarżuje, stań przy bębnie Czytelni i odskocz w ostatniej chwili: rąbnie łbem w mur. Wtedy w kryształ.
+Kustosz wziął bezterminowy urlop. Ostatnio stał przy kracie w korytarzu północnym i nasłuchiwał.
+Ja jestem na zwolnieniu. Noga. Raptor.
+PS Pod ladą informacji coś luźno siedzi.","The coffee machine works if you kick it on the left. The milk is mine.
+That stone that came by post with no sender — the curator set it in the astrolabe in the Reading Room. That night it cracked like a glass out of the freezer and flew apart in six red streaks, to the six wings. In each one something big swallowed a shard, and now it stands guard. Locks grew on the doors in the shape of a sun, a wing, an owl and a star. Nobody fitted them.
+Rex waits under the glass roof. When he charges, stand by the Reading Room's drum and sidestep late: he'll ram the wall. Then go for the crystal.
+The curator has taken indefinite leave. Last I saw him, he stood by the grate in the north corridor, listening.
+I'm on sick leave. My leg. Raptor.
+PS Something sits loose under the information desk."
+NOTE_COURT_1_SIGN,— Heniek,— Heniek
+NOTE_COURT_2_TITLE,Notatka służbowa: astrolabium,Memo: the astrolabe
+NOTE_COURT_2_BODY,"Do: nocna zmiana. Do wiadomości: nikt więcej.
+Astrolabium w środku Czytelni trafiło do nas z zapisu fundatora, Ksawerego Zawilskiego. Przez półtora wieku jego środkowy pierścień był pusty. Dar anonimowy, „minerał nieznanego pochodzenia”, wszedł w niego co do milimetra. Przyznaję: osadziłem go tam sam, wbrew zastrzeżeniom testamentu, które uważałem za dziwactwo starego człowieka.
+Uważałem.
+Jeśli zbierzecie odłamki, proszę je osadzić z powrotem w pierścieniu. Wszystkie sześć. Kamień się scali i — sądząc po tym, jak bije — od razu poleci tam, gdzie czeka szkielet. To jedyny słaby punkt tego zwierzęcia: kryształ między żebrami. W kości szkoda amunicji.
+Kiedy zaryczy, schodzą się eksponaty ze wszystkich skrzydeł. Pod koniec od jego ryku pęka szklany dach — proszę patrzeć na cienie na posadzce.
+Kartaczownicę z ekspozycji „Wiek pary i stali” wolno zabrać. Łańcuch puści od strzelby albo od trzech porządnych ciosów.
+Za szkody odpowiada Dział Techniczny.","To: the night shift. Copies: nobody else.
+The astrolabe in the middle of the Reading Room came to us in the will of our founder, Ksawery Zawilski. For a century and a half its central ring stood empty. The anonymous gift, the “mineral of unknown origin”, went into it to the millimetre. I admit it: I set it there myself, against the reservations in the will, which I took for an old man's whim.
+Took.
+If you gather the shards, set them back in the ring. All six. The stone will mend and — judging by the way it beats — fly straight to where the skeleton waits. That is the animal's only weak point: the crystal between its ribs. Bone is a waste of ammunition.
+When it roars, exhibits come from every wing. Towards the end its roar cracks the glass roof — watch the shadows on the floor.
+You may take the gatling gun from “The Age of Steam and Steel”. The chain gives to a shotgun or to three good punches.
+The Maintenance Department is liable for all damage."
+NOTE_COURT_2_SIGN,"dr A. Wróblewski, kustosz","Dr A. Wróblewski, curator"
+NOTE_EGYPT_1_TITLE,"Dziennik ekspedycji, Teby 1898","Expedition diary, Thebes 1898"
+NOTE_EGYPT_1_BODY,"14 lutego. Otworzyliśmy grób kapłana Amona. Profesor tańczył. Ja rysowałem.
+15 lutego. Tragarze nie chcą nocować przy sarkofagach. Mówią, że umarli nie lubią, kiedy ktoś zabiera rzeczy ze stołu. Profesor kazał im się nie wygłupiać i położył strzelbę na stole mapowym — „na hieny”.
+19 lutego. W nocy Hasan wziął strzelbę, żeby przegonić hieny. Hien nie było. Spod namiotu wstały trzy mumie, jedna po drugiej, jakby ktoś je wywołał po nazwisku.
+20 lutego. Notuję dla potomnych: bandaże śmigają jak bicz i przyciągają człowieka do siebie — trzeba stać z boku, nigdy na wprost. Za to płoną jak papier, a płonący umarły zapomina, czego chciał, i ucieka. Ogień to nasz przyjaciel. Hasan się zgadza.
+22 lutego. Profesor kazał spakować do muzeum cały obóz, ze stołem i strzelbą. Mówi, że to „pedagogiczne”.
+Jeśli czytasz to w muzeum: kto weźmie strzelbę ze stołu, ten obudzi obóz. Tak było w Tebach.","14 February. We opened the tomb of the priest of Amun. The Professor danced. I drew.
+15 February. The porters won't sleep by the sarcophagi. They say the dead don't like it when somebody takes things off the table. The Professor told them not to be silly and laid the shotgun on the map table — “for the hyenas”.
+19 February. In the night Hasan took the shotgun to chase off the hyenas. There were no hyenas. Three mummies rose from beside the tent, one after another, as if someone had called them by name.
+20 February. For posterity: the bandages lash out like a whip and drag a man in — stand to one side, never square in front. But they burn like paper, and a burning dead man forgets what he wanted and runs. Fire is our friend. Hasan agrees.
+22 February. The Professor has had the whole camp packed up for the museum, table and shotgun included. He calls it “educational”.
+If you are reading this in the museum: whoever takes the shotgun from the table wakes the camp. That is how it was in Thebes."
+NOTE_EGYPT_1_SIGN,"F. Zaręba, rysownik ekspedycji","F. Zaręba, expedition draughtsman"
+NOTE_EGYPT_2_TITLE,Zlecenie serwisowe nr 203,Work order no. 203
+NOTE_EGYPT_2_BODY,"Obiekt: Kolos Ramzesa. Zakres: pęknięcia.
+— Płyty na piersi: póki trzymają, szkoda naboi; wybuch zrywa je szybciej. Pod nimi świecą pęknięcia — tam celować. I w kobrę na koronie, sypie iskrami.
+— Przed uderzeniem dłonią rośnie na posadzce jej cień, potem idzie fala. Zamach przedramieniem idzie nisko. Przeskakiwać.
+— Promień z oczu obraca się powoli. Kolumny go zatrzymują, ale pękają.
+— W połowie z tronu sypią się skarabeusze (śrut, ogień). Pod koniec Kolos wstaje. Jak się ucieknie, siada z powrotem.
+Uwagi: spękana ściana w komorach grobowych — tylko wybuch. Fałszywe drzwi w Sali Sarkofagów mają żelazne ucho. Za tronem ktoś zostawił figurkę szachową.","Object: the Colossus of Ramesses. Scope: cracks.
+— Plates on his chest: while they hold, don't waste rounds; a blast knocks them off sooner. Under them the cracks glow — aim there. And at the cobra on his crown; it throws sparks.
+— Before the palm comes down, its shadow grows on the floor, then a wave runs out. The forearm sweep comes in low. Jump.
+— The beam from his eyes turns slowly. The columns stop it, but they crack.
+— Halfway through, scarabs pour from the throne (buckshot, fire). Towards the end he stands up. Run, and he sits back down.
+Remarks: the cracked wall in the burial chambers — a blast only. The false door in the sarcophagus hall has an iron ring. Someone left a chess piece behind the throne."
+NOTE_EGYPT_2_SIGN,Wykonał: konserwator R. Gil,"Done by: R. Gil, maintenance"
+NOTE_EGYPT_3_TITLE,Komunikat dla personelu,Notice to staff
+NOTE_EGYPT_3_BODY,"Dotyczy: wystawy czasowej „Archeolodzy. Sto lat wykopalisk” (figury woskowe).
+1. Po zamknięciu figury archeologów odwracać twarzą do ściany. Nie, nie wiemy, dlaczego rano stoją przodem.
+2. Figury są z wosku. Wosk jest łatwopalny. Prosimy nie sprawdzać tego na wystawie. Chyba że trzeba.
+3. Jedna figura chodzi nocą wzdłuż galerii, tam i z powrotem, jak na wykopaliskach. Nie przeszkadzać jej w pracy, chyba że idzie w waszą stronę.
+4. Strzelba na stole w obozie ekspedycji jest eksponatem. Nie jest naładowana. (Dopisek ołówkiem: jest.)
+5. Kamienia z Rosetty nie dotykać. Mówi trzema pismami. Nocna zmiana nie odpowiada w żadnym.","Re: the temporary exhibition “Archaeologists: A Century of Digging” (wax figures).
+1. After closing, turn the archaeologist figures to face the wall. No, we do not know why they are facing forward again in the morning.
+2. The figures are made of wax. Wax is flammable. Please do not test this on the exhibition. Unless you must.
+3. One figure walks the length of the gallery at night, there and back, as if on a dig. Do not interrupt its work, unless it is coming your way.
+4. The shotgun on the table in the expedition camp is an exhibit. It is not loaded. (Pencilled underneath: it is.)
+5. Do not touch the Rosetta Stone. It speaks in three scripts. The night shift does not answer in any of them."
+NOTE_EGYPT_3_SIGN,Dyrekcja,The Management
+NOTE_EGYPT_4_TITLE,Spis skrzyń ekspedycji 1898,The 1898 expedition's crate list
+NOTE_EGYPT_4_BODY,"Odpis z 1899 roku.
+Skrzynie 1–6: posągi, stele, kanopy.
+Skrzynia 7: obóz (namiot, stół mapowy, lampy, strzelba Profesora).
+Skrzynie 8–10: sarkofagi z mumiami, trzy sztuki. Wieka przybijać mocno.
+Skrzynia 11: fałszywe drzwi z grobu kapłana Amona, z żelaznym uchem do transportu.
+Skrzynia 12: szkatuła z grobu kapłana. W środku gniazdo w kształcie serca, wyściełane czerwonym pyłem. Puste. Kapłan trzymał w zaciśniętej dłoni papirus: „Serce, którego nie można zważyć, zeszło pod ziemię. Kto je wyniesie na wierzch, obudzi wszystko, co pamięta”.
+Uwaga rysownika, ołówkiem: Profesor twierdzi, że to metafora. Profesor śpi przy zapalonej lampie.
+Uwaga magazyniera, dopisana później innym atramentem: gniazdo ma co do milimetra wymiary pustego pierścienia astrolabium w Czytelni. Nikomu nie mówić.
+Łańcuch na drzwiach składu założony na polecenie Dyrekcji.","Copy made in 1899.
+Crates 1–6: statues, stelae, canopic jars.
+Crate 7: the camp (tent, map table, lamps, the Professor's shotgun).
+Crates 8–10: sarcophagi with mummies, three of them. Nail the lids down hard.
+Crate 11: the false door from the tomb of the priest of Amun, with an iron ring for hauling.
+Crate 12: a casket from the priest's tomb. Inside, a heart-shaped socket lined with red dust. Empty. In his clenched hand the priest held a papyrus: “The heart that cannot be weighed has gone down beneath the earth. Whoever brings it up again shall wake all that remembers.”
+Draughtsman's note, in pencil: the Professor says it is a metaphor. The Professor sleeps with the lamp lit.
+Storekeeper's note, added later in different ink: the socket matches the empty ring of the astrolabe in the Reading Room to the millimetre. Tell no one.
+The chain on the store's door put on by order of the Management."
+NOTE_EGYPT_4_SIGN,Magazyn zbiorów egipskich,The Egyptian collection store
+NOTE_GREECE_1_TITLE,List w sprawie marmurów,A letter concerning the marbles
+NOTE_GREECE_1_BODY,"Szanowny Panie Kustoszu,
+odlewy metop są gotowe i stoją w magazynie, ale muszę Panu napisać o rzeczy, za którą w Akademii by mnie wyśmiano.
+Marmur jest nocą ciepły. Zdejmowałem formę z Kentaura po zmroku i jego pierś była miękka jak glina, którą się dopiero ugniata. Gips pękł mi dokładnie tam, na torsie, i jeszcze na głowie. Nigdzie indziej. Proszę przekazać stróżom: jeśli kiedyś zejdzie z metopy, tam właśnie jest słaby.
+Wiem też, jak walczy, bo widziałem to w kamieniu: z daleka rzuca oszczep, łukiem; z bliska staje dęba i kopie; a kiedy ma długą salę, szarżuje przez całą. W Galerii Partenonu ma długą salę. Proszę tam postawić coś, za czym można się schować.
+Lapici u wejścia do galerii też nie śpią. Zejdą razem.
+I nie stawiajmy odlewów obok oryginałów. Oryginały się obrażają.
+Z wyrazami szacunku","Dear Mr Curator,
+The casts of the metopes are finished and stand in the store, but I must write to you of something that would get me laughed out of the Academy.
+At night the marble is warm. I took the mould off the Centaur after dark, and his chest was soft, like clay still being kneaded. My plaster cracked exactly there, across the torso, and on the head. Nowhere else. Please tell the watchmen: if he ever comes down off his metope, that is where he is weak.
+I also know how he fights, for I have seen it in the stone: from afar he throws his javelin in an arc; up close he rears and kicks; and when he has a long room, he charges the length of it. In the Parthenon gallery he has a long room. Please put something there one can hide behind.
+The Lapiths at the mouth of the gallery do not sleep either. They will come down together.
+And let us not stand the casts beside the originals. The originals take offence.
+Yours respectfully,"
+NOTE_GREECE_1_SIGN,"Antoni Lipski, rzeźbiarz","Antoni Lipski, sculptor"
+NOTE_GREECE_2_TITLE,Gołębiarz — kartka pierwsza,The pigeon man — page one
+NOTE_GREECE_2_BODY,"Dla tego, co przyjdzie po mnie na strych.
+Moje gołębie siedzą w gołębniku na dachu, ale na szklany dach nad Dziedzińcem nie siadają. Od tamtej nocy. Gołąb siądzie wszędzie, na biskupie, na mnie. Tam nie.
+Z góry widać czemu: szyby świecą od spodu na czerwono, jak żarówka pod kocem. Najmocniej nad kratą w korytarzu północnym.
+W Sali Waz tylna ściana jest spękana, za nią skorupy w skrzyniach. Za skorupami jeszcze jedne drzwi, z żelaznym uchem. Gołąb nie wleci, człowiek nie wejdzie. Może harpun.
+Na dach wychodzi się z podestu w holu wejściowym, przez właz na linie. Kładkami dojdziesz do wieży Oświecenia. Uważaj na szkło.","For whoever comes up to the loft after me.
+My pigeons roost in the loft on the roof, but they won't land on the glass roof over the Great Court. Not since that night. A pigeon will land anywhere, on a bishop, on me. Not there.
+From up top you can see why: the panes glow red from underneath, like a bulb under a blanket. Brightest over the grate in the north corridor.
+In the vase room the back wall is cracked, with potsherds in crates behind it. Past the potsherds, one more door, with an iron ring. A pigeon won't fly in, a man won't get in. A harpoon, maybe.
+You get onto the roof from the landing in the entrance hall, through the hatch on a rope. The catwalks take you to the Enlightenment's tower. Mind the glass."
+NOTE_GREECE_2_SIGN,"E. Turek, gołębiarz","E. Turek, pigeon man"
+NOTE_GREECE_3_TITLE,"Książka raportów nocnych, str. 112","Night report book, p. 112"
+NOTE_GREECE_3_BODY,"01:10 — Hoplici chodzą parami i zachodzą tarczami. Z przodu nic nie wskórasz. (S.M.)
+01:12 — To ich obejdź. (H.)
+01:30 — Obszedłem. Tam też mają przód. (S.M.)
+01:31 — Paralizator: po prądzie opuszczają tarczę. A strzał z góry, z antresoli, tarcza przepuszcza. (H.)
+01:45 — Przed pchnięciem grot błyska. Sięgają na trzy metry, stoję na czterech. (S.M.)
+02:20 — Popiersia w Sali Waz pękają i świecą, zanim plują. Odłamek da się zestrzelić. Nie zestrzeliłem. (S.M.)
+04:15 — Magazyn odlewów to przystań. Ostatnie drzwi przed Kentaurem. (H.)
+04:16 — Nie wpisywać rzeczy, których Dyrekcja nie powinna czytać. (Dyrekcja)","01:10 — The hoplites go in pairs and overlap their shields. You get nowhere from the front. (S.M.)
+01:12 — Then go round them. (H.)
+01:30 — Went round. They've got a front there too. (S.M.)
+01:31 — The taser: after a jolt they drop the shield. And a shot from above, from the mezzanine, gets past it. (H.)
+01:45 — The point flashes before a thrust. They reach three metres; I stand at four. (S.M.)
+02:20 — The busts in the vase room crack and glow before they spit. The shard can be shot down. I didn't. (S.M.)
+04:15 — The cast store is a haven. Last door before the Centaur. (H.)
+04:16 — Do not write here anything the Management should not read. (The Management)"
+NOTE_GREECE_3_SIGN,(wpisy różnych osób),(entries in several hands)
+NOTE_GREECE_4_TITLE,Zlecenie serwisowe nr 248,Work order no. 248
+NOTE_GREECE_4_BODY,"Obiekt: wieża schodowa za Galerią Partenonu.
+— Drzwi z wieży na podest holu wejściowego ryglują się od strony Grecji. Zasuwę zostawiłem tu celowo: kto przejdzie Grecję, wróci do holu na skróty.
+— Drzwi do podziemi tak samo. Z każdego skrzydła jest takie zejście. Zasuwy odsuwać, drzwi nie wyważać.
+— Żaluzje w korytarzu północnym stoją bez prądu: rozdzielni brakuje dwóch bezpieczników. Szczegóły na drzwiach rozdzielni.
+— Na schodach ciągnie od dołu ciepłym powietrzem, choć kotłownia jest po drugiej stronie.
+Uwagi: spod posadzki tego korytarza słychać równe stukanie. Przyłożyłem stetoskop — przestało. Zabrałem — zaczęło znowu. Jakby się śmiało.","Object: the stair tower behind the Parthenon gallery.
+— The door from the tower to the entrance hall landing bolts on the Greek side. I left the bolt here on purpose: whoever gets through Greece can take the short way back to the hall.
+— Same with the door to the basement. Every wing has a way down like this. Draw the bolts, don't force the doors.
+— The north corridor's shutters have no power: the switchboard is two fuses short. Details on the switchboard door.
+— A warm draught comes up the stairs from below, though the boiler room is on the other side.
+Remarks: under the floor of this corridor there is a steady knocking. I put a stethoscope to it — it stopped. Took it away — it started again. As if it were laughing."
+NOTE_GREECE_4_SIGN,Wykonał: konserwator R. Gil,"Done by: R. Gil, maintenance"
+NOTE_ASSYRIA_1_TITLE,Karta informacyjna: lamassu,Information card: the lamassu
+NOTE_ASSYRIA_1_BODY,"LAMASSU. Skrzydlaty byk o ludzkiej głowie, strażnik bram pałacu Sargona II w Chorsabadzie, VIII w. p.n.e. Ma pięć nóg: oglądany z przodu stoi, z boku kroczy.
+Dopiski nocnej zmiany, długopisem:
+— W nocy robi jedno i drugie.
+— Ten z dziedzińca pałacu jest większy i ma odłamek. Zanim ruszy do szarży, grzebie kopytem. Słychać.
+— Rozkłada skrzydła = zaraz dmuchnie. Za kolumnę.
+— Tupnie = po posadzce idzie fala. Przeskoczyć.
+— Bić w twarz. Twarz jest ludzka i miękka. Korona też coś czuje.
+— W połowie walki budzą się wojownicy w ścianach.
+— Wojownicy z płaskorzeźb: z boku płascy jak deska, szkoda naboi. Z przodu w oko. Jak w nich celujesz, uskakują w bok.
+— Bezpiecznik do rozdzielni wykręciła ekipa od oświetlenia i zostawiła na rusztowaniu w Galerii Nimrud. Kto go weźmie, obudzi rusztowanie.
+— Przeczytałem tę kartę dwa razy i dalej nie wiem, co to p.n.e. (S.M.)","LAMASSU. A winged bull with a human head, guardian of the gates of Sargon II's palace at Khorsabad, 8th century BC. It has five legs: seen from the front it stands, seen from the side it strides.
+Notes from the night shift, in biro:
+— At night it does both.
+— The one in the palace courtyard is bigger and has a shard. Before it charges, it paws the ground. You can hear it.
+— Wings spread = it's about to blow. Get behind a column.
+— Stamps = a wave runs along the floor. Jump it.
+— Hit it in the face. The face is human and soft. The crown feels something too.
+— Halfway through the fight, the warriors in the walls wake up.
+— The warriors from the reliefs: side-on they're flat as a plank, don't waste your rounds. From the front, in the eye. When you aim at them, they sidestep.
+— The switchboard fuse was taken out by the lighting crew and left on the scaffold in the Nimrud gallery. Whoever takes it wakes the scaffold.
+— Read this card twice and I still don't know what BC stands for. (S.M.)"
+NOTE_ASSYRIA_1_SIGN,"Muzeum Miejskie, dział edukacji","City Museum, Education Department"
+NOTE_ASSYRIA_2_TITLE,Tabliczka bez sygnatury — przekład roboczy,An unnumbered tablet — working translation
+NOTE_ASSYRIA_2_BODY,"Tabliczkę znaleziono w magazynie, w skrzyni bez numeru. Glinę wypalił pożar Niniwy, tak jak całą bibliotekę Assurbanipala: ogień, który miał ją zniszczyć, utrwalił ją na wieki. Tekst uszkodzony; nawiasy oznaczają moje uzupełnienia.
+„Kamień z Apsu, z wód pod ziemią, otworzył oko. Byki ze skrzydłami zeszły z bram. Lwy zeszły ze ścian i król polował na nie po raz drugi. [Kapłani] rozbili kamień na [sześć] i rozdali strażnikom, a strażnicy nie oddali. [Gdy] kamień się złoży, otworzy się droga w dół, do Apsu, i Apsu upomni się o swoje”.
+Moja uwaga: „sześć” to domysł. Wolałbym, żeby był błędny.
+Druga uwaga: magazyn tabliczek za spękaną ścianą biblioteki trzeba otworzyć wybuchem. Dyrekcja się nie zgadza. Ja się nie zgadzam z Dyrekcją.
+Trzecia: od tygodnia po zamknięciu słyszę w tej sali skrobanie rylców. Ktoś tu nocą pisze dalej.","This tablet was found in the store, in an unnumbered crate. Its clay was baked in the fire of Nineveh, like the whole library of Ashurbanipal: the fire that was meant to destroy it preserved it for ever. The text is damaged; brackets mark my restorations.
+“The stone from the Apsu, from the waters beneath the earth, opened its eye. The winged bulls came down from the gates. The lions came down from the walls, and the king hunted them a second time. [The priests] broke the stone into [six] and gave it to the guardians, and the guardians would not give it back. [When] the stone is whole again, the way down to the Apsu will open, and the Apsu will come for what is its own.”
+My note: “six” is a guess. I would rather it were wrong.
+Second note: the tablet store behind the library's cracked wall must be opened with a blast. The Management disagrees. I disagree with the Management.
+Third: for a week now, after closing, I have heard styluses scratching in this room. Someone goes on writing here at night."
+NOTE_ASSYRIA_2_SIGN,prof. T. Mirecki,Prof. T. Mirecki
+NOTE_ASSYRIA_3_TITLE,Zlecenie serwisowe nr 311,Work order no. 311
+NOTE_ASSYRIA_3_BODY,"Obiekt: winda towarowa. Zgłoszenie: kursy, których nikt nie zamawiał.
+— Licznik pokazuje po kilka kursów na noc. Ochrona twierdzi, że nie jeździ. Wierzę: ochrona boi się windy.
+— W kabinie przyciski PARTER i PODZIEMIA, a pod nimi trzeci, zamalowany. Ktoś zdrapał farbę i wydrapał „−1”.
+— Na starych planach fundatorów pod kryptą jest jeszcze jedna kondygnacja, opisana tylko „−1”. Na nowych jej nie ma. Winda chyba czyta stare plany.
+— Rano na podłodze kabiny mokry piasek. Ciepły.
+Zalecenie: kabinę zamknąć na łańcuch. Zamknąłem.
+Uwagi: drzwi z klatki towarowej do podziemi ryglują się od tej strony. Odsunąć zasuwę — będzie skrót.","Object: the freight lift. Complaint: trips nobody called for.
+— The counter shows several trips a night. Security says they don't ride it. I believe them: Security is afraid of the lift.
+— In the car, buttons for GROUND and BASEMENT, and below them a third, painted over. Someone scraped off the paint and scratched “−1” there.
+— The founders' old plans show one more level under the crypt, marked only “−1”. The new plans don't. The lift seems to read the old ones.
+— In the morning, wet sand on the floor of the car. Warm.
+Recommendation: chain the car shut. Done.
+Remarks: the door from the freight stairs to the basement bolts on this side. Draw the bolt for a shortcut."
+NOTE_ASSYRIA_3_SIGN,Wykonał: konserwator R. Gil,"Done by: R. Gil, maintenance"
+NOTE_ASSYRIA_4_TITLE,Raport z klatki,Report from the cage
+NOTE_ASSYRIA_4_BODY,"Do kierownictwa.
+Piszę z klatki lwów królewskich. Ja w środku, lwy na zewnątrz. Na płaskorzeźbie jest odwrotnie: król wypuszcza lwy z klatek i do nich strzela. Tu lwy wypuściły się same, a nikt do nich nie strzela, bo ja siedzę w klatce.
+Obserwacje: lwy z reliefu skaczą jak wilki. Po skoku chwilę stoją głupio i wtedy można je trafić. Z boku są płaskie, więc od frontu.
+Krata wisi na linie, wysoko pod stropem, ręką nie sięgniesz. Jeśli ktoś to czyta, to znaczy, że linę przestrzelił. Proszę go o kanapkę.
+Proszę o przeniesienie na zmianę dzienną. Ponownie.
+PS Zegarek po dziadku nadal u Napoleona.","To the management.
+I am writing from the royal lion cage. Me inside, the lions outside. On the relief it's the other way round: the king lets the lions out of their cages and shoots them. Here the lions let themselves out, and nobody shoots them, because I'm in the cage.
+Observations: the relief lions pounce like wolves. After a pounce they stand about looking stupid for a moment, and that's when you hit them. Side-on they're flat, so from the front.
+The grille hangs on a rope, high up under the ceiling; you can't reach it by hand. If anyone is reading this, they've shot the rope through. I'd ask them for a sandwich.
+I request a transfer to the day shift. Again.
+PS Napoleon still has my grandfather's watch."
+NOTE_ASSYRIA_4_SIGN,St. Mazur,S. Mazur
+NOTE_ENLIGHTENMENT_1_TITLE,Regulamin Biblioteki Królewskiej po zmroku,King's Library rules after dark
+NOTE_ENLIGHTENMENT_1_BODY,"1. Zakaz jedzenia, picia i głośnego czytania. One odpowiadają.
+2. Książki latają stadami. Kiedy zaszeleszczą i rozłożą okładki, zaraz zanurkują. Proszę zejść z linii lotu.
+3. Książki palą się chętnie. Bibliotekarka tego nie pochwala, ale i nie zabrania.
+4. Do Planetarium prowadzi krata na przeciwwadze. Lina wisi wysoko pod kopułą; z pistoletu nie dosięgniesz jej z żadnego miejsca na dole. Potrzebny sztucer z Gabinetu Historii Naturalnej, najlepiej z galerii obserwatorów w połowie kopuły. Schody prowadzą tam z górnej galerii regałów.
+5. Zachodnia krata w Sali Zegarów też wisi na linie. Za nią jest archiwum zapieczętowane. Nie ja je pieczętowałam.
+6. Pod Magazynem zamkniętym jest introligatornia, zabita deskami. Introligator zostawił tam coś, czego nie chciał nikomu pokazywać. Deski puszczą od strzelby albo od kilku porządnych ciosów.
+7. Na górnej galerii jeden regał ma żelazne ucho. Proszę nie wieszać na nim płaszczy.
+8. Ten gabinet jest przystanią. Herbata w szufladzie.","1. No eating, drinking or reading aloud. They answer back.
+2. The books fly in flocks. When they rustle and spread their covers, they are about to dive. Kindly step out of the flight path.
+3. The books burn readily. The librarian neither approves nor forbids it.
+4. The way into the Planetarium is a portcullis on a counterweight. The rope hangs high under the dome; a pistol will not reach it from anywhere below. You need the rifle from the natural history cabinet, best fired from the observers' gallery halfway up the dome. The stairs go up there from the upper gallery of bookcases.
+5. The west grille in the clocks room hangs on a rope too. Behind it lies the sealed archive. I did not seal it.
+6. Under the closed stacks is the bindery, boarded up. The bookbinder left something there he did not wish to show anyone. The boards give to a shotgun or a few good punches.
+7. On the upper gallery one bookcase has an iron ring. Kindly do not hang your coat on it.
+8. This office is a haven. The tea is in the drawer."
+NOTE_ENLIGHTENMENT_1_SIGN,"mgr I. Kostecka, bibliotekarka","I. Kostecka, MA, librarian"
+NOTE_ENLIGHTENMENT_2_TITLE,"Z testamentu Ksawerego Zawilskiego (odpis, 1869)","From the will of Ksawery Zawilski (copy, 1869)"
+NOTE_ENLIGHTENMENT_2_BODY,"…zbiory moje, przyrodnicze i astronomiczne, zapisuję Muzeum Miejskiemu pod warunkami następującymi:
+Primo. Astrolabium ma stać w środku Czytelni i nikt nie ma go ruszać. Pierścień środkowy ma zostać pusty. Gdyby kiedyś przyszedł do tego domu czerwony kamień, który w ten pierścień wejdzie, niech go nikt w nim nie osadza. Kamień, który się złoży, upomni się o drogę w dół.
+Secundo. Sztucer mój ma leżeć w gabinecie, na stole, nabity. Bije trzech na wylot, a kto trafi w miejsce słabe, kładzie zwierzę jednym strzałem. Moje wilki i jaszczury w gablotach pamiętają go i wstaną, gdy ktoś go podniesie. Niech wstają. Niech się uczą.
+Tertio. Mój gabinet ukryty, nad schodami służbowymi, ma pozostać zamknięty. Kto znajdzie do niego drogę po żelaznym uchu, niech go sobie weźmie.
+Quarto. Pochować mnie w krypcie, obok pozostałych fundatorów, twarzą do schodów. Ktoś musi pilnować.","…my collections, of natural history and astronomy, I bequeath to the City Museum on the following conditions:
+Primo. The astrolabe shall stand in the middle of the Reading Room and no one shall move it. Its central ring shall stay empty. Should a red stone ever come to this house that fits that ring, let no one set it there. A stone made whole will demand its way down.
+Secundo. My rifle shall lie in the cabinet, on the table, loaded. It shoots clean through three, and whoever hits the weak place drops the beast with one shot. My wolves and lizards in the cases remember it and will rise when someone lifts it. Let them rise. Let them learn.
+Tertio. My hidden study, above the service stairs, shall stay shut. Whoever finds the way to it by the iron ring may keep it.
+Quarto. Bury me in the crypt, beside the other founders, facing the stairs. Someone has to keep watch."
+NOTE_ENLIGHTENMENT_2_SIGN,"Ksawery Zawilski, kolekcjoner, fundator Muzeum","Ksawery Zawilski, collector, founder of the Museum"
+NOTE_ENLIGHTENMENT_3_TITLE,Dziennik obserwacji,Observation log
+NOTE_ENLIGHTENMENT_3_BODY,"Noc pogodna. Niebo w porządku. Planetarium nie.
+Wielkie Planetarium kręci się samo. Ramiona chodzą na trzech wysokościach: nad niskim się skacze, przy wysokim staje się w luce.
+Planety odczepiają się i toczą po posadzce albo krążą jak kule armatnie. Naliczyłam sześć. Kiedy zestrzelić wszystkie, mosiężne słońce w środku się otwiera, a w nim świeci coś czerwonego. Tam celować.
+Jest powolne. Daje czas, żeby się nauczyć, gdzie bić.
+Linę od kraty przetnie sztucer stąd, z tego balkonu. Z dołu nic.
+Od tamtej nocy Planetarium ma o jedną planetę więcej, małą i czerwoną. Krąży pod posadzką. Według moich wyliczeń jej słońce jest głęboko pod nami.","A clear night. The sky is in order. The Planetarium is not.
+The Great Orrery turns by itself. Its arms sweep at three heights: jump the low one; for the high one, stand in a gap.
+The planets come loose and roll across the floor or circle like cannonballs. I counted six. Shoot down all six and the brass sun in the middle opens, and inside it something glows red. Aim there.
+It is slow. It gives you time to learn where to strike.
+The rifle cuts the portcullis rope from here, from this balcony. From below, nothing does.
+Since that night the Orrery has one more planet, small and red. It circles under the floor. By my reckoning its sun lies deep beneath us."
+NOTE_ENLIGHTENMENT_3_SIGN,"dr E. Sztern, obserwatorka","Dr E. Sztern, observer"
+NOTE_ENLIGHTENMENT_4_TITLE,"Do teczki, nie do oprawy","For the folder, not for binding"
+NOTE_ENLIGHTENMENT_4_BODY,"Kustosz przysłał mi do oprawy papier pakowy i etykietę z daru anonimowego. „Do archiwum, panie Tadeuszu, ładnie”. Oprawiłem. Potem przeczytałem, co oprawiam.
+Znaczek z cesarzem. Stempel z października 1912 roku. Nadawcy brak.
+Adres pisany staranną ręką, z dużym zawijasem przy K. Ten zawijas znam z dziennika stróża Kopcia, który leży w starej stróżówce pod kanciapą. Porównałem litera po literze. Ta sama ręka.
+Kopeć zszedł pod kryptę w październiku 1912 i nie wrócił. Jego paczka przyszła ponad sto lat później. Ciepła.
+Teczki nie oddam, dopóki ktoś mi tego nie wyjaśni. Zabijam drzwi deskami. Jeśli ją znalazłeś, to nie było komu wyjaśniać.","The curator sent me the wrapping paper and the label from the anonymous gift to be bound. “For the archive, Mr Bury, nicely.” I bound them. Then I read what I had bound.
+A stamp with the emperor on it. A postmark from October 1912. No sender.
+The address in a careful hand, with a big flourish on the K. I know that flourish from the log of the watchman Kopeć, which lies in the old night-watch room under the security booth. I compared them letter by letter. The same hand.
+Kopeć went down below the crypt in October 1912 and never came back. His parcel arrived more than a hundred years later. Warm.
+I will not hand the folder over until someone explains this to me. I am boarding up the door. If you have found it, there was nobody left to explain."
+NOTE_ENLIGHTENMENT_4_SIGN,"T. Bury, introligator","T. Bury, bookbinder"
+NOTE_ASIA_1_TITLE,Hwacha — ognista skrzynia,Hwacha — the fire-arrow chest
+NOTE_ASIA_1_BODY,"HWACHA. Wyrzutnia ognistych strzał na wózku, Korea, dynastia Joseon. Oryginał wypuszczał w jednej salwie dziesiątki strzał z prochem. Nasz egzemplarz ma sześć rur. Resztę zużyto na pokazie sylwestrowym.
+Dopiski nocnej zmiany:
+— Strzela salwą, wachlarzem. Spękany mur puszcza od jednej salwy. W Sali Chin, w ścianie obok Buddy, przez rysy prześwituje księżyc: tam jest ogród.
+— Kto ruszy wózek, obudzi lwy z brązu. Chodzą parami. Zanim ryknie, kula w pysku zaczyna świecić — ryk ogłusza na chwilę, więc wtedy nie stój blisko. Strzelaj w kulę.
+— Zbroje samurajów chodzą jak rycerze: z przodu zasłonięte, obracają się wolno.
+— W ogrodzie czeka Generał. Przed cięciem błyska ostrzem. Kiedy stoi w gardzie, odbija wszystko, co leci z przodu: obejdź go albo daj mu prądem. Słaby jest w twarz pod maską i w plecy.
+— Drzwi z tej sali do Planetarium ryglują się od naszej strony. Odsuń zasuwę, będzie skrót do Oświecenia.","HWACHA. A cart-mounted fire-arrow launcher, Korea, Joseon dynasty. The original loosed dozens of gunpowder arrows in a single volley. Our example has six tubes. The rest were used up at a New Year's Eve display.
+Notes from the night shift:
+— It fires a volley, in a fan. A cracked wall gives way to a single volley. In the China hall, in the wall beside the Buddha, moonlight shows through the cracks: that's where the garden is.
+— Whoever moves the cart wakes the bronze lions. They go in pairs. Before one roars, the ball in its mouth starts to glow — the roar stuns you for a moment, so don't stand close then. Shoot the ball.
+— The samurai armours move like the knights: guarded at the front, slow to turn.
+— The General waits in the garden. His blade flashes before he cuts. When he stands on guard he deflects everything that comes at him from the front: go round him, or give him a jolt. He is weak in the face under the mask, and in the back.
+— The door from this hall to the Planetarium bolts on our side. Draw the bolt for a shortcut to the Enlightenment."
+NOTE_ASIA_1_SIGN,Dział Azji; dopiski: nocna zmiana,Asia Department; notes: the night shift
+NOTE_ASIA_2_TITLE,Herbata dla stróża,Tea for the watchman
+NOTE_ASIA_2_BODY,"Woda nie może wrzeć. Wrząca woda się złości, a złość przechodzi w liście.
+Kiedy Generał upadł, ogród ucichł pierwszy raz od tamtej nocy. Płatki wiśni znów spadają w dół, a nie na boki. Usiądź. Zegar poczeka tu razem z tobą, ale niedługo.
+Trzy rzeczy, które widziałem z tej maty.
+Pierwsza: kapliczkę z dzwonem zamyka krata na linie. Lina wisi wysoko, ręka jej nie sięgnie. Celne oko sięgnie.
+Druga: staw w ogrodzie nie ma odpływu, a woda w nim płynie w dół. Wrzuciłem płatek. Nie wypłynął.
+Trzecia: dzwon w kapliczce dzwoni czasem sam, nisko, jakby ktoś uderzał w niego od spodu.
+Dopij do końca. Na dnie czarki nie zostawia się niczego, co mogłoby patrzeć.","The water must not boil. Boiling water grows angry, and the anger goes into the leaves.
+When the General fell, the garden went quiet for the first time since that night. The cherry petals fall downwards again, not sideways. Sit. The clock will wait here with you, but not for long.
+Three things I have seen from this mat.
+The first: the bell shrine is closed by a grille on a rope. The rope hangs high; a hand will not reach it. A true eye will.
+The second: the pond in the garden has no outlet, yet its water flows downwards. I dropped a petal in. It did not come up.
+The third: the bell in the shrine sometimes rings by itself, low, as if someone were striking it from underneath.
+Drink it to the end. One leaves nothing at the bottom of the bowl that could look back."
+NOTE_ASIA_2_SIGN,"Okamura, mistrz herbaty","Okamura, tea master"
+NOTE_ASIA_3_TITLE,Karta płatnerza,The armourer's card
+NOTE_ASIA_3_BODY,"Przegląd zbroi samurajskich.
+W nocy schodzą ze stojaków. Ruszają się jak nasi rycerze z Czytelni: z przodu zasłonięte, obracają się ciężko, więc da się zajść z boku. Paralizator opuszcza im gardę. Od góry i od tyłu blacha jest cienka.
+Zbroję Generała przywiozła wyprawa z 1910 roku, razem ze skrzyniami, które stoją w piwnicy pod Salą Chin, za spękaną ścianą u stóp schodów służbowych. Tej zbroi nie przeglądam. Hełm jest od środka ciepły, a pod maską coś oddycha. W protokole wpisałem „stan dobry”.
+Skarbiec zamknąłem na łańcuch, bo zbroje lubią stąd wychodzić. Założyłem go tak, żeby w razie czego puścił.","Inspection of the samurai armours.
+At night they step down off their racks. They move like our knights in the Reading Room: guarded at the front, heavy to turn, so you can get round to the side. The taser drops their guard. From above and from behind, the plate is thin.
+The General's armour came with the 1910 expedition, along with the crates that stand in the cellar under the China hall, behind the cracked wall at the foot of the service stairs. That one I do not inspect. The helmet is warm inside, and something breathes under the mask. In the report I wrote “good condition”.
+I chained the vault shut because the armours like to wander. I put the chain on so it would give if it had to."
+NOTE_ASIA_3_SIGN,"W. Kowalik, płatnerz muzealny","W. Kowalik, museum armourer"
+NOTE_ASIA_4_TITLE,"List z wyprawy, 1910","A letter from the expedition, 1910"
+NOTE_ASIA_4_BODY,"Szanowna Dyrekcjo,
+wysyłam skrzynie statkiem. Para lwów z brązu, lew i lwica. W pyskach mają kule odlane razem z głową: kula się toczy, a wyjąć jej nie można. Proszę nie próbować. Mnisi mówią, że to perła smoka i że lwy pilnują, żeby nie stoczyła się w dół.
+Zbroja generała jest w skrzyni nr 9. Mnisi prosili, żeby jej nie zabierać, bo generał „jeszcze nie skończył warty”. Zapłaciłem podwójnie. Prosili, żebym zapłacił potrójnie i zostawił.
+Opowiadali też o smoku, który gonił płonącą perłę po niebie, aż perła spadła w głąb ziemi. Od tamtej pory smok szuka jej pod ziemią, a ziemia czasem drży. Zanotowałem dla działu etnografii.
+Skrzynie proszę składować w piwnicy, nie w salach. Nie umiem napisać dlaczego.
+Z poważaniem","To the Management,
+I am sending the crates by ship. A pair of bronze lions, a lion and a lioness. In their mouths they hold balls cast together with the head: the ball rolls about, but cannot be taken out. Please do not try. The monks say it is the dragon's pearl, and that the lions keep watch so that it does not roll down below.
+The general's armour is in crate no. 9. The monks asked me not to take it, because the general “has not finished his watch”. I paid double. They asked me to pay triple and leave it.
+They also told of a dragon that chased a flaming pearl across the sky until the pearl fell deep into the earth. Since then the dragon has been seeking it underground, and now and then the earth trembles. I have noted it for the ethnography department.
+Please store the crates in the cellar, not in the galleries. I cannot put into writing why.
+Yours faithfully,"
+NOTE_ASIA_4_SIGN,"A. Rudnicki, kierownik wyprawy","A. Rudnicki, expedition leader"
+NOTE_AMERICAS_1_TITLE,Dziennik bosmana Szczygła,Boatswain Szczygieł's log
+NOTE_AMERICAS_1_BODY,"Statek wielorybniczy „Hope”, Pacyfik, rok 1851.
+Kaszalot zszedł w głąb i nie wynurzał się przez godzinę. Kiedy wypłynął, w brzuchu miał światło. Czerwone. Kapitan mówi, że to ambra. Ambra nie świeci.
+Nasz harpunnik zrobiony na wieloryba, nie na ludzi, ale zapiszę, co umie, bo pamięć już nie ta. Mały cel przybija do burty albo do ściany, jeśli ma za sobą ścianę. Większy przyciąga do siebie i ogłusza. Wielki tylko rani, a potem wielki jest zły. Trafisz w żelazne ucho — pociągnie wszystko, co do ucha przywiązane: szalupę, kratę, choćby i czółno.
+Kto zdejmie harpunnik ze stojaka, ten budzi wachtę. Taki zwyczaj na statku. I taki tutaj.
+Szalupę i harpunnik oddaję do muzeum, bo morze już ich nie chce. Mnie chyba też nie.","The whaler Hope, the Pacific, 1851.
+The sperm whale sounded and stayed down an hour. When it surfaced it had a light in its belly. Red. The captain says it's ambergris. Ambergris does not glow.
+Our harpoon gun was made for whales, not men, but I'll write down what it can do, for my memory isn't what it was. A small mark it nails to the side, or to a wall if there's a wall behind it. A bigger one it hauls in and stuns. A great one it only wounds, and then the great one is angry. Hit an iron ring and it drags whatever is tied to that ring: a boat, a grille, even a canoe.
+Whoever takes the harpoon gun off its rack wakes the watch. That's the custom aboard ship. And here too.
+I give the boat and the harpoon gun to the museum, for the sea doesn't want them any more. Nor me, I think."
+NOTE_AMERICAS_1_SIGN,"J. Szczygieł, bosman","J. Szczygieł, boatswain"
+NOTE_AMERICAS_2_TITLE,Scenariusz oprowadzania (wersja nocna),Tour script (night version)
+NOTE_AMERICAS_2_BODY,"Proszę państwa, zatrzymajmy się przy totemach. Proszę nie stawać na wprost twarzy. Każda twarz to osobny… powiedzmy: rzeźbiarz. Kiedy oczy się zapalają, zaraz pluje drzazgą. Zestrzeliwujemy od góry. Im mniej twarzy zostanie, tym szybciej plują pozostałe, więc kończymy, co zaczęliśmy.
+Wojownicy-jaguary skaczą jak wilki. Po skoku chwilę stoją bez obrony. To jest ten moment, w którym przewodnik przestaje mówić i zaczyna działać.
+W Galerii Pacyfiku zapadła się podłoga. Nad dziurą wisi na hakach czółno wojenne, z żelaznym uchem. Do Świątyni Węża nie ma innej drogi niż po czółnie.
+W Świątyni czeka Dwugłowy Wąż. Jedna głowa pluje turkusem, druga kąsa — przed ukąszeniem syczy. Ogon zamiata. Proszę celować w głowy i w te miejsca ciała, z których odpadła mozaika. Według jednej z interpretacji jedna głowa patrzy w niebo, a druga w podziemia. Ta druga, proszę państwa, patrzy teraz w naszą stronę.
+Pytania? Nie ma pytań. Wychodzimy szybko.","Ladies and gentlemen, let us stop by the totem poles. Please don't stand squarely in front of a face. Each face is a separate… let us say, sculptor. When its eyes light up, it is about to spit a splinter. We shoot them down from the top. The fewer faces are left, the faster the rest of them spit, so we finish what we started.
+The jaguar warriors pounce like wolves. After a pounce they are defenceless for a moment. That is the moment when the guide stops talking and starts acting.
+In the Pacific gallery the floor has caved in. Over the hole a war canoe hangs on hooks, with an iron ring. There is no way to the Serpent Temple except across the canoe.
+In the Temple waits the Double-Headed Serpent. One head spits turquoise, the other bites — before it bites, it hisses. The tail sweeps. Please aim at the heads, and at the places on the body where the mosaic has come away. According to one interpretation, one head looks to the sky and the other to the underworld. The second one, ladies and gentlemen, is now looking our way.
+Any questions? No questions. We leave quickly."
+NOTE_AMERICAS_2_SIGN,"H. Bielecka, przewodniczka","H. Bielecka, guide"
+NOTE_AMERICAS_3_TITLE,"Młody, to moje miejsce","Kid, this is my spot"
+NOTE_AMERICAS_3_BODY,"Skoro to czytasz, masz harpun i znalazłeś moje miejsce do drzemki. Termos jest mój. Hasło pionowo siedem to „lamassu”.
+Moai pilnuje lepiej niż ja. Na wyspie stali plecami do morza, a ten stoi twarzą do kraty w korytarzu północnym. Od tamtej nocy go nie odwracam, bo i tak wraca.
+Wąż w świątyni na koniec owija się wokół wszystkiego. Nie daj się zapędzić w róg; z tarasów lepiej widać głowy.
+Szachy z Lewis zwiały z gabloty. Osiem figurek. Chowają się za plecami największych: za tronem Ramzesa, za obeliskiem, za Buddą, przy ołtarzu Węża. Jedna gryzie tarczę. Palce też.
+Noga się goi. Wrócę, jak przestanie swędzieć.","If you're reading this, you've got the harpoon and you've found my napping spot. The flask is mine. Seven down is “lamassu”.
+The moai keeps watch better than I do. On the island they stood with their backs to the sea; this one faces the grate in the north corridor. Since that night I've stopped turning him round, because he turns back anyway.
+At the end, the Serpent in the temple coils round everything. Don't get herded into a corner; from the terraces you see the heads better.
+The Lewis chessmen have run off from their case. Eight little figures. They hide behind the backs of the biggest ones: behind Ramesses' throne, behind the obelisk, behind the Buddha, by the Serpent's altar. One of them bites his shield. Fingers too.
+The leg is healing. I'll be back when it stops itching."
+NOTE_AMERICAS_3_SIGN,— Heniek,— Heniek
+NOTE_AMERICAS_4_TITLE,Zarządzenie Dyrekcji nr 4/1931,Management order no. 4/1931
+NOTE_AMERICAS_4_BODY,"Magazyn zbiorów pod Salą Totemów zamknąć z dniem dzisiejszym i zabić deskami. Kluczy nie wydawać. Woźnemu nie mówić, bo zgubi.
+Powód: raport z nocnego obchodu z 11 na 12 marca (w załączeniu).
+Załącznik. Obchodu dokonał stróż nocny W. Pająk, przy świecy, wobec awarii prądu.
+— 2.40. W magazynie brak totemu nr 3. Sześć metrów cedru. Drzwi magazynu mają metr dwadzieścia.
+— 2.55. Ślady wleczenia prowadzą do ściany i dalej, w ścianę. Ściana cała.
+— 3.00. Podłoga ciepła. Pod nią coś bije, równo. Świeca się nie dopala. Zdmuchnąłem — zapaliła się sama.
+— 3.10. Słyszę totem pod podłogą. Śpiewa. Wychodzę.
+Uwaga Dyrekcji: świecę stróża Pająka przekazać do zbiorów. Nie gaśnie.","The collection store under the totem hall is to be closed as of today and boarded up. No keys to be issued. Do not tell the caretaker; he will lose them.
+Reason: the report of the night round of 11–12 March (attached).
+Attachment. Round made by night watchman W. Pająk, by candlelight, owing to a power failure.
+— 2.40 a.m. Totem pole no. 3 missing from the store. Six metres of cedar. The store's door is one metre twenty wide.
+— 2.55 a.m. Drag marks lead to the wall and on, into the wall. The wall is intact.
+— 3.00 a.m. The floor is warm. Something beats under it, steadily. The candle does not burn down. I blew it out — it lit itself again.
+— 3.10 a.m. I can hear the totem under the floor. It is singing. I am leaving.
+Management's note: watchman Pająk's candle to be added to the collection. It will not go out."
+NOTE_AMERICAS_4_SIGN,Dyrektor (podpis nieczytelny),The Director (signature illegible)
+END_FLOOR1_EPILOGUE,"Kryształ pękł po raz drugi i tym razem nie poleciał do żadnego skrzydła. Okruchy potoczyły się po stopniach za kratą, w dół, tam gdzie stukanie jest najgłośniejsze. W krypcie kamienni fundatorzy na swoich płytach mieli głowy odwrócone w stronę schodów. Daleko w dole ktoś zostawił zapalone światło. Obok, na stopniu, stała latarnia stróża z 1912 roku. Jeszcze ciepła.","The crystal broke a second time, and this time it flew to no wing. Its splinters rolled down the steps beyond the grate, down to where the knocking is loudest. In the crypt, the stone founders on their tombs had turned their heads towards the stairs. Far below, someone had left a light on. Beside it, on a step, stood a night watchman's lantern from 1912. Still warm."
+TIP_1,"Latarka pokazuje drogę — i ciebie. Po ciemku eksponaty dostrzegą cię dopiero z bliska; z zapaloną latarką widać cię z drugiego końca sali.","The torch shows you the way — and shows you off. In the dark the exhibits spot you only up close; with the torch on, they see you from across the room."
+TIP_2,"Bateria latarki ładuje się wtedy, gdy latarka jest zgaszona. Ciemność to też narzędzie.","The torch's battery recharges while it is off. Darkness is a tool too."
+TIP_3,"Zginąłeś? Cały niesiony Pył został w twojej latarce, tam gdzie upadłeś. Wróć po nią następnej nocy. Zgiń po drodze, a przepadnie.","Died? All the Dust you carried is in your torch, where you fell. Go back for it the next night. Die on the way, and it is gone."
+TIP_4,"Wydany Pył jest bezpieczny, Pył w kieszeni — nie bardzo. Terminal w przystani przyjmuje go bez marudzenia.","Spent Dust is safe; Dust in your pocket, not so much. The terminal in a haven takes it without a fuss."
+TIP_5,"Przystań leczy, zapisuje grę i na chwilę zatrzymuje zegar. Eksponaty zostają za progiem — a ty w środku nie strzelasz.","A haven heals you, saves the game and stops the clock for a while. The exhibits stay outside — and you don't shoot inside."
+TIP_6,"O trzeciej wybija godzina duchów: eksponaty stają się szybsze i groźniejsze. Najtrudniejsze lepiej mieć już wtedy za sobą.","At three the witching hour strikes: the exhibits get faster and fiercer. Best to have the hardest part behind you by then."
+TIP_7,"Świt o szóstej kończy noc bez śmierci. Pył zostaje przy tobie, a muzeum wraca na swoje miejsca.","Dawn at six ends the night without a death. You keep your Dust, and the museum goes back to its places."
+TIP_8,"Paralizator ogłusza, pięść dobija, dobicie leczy. Heniek nazywa to obiegiem zamkniętym.","The taser stuns, the fist finishes, a finisher heals. Heniek calls it a closed loop."
+TIP_9,"Łańcuch puszcza od strzelby albo trzech porządnych ciosów pięścią. Deski — od pięciu. Spękany mur — tylko od wybuchu.","A chain gives to a shotgun or three good punches. Boards, to five. A cracked wall, only to a blast."
+TIP_10,"Spękany mur nie lubi ognia: trzy race z bliska albo jedna salwa ognistej skrzyni.","A cracked wall does not like fire: three flares from close up, or one volley from the fire-arrow chest."
+TIP_11,"Lina za daleko, żeby sięgnąć? Pistolet przetnie ją z bliska, sztucer z każdej odległości. Niektóre przetnie tylko sztucer.","A rope too far to reach? The pistol cuts it from close up, the rifle from any distance. Some, only the rifle."
+TIP_12,"Żelazne ucho na drzwiach, cokole albo czółnie czeka na harpun. Ręką nie pociągniesz.","An iron ring on a door, a plinth or a canoe is waiting for the harpoon. You won't shift it by hand."
+TIP_13,"Drzwi do podziemi ryglują się od strony skrzydeł. Odsuń zasuwę, a następnej nocy wrócisz na skróty.","The basement doors bolt on the wings' side. Draw the bolt, and the next night you can take the short way."
+TIP_14,Każdy strażnik skrzydła ma słaby punkt. Notatki z jego skrzydła zwykle wiedzą jaki.,Every wing's guardian has a weak point. The notes in its wing usually know which.
+TIP_15,"Pokonany strażnik nie wraca, a jego skrzydło słabnie: następnej nocy budzi się tam mniej eksponatów.","A defeated guardian does not come back, and its wing grows weaker: the next night, fewer exhibits wake there."
+TIP_16,"Hałas niesie się przez otwarte drzwi, nie przez zamknięte. Eksponat, który tylko coś usłyszał, przyjdzie sprawdzić — jeszcze nie poluje.","Noise carries through open doors, not closed ones. An exhibit that only heard something comes to check — it isn't hunting yet."
+TIP_17,"Eksponat, który cię zgubił, najpierw szuka, potem wraca na swój cokół. Daj mu chwilę.","An exhibit that has lost you searches first, then goes back to its plinth. Give it a moment."
+TIP_18,Wosk i bandaże palą się dwa razy chętniej. Rakietnica to nie tylko światło.,Wax and bandages burn twice as readily. The flare gun is not just a light.
+TIP_19,"Plan muzeum zapamiętuje, gdzie byłeś. Białe luki między salami to nie błąd drukarni.",The museum map remembers where you have been. The white gaps between the rooms are not a printing error.
+TIP_20,"Szachy z Lewis lubią się chować za plecami największych eksponatów. Osiem figurek, jeden komplet.","The Lewis chessmen like to hide behind the backs of the biggest exhibits. Eight pieces, one set."
+HUD_GUARDIAN_OUT_OF_ARENA,Odbija się — strażnik walczy tylko na swojej arenie,It glances off — a guardian fights only on its own arena
+CCTV_PAGE,Strona %d/%d — strzałki dalej,Page %d/%d — arrows for more
+HUD_HINT_FLOOR1_GOAL,"Najpierw broń: klucz do szafki ochrony leży w kasie holu wejściowego. Cel nocy zawsze widać w lewym górnym rogu.","A weapon first: the gun locker key is in the entrance hall's till. The night's goal is always shown top left."
+DIFF_TITLE,Którą zmianę bierzesz?,Which shift will you take?
+DIFF_SUBTITLE,Poziom trudności — zmienisz go w opcjach między nocami,Difficulty — change it in the options between nights
+DIFF_CALM,Spokojna zmiana,Quiet shift
+DIFF_CALM_DETAIL,"Eksponaty biją słabiej (×0,6) i widzą gorzej, łupu jest więcej. Dla historii w spokojnym tempie.","Exhibits hit softer (×0.6) and see less, there is more loot. For the story at an easy pace."
+DIFF_NIGHT,Nocna zmiana,Night shift
+DIFF_NIGHT_DETAIL,"Gra taka, jak ją pomyślano. Zalecana.",The game as it was meant to be played. Recommended.
+DIFF_DOUBLE,Podwójna zmiana,Double shift
+DIFF_DOUBLE_DETAIL,"Mocniejsze ciosy (×1,35), więcej zdrowia (×1,2), czujniejsze oko, mniej łupu, do 10 polujących naraz.","Harder hits (×1.35), more health (×1.2), sharper eyes, less loot, up to 10 hunting at once."
+OPT_SECTION_GAME,Gra,Game
+OPT_DIFFICULTY,Trudność,Difficulty
+OPT_DIFFICULTY_NIGHT_NOTE,"Wzrok eksponatów zmienia się od razu, ich siła i łup — od następnej nocy.","The exhibits' sight changes at once, their strength and the loot from the next night."
+LOADING,Wczytywanie nocy,Loading the night
+LOADING_TIP_CAPTION,Wskazówka,Tip
+LOADING_TIP_NONE,Muzeum zamyka się na noc.,The museum closes for the night.
+PAUSE_NOTES_LOBBY,Hol muzeum,The museum lobby
+MAP_TITLE,Muzeum Miejskie,City Museum
+MAP_SUBTITLE,Plan zwiedzania · Piętro I — Wielki Dziedziniec,Visitor map · Floor I — the Great Court
+MAP_TAB_GROUND,Parter,Ground floor
+MAP_TAB_BASEMENT,Podziemia,Basement
+MAP_TAB_ROOF,Dach,Roof
+MAP_PAGE_GROUND,Galerie i sale wystawowe,Galleries and exhibition rooms
+MAP_PAGE_BASEMENT,Wstęp tylko dla personelu,Staff only
+MAP_PAGE_ROOF,Wstęp wzbroniony,No entry
+MAP_NOTICE_BASEMENT,Podziemia — wstęp tylko dla personelu,Basement — staff only
+MAP_NOTICE_ROOF,Dach — wstęp wzbroniony,Roof — no entry
+MAP_LEGEND,Legenda,Key
+MAP_LEGEND_COURT,Wielki Dziedziniec i hol,The Great Court and entrance hall
+MAP_LEGEND_STAFF,Pomieszczenia służbowe,Staff areas
+MAP_LEGEND_FACILITIES,Udogodnienia,Facilities
+MAP_PICTO_INFO,Informacja,Information
+MAP_PICTO_CAFE,Kawiarnia,Café
+MAP_PICTO_SHOP,Sklep muzealny,Museum shop
+MAP_PICTO_CLOAKROOM,Szatnia,Cloakroom
+MAP_PICTO_TICKETS,Kasa biletowa,Tickets
+MAP_PICTO_STAIRS,Schody,Stairs
+MAP_PICTO_ENTRANCE,Wejście,Entrance
+MAP_UPPER,"Balkon, antresola","Balcony, mezzanine"
+MAP_YOU_ARE_HERE,Jesteś tutaj,You are here
+MAP_DO_NOT_TOUCH,Prosimy nie dotykać eksponatów.,Please do not touch the exhibits.
+MAP_HOURS,Czynne codziennie 10:00–17:30,Open daily 10:00–17:30
+MAP_NOTES,Notatki,Notes
+MAP_EDITION,Wydanie VII · 1996,7th edition · 1996
+MAP_SCALE,%d m,%d m
+MAP_NORTH,N,N
+MAP_PENCIL_TONIGHT,Na dziś:,Tonight:
+MAP_PENCIL_KEY_VISITED,byłem,been here
+MAP_PENCIL_KEY_HAVEN,przystań,haven
+MAP_PENCIL_KEY_GUARDIAN,strażnik!,guardian!
+MAP_PENCIL_KEY_GATE,zamknięte,locked
+MAP_PENCIL_KEY_GOAL,cel,goal
+MAP_PENCIL_HERE,tu!,here!
+MAP_PENCIL_GOAL_ON,(zob. %s),(see %s)
+MAP_HINT,%s — zamknij    Q / E — piętro    kółko — zbliż    przeciągnij — przesuń    %s — gdzie jestem,%s — close    Q / E — floor    wheel — zoom    drag — move    %s — where am I
+PAUSE_MAP,Plan muzeum,Museum map
+HUD_HELP_MAP,M — plan muzeum z ołówkowymi notatkami strażnika,M — the museum map with the guard's pencil notes
+MAP_KEY_SPACE,Spacja,Space
+MENU_SUBTITLE,Piętro I — Wielki Dziedziniec,Floor I — The Great Court
+MENU_VERSION_FLOOR1,Wersja demonstracyjna  ·  Piętro I,Demo build  ·  Floor I
+VO_HENIEK_NIGHT_1,"Młody? Tu Heniek. Noga w gipsie, ale radio działa. Klucz do szafki jest w kasie, w szufladzie. I słuchaj: jak coś się rusza, a nie powinno, nie dyskutuj z tym.","Kid? Heniek here. Leg's in plaster, but the radio works. The locker key's in the ticket booth, in the drawer. And listen: if something moves that shouldn't, don't argue with it."
+VO_SYSTEM_CLOSING_1,"Uwaga. Muzeum Miejskie jest zamknięte. Dziękujemy za wizytę. Pracownik ochrony proszony jest o niedotykanie eksponatów. Także tych, które dotykają jego.",Attention. The City Museum is now closed. Thank you for your visit. The security officer is reminded not to touch the exhibits. Including the ones that touch him.
+VO_GUIDE_ROSETTA_A,"Stanowisko pierwsze. Kamień z Rosetty, rok sto dziewięćdziesiąty szósty przed naszą erą. Ten sam dekret zapisano trzy razy: hieroglifami, pismem demotycznym i po grecku. Dzięki greckiemu tekstowi Jean-François Champollion odczytał hieroglify w tysiąc osiemset dwudziestym drugim roku.","Stop one. The Rosetta Stone, 196 BC. The same decree is written three times: in hieroglyphs, in Demotic script, and in Greek. Thanks to the Greek text, Jean-François Champollion deciphered the hieroglyphs in 1822."
+VO_GUIDE_ROSETTA_B,"Stanowisko pierwsze. Kamień z Rosetty. Ten sam tekst zapisano trzy razy, bo za pierwszym razem nikt nie słuchał. Za drugim też nie. Proszę nie stać tak blisko. Kamień nie lubi, kiedy się go czyta po zmroku.","Stop one. The Rosetta Stone. The same text was written three times, because the first time no one listened. Nor the second. Please do not stand so close. The stone does not like being read after dark."
+OPT_VOLUME_VOICE,Głosy,Voices
+OPT_SUBTITLES,Napisy,Subtitles
+PROMPT_AUDIOGUIDE,Posłuchaj audioprzewodnika,Listen to the audio guide
+VOICE_SPEAKER_HENIEK,Heniek · radio,Heniek · radio
+VOICE_SPEAKER_SYSTEM,Wirtualny Kustosz,Virtual Curator
+VOICE_SPEAKER_GUIDE,Audioprzewodnik,Audio guide
+HUD_NO_REST_GUARDIAN,"Nie teraz — strażnik ogrodu czuwa","Not now — the garden's guardian keeps watch"

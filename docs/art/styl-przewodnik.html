@@ -1,0 +1,1039 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Przewodnik stylu</title>
+<style>
+:root {
+  --bg: #f6f3ec;
+  --paper: #fffdf8;
+  --ink: #23201b;
+  --muted: #6c655a;
+  --line: #ddd5c6;
+  --accent: #8a5a1f;
+  --accent-2: #2c4d5e;
+  --code-bg: #efe9dd;
+  --warn: #9b3b2a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131519;
+    --paper: #1a1d22;
+    --ink: #e6e1d6;
+    --muted: #a39b8d;
+    --line: #2f343b;
+    --accent: #d4a45a;
+    --accent-2: #8fb3c7;
+    --code-bg: #242830;
+    --warn: #e08a73;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131519; --paper: #1a1d22; --ink: #e6e1d6; --muted: #a39b8d; --line: #2f343b;
+  --accent: #d4a45a; --accent-2: #8fb3c7; --code-bg: #242830; --warn: #e08a73;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 17px/1.62 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+main { max-width: 980px; margin: 0 auto; padding: 48px 16px 96px; }
+header.top { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 28px; }
+.kicker { font: 600 13px/1.4 "Segoe UI", system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: 40px; line-height: 1.1; margin: 8px 0 10px; letter-spacing: -.01em; }
+h2 { font-size: 27px; margin: 56px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+h3 { font-size: 20px; margin: 30px 0 8px; color: var(--accent-2); }
+p, li { max-width: 72ch; }
+.lead { font-size: 19px; color: var(--muted); max-width: 70ch; }
+a { color: var(--accent-2); }
+code, pre { font: 13.5px/1.5 Consolas, "Cascadia Mono", monospace; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--line); }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0 20px; font: 14.5px/1.45 "Segoe UI", system-ui, sans-serif; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 2px solid var(--line); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; }
+.ramp { white-space: nowrap; }
+.sw { display: inline-block; width: 22px; height: 22px; border-radius: 3px; margin-right: 2px; border: 1px solid rgba(0,0,0,.18); vertical-align: middle; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 22px 0 8px; }
+.stat { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.stat b { display: block; font: 700 26px/1.1 "Segoe UI", system-ui, sans-serif; color: var(--accent); }
+.stat span { font: 13px/1.35 "Segoe UI", system-ui, sans-serif; color: var(--muted); }
+figure { margin: 18px 0 26px; }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); background: #000; }
+figcaption { font: 14px/1.5 "Segoe UI", system-ui, sans-serif; color: var(--muted); margin-top: 6px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.grid3 figure, .grid2 figure { margin: 0; }
+.note { background: var(--paper); border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+.warn { border-left-color: var(--warn); }
+.toc { columns: 2; column-gap: 32px; font: 15px/1.7 "Segoe UI", system-ui, sans-serif; padding-left: 20px; }
+@media (max-width: 640px) { h1 { font-size: 31px; } .toc { columns: 1; } body { font-size: 16px; } }
+</style>
+</head>
+<body>
+<main>
+
+<header class="top">
+  <div class="kicker">Nocna Zmiana · etap 1b · próbka stylu · etap 2: modele wrogów, bossa, broni i rekwizytów · etap 2b: zestaw modułowy holu · etap 3: rozbudowa</div>
+  <h1>Przewodnik stylu graficznego</h1>
+  <p class="lead">Jak wygląda muzeum nocą i jak powstaje każda tekstura i każdy model w grze: paleta, gęstość tekseli, zasady modelowania, przepis na światło, obsługa narzędzi i wydajność. Wszystko jest generowane skryptami, więc każdą rzecz da się odtworzyć i poprawić jedną zmianą liczby.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>64 px/m</b><span>gęstość tekseli architektury (1 m ściany = 64 teksele)</span></div>
+  <div class="stat"><b>~160 / 140 FPS</b><span>próbka / cały hol z zestawem w 1920×1080 na RTX 2080 Ti, pełna jakość (SDFGI)</span></div>
+  <div class="stat"><b>43 + 119 modeli</b><span>próbka, etapy 2 i 3 + zestaw holu; 30 tekstur kafelkowych, sprite pyłu i 10 malowanych płócien, wszystko z Blendera w trybie tła</span></div>
+  <div class="stat"><b>0 okien</b><span>cały potok działa bez interfejsu (Blender <code>-b</code>, Godot <code>--headless</code>)</span></div>
+</div>
+
+<ol class="toc">
+  <li><a href="#kierunek">Kierunek w jednym akapicie</a></li>
+  <li><a href="#galeria">Próbka: zrzuty ekranu</a></li>
+  <li><a href="#obraz">Zasady obrazu</a></li>
+  <li><a href="#teksele">Gęstość tekseli</a></li>
+  <li><a href="#paleta">Paleta materiałów</a></li>
+  <li><a href="#tekstury">Jak malowane są tekstury</a></li>
+  <li><a href="#modele">Zasady modelowania</a></li>
+  <li><a href="#etap2">Modele etapu 2: wrogowie, boss, broń, rekwizyty</a></li>
+  <li><a href="#etap3">Modele etapu 3: kartaczownica, rakietnica, raptor, portrety</a></li>
+  <li><a href="#zestaw">Zestaw modułowy holu (etap 2b)</a></li>
+  <li><a href="#swiatlo">Przepis na światło</a></li>
+  <li><a href="#gi">Wybór GI: pomiary</a></li>
+  <li><a href="#narzedzia">Narzędzia i polecenia</a></li>
+  <li><a href="#nowe">Nowy model lub tekstura krok po kroku</a></li>
+  <li><a href="#wydajnosc">Wydajność</a></li>
+  <li><a href="#slabosci">Uczciwie: słabe punkty</a></li>
+  <li><a href="#pliki">Mapa plików</a></li>
+</ol>
+
+<h2 id="kierunek">Kierunek w jednym akapicie</h2>
+<p><strong>Styl retro, nie jakość retro.</strong> Z lat 90. bierzemy wyłącznie język: masywne, czytelne bryły, ostre piksele tekstur i ograniczoną, ale bogatą paletę. Resztę robimy nowocześnie: natywna rozdzielczość, dynamiczne cienie, wolumetryczna mgła ze snopami księżyca, globalne oświetlenie, odbicia na polerowanym marmurze i szkle, bloom i tonemapping AgX. Noc ma trzy temperatury światła, które zawsze się ze sobą spierają: <strong>zimny księżyc</strong> (niebieski), <strong>ciepłe lampy żarowe</strong> (bursztyn) i <strong>czerwone światło awaryjne</strong>.</p>
+
+<h2 id="galeria">Próbka: zrzuty ekranu</h2>
+<p>Fragment galerii rzeźby 12 × 10 m, wysokość 6 m. Marmurowa szachownica, boazeria z orzecha, tapeta adamaszkowa, gzyms z kostkowaniem, kasetonowy strop, dwa wysokie okna z żeliwnymi szprosami, dwie gabloty (w jednej kryształ z fabuły), trzy popiersia, kolumny z czerwonego marmuru, obraz z lampką, aksamitne liny, ławka, kinkiety, lampa awaryjna i figura woskowa. Zrzuty mają 1920 × 1080, tu są pomniejszone.</p>
+
+<figure><img src="img/wide.jpg" alt="Szeroki widok galerii nocą"><figcaption><b>wide</b> — cała sala: snopy księżyca przez okna, ciepłe kinkiety, czerwień awaryjna w narożniku, odbicia w marmurze, figura woskowa w pozie ataku.</figcaption></figure>
+<div class="grid2">
+  <figure><img src="img/case.jpg" alt="Gablota z kryształem"><figcaption><b>case</b> — gablota z kryształem, lampka w pokrywie, szkło z odbiciami, cienie szprosów na podłodze.</figcaption></figure>
+  <figure><img src="img/marble.jpg" alt="Nisko nad marmurem"><figcaption><b>marble</b> — kamera tuż nad podłogą: odbicia SSR i sondy w polerowanym kamieniu, snop przez okno.</figcaption></figure>
+  <figure><img src="img/figure.jpg" alt="Figura woskowa z bliska"><figcaption><b>figure</b> — figura woskowa: szklane oczy, pęknięcie na czole, zacieki wosku, pazury.</figcaption></figure>
+  <figure><img src="img/flashlight.jpg" alt="Latarka w ciemności"><figcaption><b>flashlight</b> — awaria prądu: tylko księżyc, lampa awaryjna i latarka strażnika na figurze.</figcaption></figure>
+  <figure><img src="img/painting.jpg" alt="Obraz między kolumnami"><figcaption><b>painting</b> — oś sali: obraz z lampką między kolumnami, liny, dwa snopy księżyca.</figcaption></figure>
+  <figure><img src="img/bust.jpg" alt="Popiersie przy ścianie"><figcaption><b>bust</b> — popiersie na cokole: wapień z marmurowymi płytami, tapeta, kinkiet, światło awaryjne.</figcaption></figure>
+</div>
+<div class="note warn"><strong>Uwaga do zrzutów.</strong> Te obrazy pochodzą z ostatniego przebiegu przed ostatnimi poprawkami popiersia i figury (spokojniejszy marmur, epolety, gładszy wosk). Aktualne modele widać na podglądach z Blendera niżej. Świeże zrzuty daje jedno polecenie: <code>bash tools/run_style.sh</code> (otwiera okno, więc uruchamiać tylko wtedy, gdy nikt nie pracuje przy komputerze).</div>
+
+<h3>Modele z bliska (podglądy Cycles z Blendera)</h3>
+<div class="grid3">
+  <figure><img src="img/model_wax_figure.jpg" alt=""><figcaption>Figura woskowa, 7 części</figcaption></figure>
+  <figure><img src="img/model_wax_figure_closeup.jpg" alt=""><figcaption>Twarz figury</figcaption></figure>
+  <figure><img src="img/model_bust.jpg" alt=""><figcaption>Popiersie (marmur)</figcaption></figure>
+  <figure><img src="img/model_bust_closeup.jpg" alt=""><figcaption>Popiersie z bliska</figcaption></figure>
+  <figure><img src="img/model_display_case.jpg" alt=""><figcaption>Gablota</figcaption></figure>
+  <figure><img src="img/model_wall_window_4m.jpg" alt=""><figcaption>Moduł ściany z oknem</figcaption></figure>
+  <figure><img src="img/model_window.jpg" alt=""><figcaption>Okno</figcaption></figure>
+  <figure><img src="img/model_column.jpg" alt=""><figcaption>Kolumna toskańska</figcaption></figure>
+  <figure><img src="img/model_painting.jpg" alt=""><figcaption>Obraz z lampką</figcaption></figure>
+  <figure><img src="img/model_stanchion.jpg" alt=""><figcaption>Słupki z liną</figcaption></figure>
+  <figure><img src="img/model_bench.jpg" alt=""><figcaption>Ławka</figcaption></figure>
+  <figure><img src="img/model_crystal.jpg" alt=""><figcaption>Kryształ</figcaption></figure>
+</div>
+
+<h2 id="obraz">Zasady obrazu</h2>
+<ul>
+  <li><strong>Pełna, natywna rozdzielczość.</strong> Żadnego renderu w 480p, pikselizacji ekranu ani ditheringu. Filtry retro najwyżej jako opcja w ustawieniach.</li>
+  <li><strong>Ostre teksele.</strong> Każdy materiał ma filtr <code>TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC</code>: z bliska twarde piksele, z daleka mipmapy (nic nie migocze), pod ostrym kątem anizotropia ×16 (podłoga zostaje czytelna aż do ściany).</li>
+  <li><strong>Import bez stratnej kompresji.</strong> Tekstury są małe, więc zapisujemy je bezstratnie (<code>compress/mode=0</code>). Kompresja blokowa rozmazałaby piksele.</li>
+  <li><strong>Antyaliasing tylko geometrii:</strong> MSAA 4×. Nie używamy TAA ani FXAA, bo rozmywają teksele.</li>
+  <li><strong>Tonemapping AgX</strong>, ekspozycja 1,0. Jasność kontrolują źródła światła, nie korekcja.</li>
+</ul>
+
+<h2 id="teksele">Gęstość tekseli</h2>
+<p>Gęstość jest stała na całym obiekcie, bo UV powstają w metrach, a pakowacz rozkłada wyspy na atlas przy zadanej liczbie pikseli na metr i przyciąga je do całych tekseli. Krawędzie brył wypadają więc na granicach pikseli.</p>
+<div class="table-wrap"><table>
+<tr><th>Klasa</th><th class="num">px / m</th><th>Przykłady</th><th>Uzasadnienie</th></tr>
+<tr><td>Architektura</td><td class="num">64</td><td>moduły ścian, kolumny, strop, podłoga, tekstury kafelkowe</td><td>duże powierzchnie oglądane z 2–10 m; 1 teksel = 1,56 cm</td></tr>
+<tr><td>Meble i rekwizyty</td><td class="num">128–160</td><td>gabloty, cokoły, ławka, obraz, okno, słupki</td><td>oglądane z bliska; mosiądz i drewno potrzebują krawędzi</td></tr>
+<tr><td>Bohaterowie</td><td class="num">256</td><td>figura woskowa, popiersie, kinkiet, lampa awaryjna</td><td>twarze i dłonie; gracz podchodzi na 1 m</td></tr>
+<tr><td>Drobiazgi</td><td class="num">400</td><td>kryształ</td><td>obiekt 20 cm oglądany przez szybę</td></tr>
+<tr><td>Wrogowie</td><td class="num">256</td><td>wilk, rycerz, lewitujące popiersie</td><td>jak bohaterowie: gracz walczy z nimi z 1–5 m</td></tr>
+<tr><td>Boss</td><td class="num">112</td><td>szkielet T-Reksa (11 m)</td><td>oglądany z 3–15 m; 1 teksel = 9 mm, atlas 1952×1056</td></tr>
+<tr><td>Broń w pierwszej osobie</td><td class="num">384–512</td><td>pięści, paralizator, pistolet, dwururka</td><td>30–60 cm od oka; teksel nadal widoczny jako ostry piksel</td></tr>
+<tr><td>Znajdźki i rekwizyty</td><td class="num">128–384</td><td>amunicja, apteczka, bezpiecznik, latarka, szafka, monitory, terminal</td><td>wielkość i odległość oglądania jak u mebli; drobne rzeczy gęściej</td></tr>
+</table></div>
+
+<h2 id="paleta">Paleta materiałów</h2>
+<p>Każdy materiał ma własne rampy kolorów, od ciemnego do jasnego. Cieniowanie w teksturze polega wyłącznie na przesuwaniu się po rampie (jasna krawędź to „+2 stopnie”, brud w zagłębieniu to „−2 stopnie”), nigdy na dowolnym mieszaniu kolorów. Dzięki temu paleta zostaje ograniczona i spójna, a tekstury wyglądają na malowane ręcznie. Źródło prawdy: słownik <code>P</code> w <code>tools/art/artlib/materials.py</code>.</p>
+<div class="table-wrap"><table>
+<tr><th>Materiał</th><th>Klucz</th><th>Rampa (ciemny → jasny)</th><th class="num">Kolory</th><th>Zakres</th></tr>
+<tr><td>Marmur biały (karraryjski)</td><td><code>marble_white</code></td><td class="ramp"><span class="sw" style="background:#3f434d" title="#3f434d"></span><span class="sw" style="background:#565a65" title="#565a65"></span><span class="sw" style="background:#6f737d" title="#6f737d"></span><span class="sw" style="background:#898c95" title="#898c95"></span><span class="sw" style="background:#a2a5ac" title="#a2a5ac"></span><span class="sw" style="background:#babcc1" title="#babcc1"></span><span class="sw" style="background:#cfd0d3" title="#cfd0d3"></span><span class="sw" style="background:#dfdfdf" title="#dfdfdf"></span><span class="sw" style="background:#ecebe7" title="#ecebe7"></span><span class="sw" style="background:#f6f4ef" title="#f6f4ef"></span></td><td class="num">10</td><td><code>#3f434d → #f6f4ef</code></td></tr>
+<tr><td>Żyłki marmuru białego</td><td><code>marble_white_vein</code></td><td class="ramp"><span class="sw" style="background:#2f333e" title="#2f333e"></span><span class="sw" style="background:#434855" title="#434855"></span><span class="sw" style="background:#5a606d" title="#5a606d"></span><span class="sw" style="background:#737987" title="#737987"></span><span class="sw" style="background:#8c919d" title="#8c919d"></span></td><td class="num">5</td><td><code>#2f333e → #8c919d</code></td></tr>
+<tr><td>Marmur ciemnozielony (verde antico)</td><td><code>marble_dark</code></td><td class="ramp"><span class="sw" style="background:#080b0b" title="#080b0b"></span><span class="sw" style="background:#0d1312" title="#0d1312"></span><span class="sw" style="background:#121b19" title="#121b19"></span><span class="sw" style="background:#172320" title="#172320"></span><span class="sw" style="background:#1d2c28" title="#1d2c28"></span><span class="sw" style="background:#243631" title="#243631"></span><span class="sw" style="background:#2d423c" title="#2d423c"></span><span class="sw" style="background:#385047" title="#385047"></span></td><td class="num">8</td><td><code>#080b0b → #385047</code></td></tr>
+<tr><td>Żyłki marmuru ciemnego</td><td><code>marble_dark_vein</code></td><td class="ramp"><span class="sw" style="background:#415a50" title="#415a50"></span><span class="sw" style="background:#5b766a" title="#5b766a"></span><span class="sw" style="background:#7c978a" title="#7c978a"></span><span class="sw" style="background:#a3b8ad" title="#a3b8ad"></span><span class="sw" style="background:#c9d6cf" title="#c9d6cf"></span></td><td class="num">5</td><td><code>#415a50 → #c9d6cf</code></td></tr>
+<tr><td>Marmur czerwony (rosso)</td><td><code>marble_red</code></td><td class="ramp"><span class="sw" style="background:#1e0707" title="#1e0707"></span><span class="sw" style="background:#2e0c0b" title="#2e0c0b"></span><span class="sw" style="background:#411310" title="#411310"></span><span class="sw" style="background:#561b16" title="#561b16"></span><span class="sw" style="background:#6c251d" title="#6c251d"></span><span class="sw" style="background:#823126" title="#823126"></span><span class="sw" style="background:#983f31" title="#983f31"></span><span class="sw" style="background:#ad513f" title="#ad513f"></span></td><td class="num">8</td><td><code>#1e0707 → #ad513f</code></td></tr>
+<tr><td>Żyłki marmuru czerwonego</td><td><code>marble_red_vein</code></td><td class="ramp"><span class="sw" style="background:#5a2c24" title="#5a2c24"></span><span class="sw" style="background:#6f3d33" title="#6f3d33"></span><span class="sw" style="background:#855045" title="#855045"></span><span class="sw" style="background:#9b665a" title="#9b665a"></span><span class="sw" style="background:#b0806f" title="#b0806f"></span></td><td class="num">5</td><td><code>#5a2c24 → #b0806f</code></td></tr>
+<tr><td>Fugi</td><td><code>grout</code></td><td class="ramp"><span class="sw" style="background:#101012" title="#101012"></span><span class="sw" style="background:#19191c" title="#19191c"></span><span class="sw" style="background:#232327" title="#232327"></span><span class="sw" style="background:#2e2e33" title="#2e2e33"></span></td><td class="num">4</td><td><code>#101012 → #2e2e33</code></td></tr>
+<tr><td>Orzech (boazeria, gabloty)</td><td><code>wood_dark</code></td><td class="ramp"><span class="sw" style="background:#110a08" title="#110a08"></span><span class="sw" style="background:#1a0f0b" title="#1a0f0b"></span><span class="sw" style="background:#24150f" title="#24150f"></span><span class="sw" style="background:#2f1b13" title="#2f1b13"></span><span class="sw" style="background:#3b2218" title="#3b2218"></span><span class="sw" style="background:#482a1d" title="#482a1d"></span><span class="sw" style="background:#563322" title="#563322"></span><span class="sw" style="background:#653c28" title="#653c28"></span><span class="sw" style="background:#77482f" title="#77482f"></span><span class="sw" style="background:#8a5637" title="#8a5637"></span></td><td class="num">10</td><td><code>#110a08 → #8a5637</code></td></tr>
+<tr><td>Dąb (parkiet)</td><td><code>wood_oak</code></td><td class="ramp"><span class="sw" style="background:#261709" title="#261709"></span><span class="sw" style="background:#35200e" title="#35200e"></span><span class="sw" style="background:#462b13" title="#462b13"></span><span class="sw" style="background:#583718" title="#583718"></span><span class="sw" style="background:#6b431e" title="#6b431e"></span><span class="sw" style="background:#7e5025" title="#7e5025"></span><span class="sw" style="background:#915e2d" title="#915e2d"></span><span class="sw" style="background:#a46d37" title="#a46d37"></span><span class="sw" style="background:#b67d42" title="#b67d42"></span></td><td class="num">9</td><td><code>#261709 → #b67d42</code></td></tr>
+<tr><td>Mosiądz</td><td><code>brass</code></td><td class="ramp"><span class="sw" style="background:#241a0a" title="#241a0a"></span><span class="sw" style="background:#3a2a0f" title="#3a2a0f"></span><span class="sw" style="background:#523b14" title="#523b14"></span><span class="sw" style="background:#6d4f1a" title="#6d4f1a"></span><span class="sw" style="background:#886521" title="#886521"></span><span class="sw" style="background:#a37c2b" title="#a37c2b"></span><span class="sw" style="background:#bb9338" title="#bb9338"></span><span class="sw" style="background:#d0ab4c" title="#d0ab4c"></span><span class="sw" style="background:#e2c46c" title="#e2c46c"></span><span class="sw" style="background:#f1dd98" title="#f1dd98"></span><span class="sw" style="background:#fbf1cd" title="#fbf1cd"></span></td><td class="num">11</td><td><code>#241a0a → #fbf1cd</code></td></tr>
+<tr><td>Patyna mosiądzu</td><td><code>brass_tarnish</code></td><td class="ramp"><span class="sw" style="background:#1b1a10" title="#1b1a10"></span><span class="sw" style="background:#2a2915" title="#2a2915"></span><span class="sw" style="background:#3a3a1d" title="#3a3a1d"></span><span class="sw" style="background:#4b4b26" title="#4b4b26"></span></td><td class="num">4</td><td><code>#1b1a10 → #4b4b26</code></td></tr>
+<tr><td>Złocenie (ramy)</td><td><code>gold</code></td><td class="ramp"><span class="sw" style="background:#26170a" title="#26170a"></span><span class="sw" style="background:#3f260d" title="#3f260d"></span><span class="sw" style="background:#5d3810" title="#5d3810"></span><span class="sw" style="background:#7e4c14" title="#7e4c14"></span><span class="sw" style="background:#a0621a" title="#a0621a"></span><span class="sw" style="background:#bd7b24" title="#bd7b24"></span><span class="sw" style="background:#d49632" title="#d49632"></span><span class="sw" style="background:#e5b24a" title="#e5b24a"></span><span class="sw" style="background:#f1cd70" title="#f1cd70"></span><span class="sw" style="background:#f9e6a8" title="#f9e6a8"></span></td><td class="num">10</td><td><code>#26170a → #f9e6a8</code></td></tr>
+<tr><td>Pulment pod złoceniem</td><td><code>bole</code></td><td class="ramp"><span class="sw" style="background:#3a1209" title="#3a1209"></span><span class="sw" style="background:#58200f" title="#58200f"></span><span class="sw" style="background:#732f17" title="#732f17"></span></td><td class="num">3</td><td><code>#3a1209 → #732f17</code></td></tr>
+<tr><td>Aksamit karmazynowy</td><td><code>velvet</code></td><td class="ramp"><span class="sw" style="background:#140205" title="#140205"></span><span class="sw" style="background:#210408" title="#210408"></span><span class="sw" style="background:#30060c" title="#30060c"></span><span class="sw" style="background:#410a11" title="#410a11"></span><span class="sw" style="background:#530e17" title="#530e17"></span><span class="sw" style="background:#67131d" title="#67131d"></span><span class="sw" style="background:#7c1924" title="#7c1924"></span><span class="sw" style="background:#92212c" title="#92212c"></span><span class="sw" style="background:#a82b34" title="#a82b34"></span></td><td class="num">9</td><td><code>#140205 → #a82b34</code></td></tr>
+<tr><td>Wapień (cokoły)</td><td><code>stone</code></td><td class="ramp"><span class="sw" style="background:#2e2b27" title="#2e2b27"></span><span class="sw" style="background:#3d3934" title="#3d3934"></span><span class="sw" style="background:#4d4842" title="#4d4842"></span><span class="sw" style="background:#5e5850" title="#5e5850"></span><span class="sw" style="background:#70695f" title="#70695f"></span><span class="sw" style="background:#827a6f" title="#827a6f"></span><span class="sw" style="background:#948c80" title="#948c80"></span><span class="sw" style="background:#a69e91" title="#a69e91"></span><span class="sw" style="background:#b8b0a3" title="#b8b0a3"></span></td><td class="num">9</td><td><code>#2e2b27 → #b8b0a3</code></td></tr>
+<tr><td>Tynk / sztukateria</td><td><code>plaster</code></td><td class="ramp"><span class="sw" style="background:#4f4b44" title="#4f4b44"></span><span class="sw" style="background:#625d55" title="#625d55"></span><span class="sw" style="background:#767067" title="#767067"></span><span class="sw" style="background:#8a847a" title="#8a847a"></span><span class="sw" style="background:#9e978c" title="#9e978c"></span><span class="sw" style="background:#b1ab9f" title="#b1ab9f"></span><span class="sw" style="background:#c3bdb1" title="#c3bdb1"></span><span class="sw" style="background:#d3cdc1" title="#d3cdc1"></span><span class="sw" style="background:#e0dbcf" title="#e0dbcf"></span></td><td class="num">9</td><td><code>#4f4b44 → #e0dbcf</code></td></tr>
+<tr><td>Tapeta – tło (zieleń)</td><td><code>wallpaper</code></td><td class="ramp"><span class="sw" style="background:#0a1512" title="#0a1512"></span><span class="sw" style="background:#0f1c18" title="#0f1c18"></span><span class="sw" style="background:#13231e" title="#13231e"></span><span class="sw" style="background:#182a24" title="#182a24"></span><span class="sw" style="background:#1d312b" title="#1d312b"></span><span class="sw" style="background:#233932" title="#233932"></span><span class="sw" style="background:#2a423a" title="#2a423a"></span></td><td class="num">7</td><td><code>#0a1512 → #2a423a</code></td></tr>
+<tr><td>Tapeta – ornament adamaszku</td><td><code>wallpaper_motif</code></td><td class="ramp"><span class="sw" style="background:#2b3a2c" title="#2b3a2c"></span><span class="sw" style="background:#3b4a33" title="#3b4a33"></span><span class="sw" style="background:#4f5c3b" title="#4f5c3b"></span><span class="sw" style="background:#667045" title="#667045"></span><span class="sw" style="background:#7f8552" title="#7f8552"></span><span class="sw" style="background:#999a62" title="#999a62"></span></td><td class="num">6</td><td><code>#2b3a2c → #999a62</code></td></tr>
+<tr><td>Żeliwo malowane</td><td><code>iron</code></td><td class="ramp"><span class="sw" style="background:#0b0c0e" title="#0b0c0e"></span><span class="sw" style="background:#121417" title="#121417"></span><span class="sw" style="background:#191c20" title="#191c20"></span><span class="sw" style="background:#21252a" title="#21252a"></span><span class="sw" style="background:#2b3036" title="#2b3036"></span><span class="sw" style="background:#363c43" title="#363c43"></span><span class="sw" style="background:#434a52" title="#434a52"></span><span class="sw" style="background:#535b64" title="#535b64"></span></td><td class="num">8</td><td><code>#0b0c0e → #535b64</code></td></tr>
+<tr><td>Rdza</td><td><code>rust</code></td><td class="ramp"><span class="sw" style="background:#2a120a" title="#2a120a"></span><span class="sw" style="background:#40200f" title="#40200f"></span><span class="sw" style="background:#573016" title="#573016"></span></td><td class="num">3</td><td><code>#2a120a → #573016</code></td></tr>
+<tr><td>Szkło (odcień)</td><td><code>glass</code></td><td class="ramp"><span class="sw" style="background:#b8c7c4" title="#b8c7c4"></span><span class="sw" style="background:#cbd8d5" title="#cbd8d5"></span><span class="sw" style="background:#dde8e6" title="#dde8e6"></span><span class="sw" style="background:#eef5f4" title="#eef5f4"></span></td><td class="num">4</td><td><code>#b8c7c4 → #eef5f4</code></td></tr>
+<tr><td>Wosk – skóra</td><td><code>wax</code></td><td class="ramp"><span class="sw" style="background:#4b2f25" title="#4b2f25"></span><span class="sw" style="background:#633d2f" title="#633d2f"></span><span class="sw" style="background:#7c4f3b" title="#7c4f3b"></span><span class="sw" style="background:#956249" title="#956249"></span><span class="sw" style="background:#ad7759" title="#ad7759"></span><span class="sw" style="background:#c38d6b" title="#c38d6b"></span><span class="sw" style="background:#d5a47f" title="#d5a47f"></span><span class="sw" style="background:#e3bb97" title="#e3bb97"></span><span class="sw" style="background:#eed0b1" title="#eed0b1"></span><span class="sw" style="background:#f6e2ca" title="#f6e2ca"></span><span class="sw" style="background:#fbf0e1" title="#fbf0e1"></span></td><td class="num">11</td><td><code>#4b2f25 → #fbf0e1</code></td></tr>
+<tr><td>Wosk – rumieńce</td><td><code>wax_blush</code></td><td class="ramp"><span class="sw" style="background:#7a3c33" title="#7a3c33"></span><span class="sw" style="background:#944c40" title="#944c40"></span><span class="sw" style="background:#ad5e4f" title="#ad5e4f"></span><span class="sw" style="background:#c37362" title="#c37362"></span><span class="sw" style="background:#d38b78" title="#d38b78"></span><span class="sw" style="background:#e1a490" title="#e1a490"></span></td><td class="num">6</td><td><code>#7a3c33 → #e1a490</code></td></tr>
+<tr><td>Wosk – usta</td><td><code>wax_lip</code></td><td class="ramp"><span class="sw" style="background:#5b2322" title="#5b2322"></span><span class="sw" style="background:#76302c" title="#76302c"></span><span class="sw" style="background:#8f3f37" title="#8f3f37"></span><span class="sw" style="background:#a85246" title="#a85246"></span></td><td class="num">4</td><td><code>#5b2322 → #a85246</code></td></tr>
+<tr><td>Włosy / brwi</td><td><code>hair</code></td><td class="ramp"><span class="sw" style="background:#0e0908" title="#0e0908"></span><span class="sw" style="background:#17100d" title="#17100d"></span><span class="sw" style="background:#211712" title="#211712"></span><span class="sw" style="background:#2c1f18" title="#2c1f18"></span><span class="sw" style="background:#39291f" title="#39291f"></span><span class="sw" style="background:#473428" title="#473428"></span></td><td class="num">6</td><td><code>#0e0908 → #473428</code></td></tr>
+<tr><td>Szklane oczy</td><td><code>eye</code></td><td class="ramp"><span class="sw" style="background:#0a0a0c" title="#0a0a0c"></span><span class="sw" style="background:#1d2530" title="#1d2530"></span><span class="sw" style="background:#34485a" title="#34485a"></span><span class="sw" style="background:#e8e4da" title="#e8e4da"></span></td><td class="num">4</td><td><code>#0a0a0c → #e8e4da</code></td></tr>
+<tr><td>Mundur granatowy</td><td><code>coat</code></td><td class="ramp"><span class="sw" style="background:#05060f" title="#05060f"></span><span class="sw" style="background:#090c19" title="#090c19"></span><span class="sw" style="background:#0e1224" title="#0e1224"></span><span class="sw" style="background:#131931" title="#131931"></span><span class="sw" style="background:#1a2240" title="#1a2240"></span><span class="sw" style="background:#222c51" title="#222c51"></span><span class="sw" style="background:#2c3863" title="#2c3863"></span><span class="sw" style="background:#384676" title="#384676"></span></td><td class="num">8</td><td><code>#05060f → #384676</code></td></tr>
+<tr><td>Sukno białe (bryczesy)</td><td><code>cloth_white</code></td><td class="ramp"><span class="sw" style="background:#46443f" title="#46443f"></span><span class="sw" style="background:#5d5a54" title="#5d5a54"></span><span class="sw" style="background:#76726a" title="#76726a"></span><span class="sw" style="background:#8f8a81" title="#8f8a81"></span><span class="sw" style="background:#a7a298" title="#a7a298"></span><span class="sw" style="background:#bdb8ad" title="#bdb8ad"></span><span class="sw" style="background:#d0cbc0" title="#d0cbc0"></span><span class="sw" style="background:#e0dcd2" title="#e0dcd2"></span><span class="sw" style="background:#ece9e0" title="#ece9e0"></span></td><td class="num">9</td><td><code>#46443f → #ece9e0</code></td></tr>
+<tr><td>Sukno czerwone (wyłogi, pas)</td><td><code>cloth_red</code></td><td class="ramp"><span class="sw" style="background:#220506" title="#220506"></span><span class="sw" style="background:#35080a" title="#35080a"></span><span class="sw" style="background:#4b0c0f" title="#4b0c0f"></span><span class="sw" style="background:#621115" title="#621115"></span><span class="sw" style="background:#7a171b" title="#7a171b"></span><span class="sw" style="background:#931f22" title="#931f22"></span><span class="sw" style="background:#aa2b2b" title="#aa2b2b"></span><span class="sw" style="background:#bf3a36" title="#bf3a36"></span></td><td class="num">8</td><td><code>#220506 → #bf3a36</code></td></tr>
+<tr><td>Skóra czarna (buty, bikorn)</td><td><code>leather</code></td><td class="ramp"><span class="sw" style="background:#060607" title="#060607"></span><span class="sw" style="background:#0c0c0e" title="#0c0c0e"></span><span class="sw" style="background:#131316" title="#131316"></span><span class="sw" style="background:#1b1b1f" title="#1b1b1f"></span><span class="sw" style="background:#24242a" title="#24242a"></span><span class="sw" style="background:#2f2f37" title="#2f2f37"></span><span class="sw" style="background:#3c3c46" title="#3c3c46"></span><span class="sw" style="background:#4b4b57" title="#4b4b57"></span></td><td class="num">8</td><td><code>#060607 → #4b4b57</code></td></tr>
+<tr><td>Kryształ</td><td><code>crystal</code></td><td class="ramp"><span class="sw" style="background:#1c0405" title="#1c0405"></span><span class="sw" style="background:#2d0708" title="#2d0708"></span><span class="sw" style="background:#410c0d" title="#410c0d"></span><span class="sw" style="background:#571213" title="#571213"></span><span class="sw" style="background:#6e1a1a" title="#6e1a1a"></span><span class="sw" style="background:#862422" title="#862422"></span><span class="sw" style="background:#9e302c" title="#9e302c"></span><span class="sw" style="background:#b73f38" title="#b73f38"></span><span class="sw" style="background:#cf5548" title="#cf5548"></span></td><td class="num">9</td><td><code>#1c0405 → #cf5548</code></td></tr>
+<tr><td>Klosz lampy (świeci)</td><td><code>lamp_warm</code></td><td class="ramp"><span class="sw" style="background:#6e4a2a" title="#6e4a2a"></span><span class="sw" style="background:#9a6c3e" title="#9a6c3e"></span><span class="sw" style="background:#c49257" title="#c49257"></span><span class="sw" style="background:#e2b879" title="#e2b879"></span><span class="sw" style="background:#f3d6a2" title="#f3d6a2"></span><span class="sw" style="background:#fcecd0" title="#fcecd0"></span></td><td class="num">6</td><td><code>#6e4a2a → #fcecd0</code></td></tr>
+<tr><td>Lampa awaryjna (świeci)</td><td><code>lamp_red</code></td><td class="ramp"><span class="sw" style="background:#3a0303" title="#3a0303"></span><span class="sw" style="background:#5c0606" title="#5c0606"></span><span class="sw" style="background:#850b0a" title="#850b0a"></span><span class="sw" style="background:#b01410" title="#b01410"></span><span class="sw" style="background:#d8261b" title="#d8261b"></span><span class="sw" style="background:#f24a35" title="#f24a35"></span></td><td class="num">6</td><td><code>#3a0303 → #f24a35</code></td></tr>
+<tr><td>Płótno (odwrocie)</td><td><code>canvas_back</code></td><td class="ramp"><span class="sw" style="background:#3a3228" title="#3a3228"></span><span class="sw" style="background:#4e4436" title="#4e4436"></span><span class="sw" style="background:#625745" title="#625745"></span></td><td class="num">3</td><td><code>#3a3228 → #625745</code></td></tr>
+<tr><td>Brąz – patyna</td><td><code>bronze</code></td><td class="ramp"><span class="sw" style="background:#0f130f" title="#0f130f"></span><span class="sw" style="background:#172019" title="#172019"></span><span class="sw" style="background:#1f2c23" title="#1f2c23"></span><span class="sw" style="background:#28392e" title="#28392e"></span><span class="sw" style="background:#324839" title="#324839"></span><span class="sw" style="background:#3e5846" title="#3e5846"></span><span class="sw" style="background:#4c6a55" title="#4c6a55"></span><span class="sw" style="background:#5e7f67" title="#5e7f67"></span><span class="sw" style="background:#76977e" title="#76977e"></span></td><td class="num">9</td><td><code>#0f130f → #76977e</code></td></tr>
+<tr><td>Brąz – wytarte miejsca</td><td><code>bronze_metal</code></td><td class="ramp"><span class="sw" style="background:#3a2411" title="#3a2411"></span><span class="sw" style="background:#56361a" title="#56361a"></span><span class="sw" style="background:#744b23" title="#744b23"></span><span class="sw" style="background:#93622f" title="#93622f"></span><span class="sw" style="background:#b07b3e" title="#b07b3e"></span></td><td class="num">5</td><td><code>#3a2411 → #b07b3e</code></td></tr>
+</table></div>
+<figure><img src="img/model_textures_sheet.jpg" alt="Arkusz tekstur kafelkowych"><figcaption>Tekstury kafelkowe (albedo · normalna · szorstkość): szachownica marmurowa, parkiet, tynk, tapeta, ściana galerii, orzech, marmury, wapień, mosiądz, aksamit, szkło, wosk, sukno munduru.</figcaption></figure>
+
+<h3>Rampy etapu 2</h3>
+<p>Dopisane do tego samego słownika <code>P</code>. Zasada bez zmian: cieniowanie to kroki po rampie. Metale broni i zbroi mają jasne albedo (stal ok. #aab1bb), bo przy metaliczności 1 ciemne albedo daje w ciemnym muzeum czarną plamę; blask robią rysy, krawędzie i odbicia.</p>
+<div class="table-wrap"><table>
+<tr><th>Materiał</th><th>Klucz</th><th>Rampa (ciemny → jasny)</th><th class="num">Kolory</th><th>Zakres</th></tr>
+<tr><td>Futro wilka (szary agouti)</td><td><code>fur</code></td><td class="ramp"><span class="sw" style="background:#1b1917" title="#1b1917"></span><span class="sw" style="background:#2a2724" title="#2a2724"></span><span class="sw" style="background:#3b3632" title="#3b3632"></span><span class="sw" style="background:#4d4640" title="#4d4640"></span><span class="sw" style="background:#60574e" title="#60574e"></span><span class="sw" style="background:#74695d" title="#74695d"></span><span class="sw" style="background:#897c6c" title="#897c6c"></span><span class="sw" style="background:#9e907e" title="#9e907e"></span><span class="sw" style="background:#b3a592" title="#b3a592"></span><span class="sw" style="background:#c7bba8" title="#c7bba8"></span></td><td class="num">10</td><td><code>#1b1917 → #c7bba8</code></td></tr>
+<tr><td>Futro jasne (brzuch, pysk)</td><td><code>fur_pale</code></td><td class="ramp"><span class="sw" style="background:#4b453c" title="#4b453c"></span><span class="sw" style="background:#635c50" title="#635c50"></span><span class="sw" style="background:#7c7465" title="#7c7465"></span><span class="sw" style="background:#958d7b" title="#958d7b"></span><span class="sw" style="background:#aea591" title="#aea591"></span><span class="sw" style="background:#c4bca8" title="#c4bca8"></span><span class="sw" style="background:#d7d0be" title="#d7d0be"></span></td><td class="num">7</td><td><code>#4b453c → #d7d0be</code></td></tr>
+<tr><td>Wyschnięta skóra (łyse placki)</td><td><code>hide</code></td><td class="ramp"><span class="sw" style="background:#2e1f17" title="#2e1f17"></span><span class="sw" style="background:#45301f" title="#45301f"></span><span class="sw" style="background:#5c4029" title="#5c4029"></span><span class="sw" style="background:#735236" title="#735236"></span><span class="sw" style="background:#8a6545" title="#8a6545"></span><span class="sw" style="background:#a07a58" title="#a07a58"></span></td><td class="num">6</td><td><code>#2e1f17 → #a07a58</code></td></tr>
+<tr><td>Wełna drzewna (wypchanie)</td><td><code>excelsior</code></td><td class="ramp"><span class="sw" style="background:#3d2d12" title="#3d2d12"></span><span class="sw" style="background:#5a441b" title="#5a441b"></span><span class="sw" style="background:#795d26" title="#795d26"></span><span class="sw" style="background:#977733" title="#977733"></span><span class="sw" style="background:#b39245" title="#b39245"></span><span class="sw" style="background:#cbab5c" title="#cbab5c"></span></td><td class="num">6</td><td><code>#3d2d12 → #cbab5c</code></td></tr>
+<tr><td>Szklane oko (bursztyn)</td><td><code>eye_amber</code></td><td class="ramp"><span class="sw" style="background:#140a02" title="#140a02"></span><span class="sw" style="background:#3d1f05" title="#3d1f05"></span><span class="sw" style="background:#6e3a0a" title="#6e3a0a"></span><span class="sw" style="background:#a35b12" title="#a35b12"></span><span class="sw" style="background:#d0861f" title="#d0861f"></span><span class="sw" style="background:#efb13f" title="#efb13f"></span><span class="sw" style="background:#ffe08a" title="#ffe08a"></span></td><td class="num">7</td><td><code>#140a02 → #ffe08a</code></td></tr>
+<tr><td>Kość słoniowa (zęby, pazury)</td><td><code>ivory</code></td><td class="ramp"><span class="sw" style="background:#3a3024" title="#3a3024"></span><span class="sw" style="background:#574a37" title="#574a37"></span><span class="sw" style="background:#74664d" title="#74664d"></span><span class="sw" style="background:#928365" title="#928365"></span><span class="sw" style="background:#afa07f" title="#afa07f"></span><span class="sw" style="background:#c9bb99" title="#c9bb99"></span><span class="sw" style="background:#dfd3b3" title="#dfd3b3"></span><span class="sw" style="background:#efe7cf" title="#efe7cf"></span></td><td class="num">8</td><td><code>#3a3024 → #efe7cf</code></td></tr>
+<tr><td>Dziąsła</td><td><code>gum</code></td><td class="ramp"><span class="sw" style="background:#1a0606" title="#1a0606"></span><span class="sw" style="background:#2e0b0b" title="#2e0b0b"></span><span class="sw" style="background:#451312" title="#451312"></span><span class="sw" style="background:#5d1c19" title="#5d1c19"></span><span class="sw" style="background:#772822" title="#772822"></span><span class="sw" style="background:#92372e" title="#92372e"></span></td><td class="num">6</td><td><code>#1a0606 → #92372e</code></td></tr>
+<tr><td>Stal polerowana (zbroja)</td><td><code>steel</code></td><td class="ramp"><span class="sw" style="background:#0f1114" title="#0f1114"></span><span class="sw" style="background:#1a1d22" title="#1a1d22"></span><span class="sw" style="background:#262a31" title="#262a31"></span><span class="sw" style="background:#333842" title="#333842"></span><span class="sw" style="background:#424854" title="#424854"></span><span class="sw" style="background:#535a67" title="#535a67"></span><span class="sw" style="background:#666e7b" title="#666e7b"></span><span class="sw" style="background:#7b8390" title="#7b8390"></span><span class="sw" style="background:#929aa6" title="#929aa6"></span><span class="sw" style="background:#aab1bb" title="#aab1bb"></span><span class="sw" style="background:#c4cad2" title="#c4cad2"></span><span class="sw" style="background:#dfe3e8" title="#dfe3e8"></span></td><td class="num">12</td><td><code>#0f1114 → #dfe3e8</code></td></tr>
+<tr><td>Stal oksydowana (broń)</td><td><code>steel_blued</code></td><td class="ramp"><span class="sw" style="background:#07080c" title="#07080c"></span><span class="sw" style="background:#0c0f16" title="#0c0f16"></span><span class="sw" style="background:#121722" title="#121722"></span><span class="sw" style="background:#19202e" title="#19202e"></span><span class="sw" style="background:#212a3b" title="#212a3b"></span><span class="sw" style="background:#2b3649" title="#2b3649"></span><span class="sw" style="background:#364357" title="#364357"></span><span class="sw" style="background:#445266" title="#445266"></span><span class="sw" style="background:#566476" title="#566476"></span></td><td class="num">9</td><td><code>#07080c → #566476</code></td></tr>
+<tr><td>Farba złocista (herb)</td><td><code>paint_ochre</code></td><td class="ramp"><span class="sw" style="background:#2e1e06" title="#2e1e06"></span><span class="sw" style="background:#4a310a" title="#4a310a"></span><span class="sw" style="background:#694610" title="#694610"></span><span class="sw" style="background:#8a5d17" title="#8a5d17"></span><span class="sw" style="background:#a9761f" title="#a9761f"></span><span class="sw" style="background:#c69029" title="#c69029"></span><span class="sw" style="background:#dcab3c" title="#dcab3c"></span><span class="sw" style="background:#ecc65a" title="#ecc65a"></span></td><td class="num">8</td><td><code>#2e1e06 → #ecc65a</code></td></tr>
+<tr><td>Żar (wizjer, pęknięcia)</td><td><code>ember</code></td><td class="ramp"><span class="sw" style="background:#1a0302" title="#1a0302"></span><span class="sw" style="background:#3d0703" title="#3d0703"></span><span class="sw" style="background:#6b1004" title="#6b1004"></span><span class="sw" style="background:#9c1e06" title="#9c1e06"></span><span class="sw" style="background:#cc360b" title="#cc360b"></span><span class="sw" style="background:#f05a1a" title="#f05a1a"></span><span class="sw" style="background:#ff8a3a" title="#ff8a3a"></span><span class="sw" style="background:#ffc27a" title="#ffc27a"></span></td><td class="num">8</td><td><code>#1a0302 → #ffc27a</code></td></tr>
+<tr><td>Kość kopalna</td><td><code>bone</code></td><td class="ramp"><span class="sw" style="background:#120b06" title="#120b06"></span><span class="sw" style="background:#1f140c" title="#1f140c"></span><span class="sw" style="background:#2d1d11" title="#2d1d11"></span><span class="sw" style="background:#3c2817" title="#3c2817"></span><span class="sw" style="background:#4d341e" title="#4d341e"></span><span class="sw" style="background:#5f4126" title="#5f4126"></span><span class="sw" style="background:#724f2f" title="#724f2f"></span><span class="sw" style="background:#865e39" title="#865e39"></span><span class="sw" style="background:#9a6f45" title="#9a6f45"></span><span class="sw" style="background:#ad8153" title="#ad8153"></span><span class="sw" style="background:#bf9464" title="#bf9464"></span></td><td class="num">11</td><td><code>#120b06 → #bf9464</code></td></tr>
+<tr><td>Ząb kopalny</td><td><code>tooth_fossil</code></td><td class="ramp"><span class="sw" style="background:#0b0806" title="#0b0806"></span><span class="sw" style="background:#16100b" title="#16100b"></span><span class="sw" style="background:#221a12" title="#221a12"></span><span class="sw" style="background:#30251a" title="#30251a"></span><span class="sw" style="background:#3f3223" title="#3f3223"></span><span class="sw" style="background:#50412d" title="#50412d"></span></td><td class="num">6</td><td><code>#0b0806 → #50412d</code></td></tr>
+<tr><td>Orzech kolby</td><td><code>walnut_stock</code></td><td class="ramp"><span class="sw" style="background:#1a0e08" title="#1a0e08"></span><span class="sw" style="background:#29160c" title="#29160c"></span><span class="sw" style="background:#3a1f10" title="#3a1f10"></span><span class="sw" style="background:#4b2915" title="#4b2915"></span><span class="sw" style="background:#5d331b" title="#5d331b"></span><span class="sw" style="background:#6f3e21" title="#6f3e21"></span><span class="sw" style="background:#814928" title="#814928"></span><span class="sw" style="background:#935530" title="#935530"></span><span class="sw" style="background:#a4623a" title="#a4623a"></span></td><td class="num">9</td><td><code>#1a0e08 → #a4623a</code></td></tr>
+<tr><td>Bakelit (okładziny)</td><td><code>bakelite</code></td><td class="ramp"><span class="sw" style="background:#120806" title="#120806"></span><span class="sw" style="background:#1e0d09" title="#1e0d09"></span><span class="sw" style="background:#2b130d" title="#2b130d"></span><span class="sw" style="background:#3a1a11" title="#3a1a11"></span><span class="sw" style="background:#4a2216" title="#4a2216"></span><span class="sw" style="background:#5b2b1c" title="#5b2b1c"></span><span class="sw" style="background:#6d3524" title="#6d3524"></span></td><td class="num">7</td><td><code>#120806 → #6d3524</code></td></tr>
+<tr><td>Plastik żółty (paralizator)</td><td><code>plastic_yellow</code></td><td class="ramp"><span class="sw" style="background:#3a2a02" title="#3a2a02"></span><span class="sw" style="background:#5c4304" title="#5c4304"></span><span class="sw" style="background:#806008" title="#806008"></span><span class="sw" style="background:#a67e0d" title="#a67e0d"></span><span class="sw" style="background:#c99b14" title="#c99b14"></span><span class="sw" style="background:#e3b521" title="#e3b521"></span><span class="sw" style="background:#f4cd3a" title="#f4cd3a"></span><span class="sw" style="background:#fde170" title="#fde170"></span></td><td class="num">8</td><td><code>#3a2a02 → #fde170</code></td></tr>
+<tr><td>Plastik i guma czarne</td><td><code>plastic_black</code></td><td class="ramp"><span class="sw" style="background:#08080a" title="#08080a"></span><span class="sw" style="background:#0f0f12" title="#0f0f12"></span><span class="sw" style="background:#16161a" title="#16161a"></span><span class="sw" style="background:#1e1e23" title="#1e1e23"></span><span class="sw" style="background:#27272d" title="#27272d"></span><span class="sw" style="background:#313138" title="#313138"></span><span class="sw" style="background:#3c3c44" title="#3c3c44"></span></td><td class="num">7</td><td><code>#08080a → #3c3c44</code></td></tr>
+<tr><td>Mundur strażnika</td><td><code>uniform</code></td><td class="ramp"><span class="sw" style="background:#07090d" title="#07090d"></span><span class="sw" style="background:#0c1016" title="#0c1016"></span><span class="sw" style="background:#121820" title="#121820"></span><span class="sw" style="background:#19202b" title="#19202b"></span><span class="sw" style="background:#212a37" title="#212a37"></span><span class="sw" style="background:#2a3544" title="#2a3544"></span><span class="sw" style="background:#344152" title="#344152"></span><span class="sw" style="background:#3f4d60" title="#3f4d60"></span></td><td class="num">8</td><td><code>#07090d → #3f4d60</code></td></tr>
+<tr><td>Tektura</td><td><code>cardboard</code></td><td class="ramp"><span class="sw" style="background:#2b1d0f" title="#2b1d0f"></span><span class="sw" style="background:#3f2c17" title="#3f2c17"></span><span class="sw" style="background:#54391f" title="#54391f"></span><span class="sw" style="background:#6a4a29" title="#6a4a29"></span><span class="sw" style="background:#805c34" title="#805c34"></span><span class="sw" style="background:#966f41" title="#966f41"></span><span class="sw" style="background:#aa824f" title="#aa824f"></span><span class="sw" style="background:#bc955f" title="#bc955f"></span></td><td class="num">8</td><td><code>#2b1d0f → #bc955f</code></td></tr>
+<tr><td>Emalia biała (apteczka)</td><td><code>enamel_white</code></td><td class="ramp"><span class="sw" style="background:#4a4a46" title="#4a4a46"></span><span class="sw" style="background:#62625d" title="#62625d"></span><span class="sw" style="background:#7c7c76" title="#7c7c76"></span><span class="sw" style="background:#96968f" title="#96968f"></span><span class="sw" style="background:#b0afa8" title="#b0afa8"></span><span class="sw" style="background:#c8c7bf" title="#c8c7bf"></span><span class="sw" style="background:#dcdbd3" title="#dcdbd3"></span><span class="sw" style="background:#eceae3" title="#eceae3"></span></td><td class="num">8</td><td><code>#4a4a46 → #eceae3</code></td></tr>
+<tr><td>Porcelana (bezpiecznik)</td><td><code>porcelain</code></td><td class="ramp"><span class="sw" style="background:#3f3a31" title="#3f3a31"></span><span class="sw" style="background:#5a5446" title="#5a5446"></span><span class="sw" style="background:#78715f" title="#78715f"></span><span class="sw" style="background:#978f7a" title="#978f7a"></span><span class="sw" style="background:#b3ab94" title="#b3ab94"></span><span class="sw" style="background:#cbc4ad" title="#cbc4ad"></span><span class="sw" style="background:#dfd9c4" title="#dfd9c4"></span><span class="sw" style="background:#eeead9" title="#eeead9"></span></td><td class="num">8</td><td><code>#3f3a31 → #eeead9</code></td></tr>
+<tr><td>Emalia zielona (latarka)</td><td><code>paint_green</code></td><td class="ramp"><span class="sw" style="background:#06100b" title="#06100b"></span><span class="sw" style="background:#0b1a12" title="#0b1a12"></span><span class="sw" style="background:#11251a" title="#11251a"></span><span class="sw" style="background:#183123" title="#183123"></span><span class="sw" style="background:#203e2d" title="#203e2d"></span><span class="sw" style="background:#294c38" title="#294c38"></span><span class="sw" style="background:#335b44" title="#335b44"></span><span class="sw" style="background:#3f6b51" title="#3f6b51"></span></td><td class="num">8</td><td><code>#06100b → #3f6b51</code></td></tr>
+<tr><td>Emalia oliwkowa (szafka)</td><td><code>paint_olive</code></td><td class="ramp"><span class="sw" style="background:#151812" title="#151812"></span><span class="sw" style="background:#1f231b" title="#1f231b"></span><span class="sw" style="background:#2a2f25" title="#2a2f25"></span><span class="sw" style="background:#353b2f" title="#353b2f"></span><span class="sw" style="background:#41483a" title="#41483a"></span><span class="sw" style="background:#4e5646" title="#4e5646"></span><span class="sw" style="background:#5c6553" title="#5c6553"></span><span class="sw" style="background:#6b7461" title="#6b7461"></span><span class="sw" style="background:#7b8470" title="#7b8470"></span></td><td class="num">9</td><td><code>#151812 → #7b8470</code></td></tr>
+<tr><td>Plastik beżowy (komputer)</td><td><code>plastic_beige</code></td><td class="ramp"><span class="sw" style="background:#3b352b" title="#3b352b"></span><span class="sw" style="background:#534b3e" title="#534b3e"></span><span class="sw" style="background:#6b6252" title="#6b6252"></span><span class="sw" style="background:#847a67" title="#847a67"></span><span class="sw" style="background:#9c927c" title="#9c927c"></span><span class="sw" style="background:#b3a990" title="#b3a990"></span><span class="sw" style="background:#c7bea5" title="#c7bea5"></span><span class="sw" style="background:#d8d0b8" title="#d8d0b8"></span></td><td class="num">8</td><td><code>#3b352b → #d8d0b8</code></td></tr>
+<tr><td>Szkło kineskopu</td><td><code>crt_glass</code></td><td class="ramp"><span class="sw" style="background:#050706" title="#050706"></span><span class="sw" style="background:#0a0e0c" title="#0a0e0c"></span><span class="sw" style="background:#111714" title="#111714"></span><span class="sw" style="background:#1a211d" title="#1a211d"></span><span class="sw" style="background:#252e29" title="#252e29"></span></td><td class="num">5</td><td><code>#050706 → #252e29</code></td></tr>
+<tr><td>Dioda zielona</td><td><code>led_green</code></td><td class="ramp"><span class="sw" style="background:#0a2a0a" title="#0a2a0a"></span><span class="sw" style="background:#145214" title="#145214"></span><span class="sw" style="background:#1f7a1f" title="#1f7a1f"></span><span class="sw" style="background:#36a336" title="#36a336"></span><span class="sw" style="background:#62cc55" title="#62cc55"></span><span class="sw" style="background:#a6f08c" title="#a6f08c"></span></td><td class="num">6</td><td><code>#0a2a0a → #a6f08c</code></td></tr>
+<tr><td>Luminofor (terminal)</td><td><code>phosphor</code></td><td class="ramp"><span class="sw" style="background:#020803" title="#020803"></span><span class="sw" style="background:#051a08" title="#051a08"></span><span class="sw" style="background:#0a300f" title="#0a300f"></span><span class="sw" style="background:#124a18" title="#124a18"></span><span class="sw" style="background:#1e6a26" title="#1e6a26"></span><span class="sw" style="background:#2f8c38" title="#2f8c38"></span><span class="sw" style="background:#4bb050" title="#4bb050"></span><span class="sw" style="background:#7fd67a" title="#7fd67a"></span><span class="sw" style="background:#c2f5b5" title="#c2f5b5"></span></td><td class="num">9</td><td><code>#020803 → #c2f5b5</code></td></tr>
+<tr><td>Obraz CCTV (szarości)</td><td><code>crt_grey</code></td><td class="ramp"><span class="sw" style="background:#05070a" title="#05070a"></span><span class="sw" style="background:#0c1016" title="#0c1016"></span><span class="sw" style="background:#151b23" title="#151b23"></span><span class="sw" style="background:#202833" title="#202833"></span><span class="sw" style="background:#2d3744" title="#2d3744"></span><span class="sw" style="background:#3e4957" title="#3e4957"></span><span class="sw" style="background:#525e6d" title="#525e6d"></span><span class="sw" style="background:#6a7686" title="#6a7686"></span><span class="sw" style="background:#8894a2" title="#8894a2"></span><span class="sw" style="background:#a9b3bf" title="#a9b3bf"></span></td><td class="num">10</td><td><code>#05070a → #a9b3bf</code></td></tr>
+<tr><td>Pył (drobina)</td><td><code>dust</code></td><td class="ramp"><span class="sw" style="background:#3a2408" title="#3a2408"></span><span class="sw" style="background:#6b4410" title="#6b4410"></span><span class="sw" style="background:#a0691c" title="#a0691c"></span><span class="sw" style="background:#d09a33" title="#d09a33"></span><span class="sw" style="background:#f2c65a" title="#f2c65a"></span><span class="sw" style="background:#fde79a" title="#fde79a"></span><span class="sw" style="background:#fffbe0" title="#fffbe0"></span></td><td class="num">7</td><td><code>#3a2408 → #fffbe0</code></td></tr>
+</table></div>
+<figure><img src="img/model_material_sheet.jpg" alt="Próbki materiałów etapu 2"><figcaption>Próbki materiałów etapu 2 na płaskiej płycie 0,5 m (albedo · normalna · szorstkość; <code>tools/art/material_sheet.py</code>): futro, stal zbroi, kolczuga, farba tarczy, stal oksydowana, orzech, bakelit z radełkowaniem, żółty plastik, guma, mundur, kość kopalna, tektura, emalia biała, emalia oliwkowa, porcelana, beżowy plastik.</figcaption></figure>
+
+<h2 id="tekstury">Jak malowane są tekstury</h2>
+<p>Nie ma tu zdjęć ani gotowych bibliotek. Każdy materiał to funkcja w Pythonie (numpy), liczona dla każdego teksela. Ta sama funkcja maluje teksturę kafelkową (płaszczyzna, szum okresowy) i unikalny atlas modelu (teksele rzutowane na siatkę).</p>
+<ol>
+  <li><strong>Rasteryzacja.</strong> Każdy trójkąt modelu jest rysowany w przestrzeni UV atlasu. Dla każdego teksela znamy pozycję 3D, normalną, kierunek wyspy UV (słoje drewna, szczotkowanie mosiądzu biegną wzdłuż dłuższego boku) i „metrowe UV” do wzorów tapety czy splotu.</li>
+  <li><strong>Krawędzie i zagłębienia.</strong> Dla ostrych krawędzi (kąt ponad 28°, tylko krawędzie cieniowane płasko) liczona jest odległość teksela od krawędzi wypukłej i wklęsłej. Z tego powstają malowane <em>jasne krawędzie</em> (1–2 teksele) i <em>brud w narożach</em> (3 teksele).</li>
+  <li><strong>Okluzja otoczenia.</strong> 12–16 promieni na teksel (BVH Blendera), z domyślną podłogą pod meblami. Wynik przyciemnia rampę i trafia do kanału R mapy ORM.</li>
+  <li><strong>Krzywizna</strong> (tylko kształty organiczne): wypukłości jaśniej, bruzdy ciemniej. Tak rzeźbi się marmur popiersia i wosk twarzy.</li>
+  <li><strong>Materiał.</strong> Szum gradientowy, fBm, szum komórkowy i zaburzanie dziedziny. Przykłady: żyłki marmuru to <em>kontury zera</em> zaburzonego szumu (cienkie, kręte, zamknięte); tapeta to symetryczny adamaszek w raporcie „half-drop” z obwiedną 1 teksela; obraz olejny to kompozycja w 22-kolorowej palecie z krakelurą.</li>
+  <li><strong>Znaki wspólne (etap 2):</strong> <code>scratches</code> (proste rysy w metrowym UV, jedna na komórkę),
+    <code>dents</code> (wgniecenia z szumu komórkowego, działają przez mapę normalnych), <code>strokes</code> i <code>_streaks</code>
+    (pociągnięcia sierści i włókien wzdłuż pola kierunku), <code>stitches</code> (szew z krzyżykami nici),
+    <code>checkering</code> (radełkowanie chwytów), <code>text_marks</code> (pseudo-napisy z glifów 3×5 tekseli;
+    etykiety, szablony, klawisze), <code>paint</code> (farba odpryskująca do dowolnego materiału pod spodem).</li>
+  <li><strong>Wyjście:</strong> <code>_albedo.png</code>, <code>_normal.png</code> (z wysokości, konwencja OpenGL), <code>_orm.png</code> (R okluzja, G szorstkość, B metaliczność), opcjonalnie <code>_emit.png</code> (lampy, kryształ) i <code>_sss.png</code> (maska podpowierzchniowego rozpraszania wosku). Wyspy dostają 4 teksele marginesu dla mipmap.</li>
+</ol>
+
+<h2 id="modele">Zasady modelowania</h2>
+<h3>Bryła</h3>
+<ul>
+  <li><strong>Masywne, uproszczone formy</strong> o wyraźnej sylwetce. Profil gzymsu ma 15 punktów, a nie 150.</li>
+  <li><strong>Fazki jednosegmentowe</strong> (ścięcie 45°, bez zaokrąglenia), które łapią światło jako jedna jasna linia:
+    architektura 6–20 mm (listwy 5 mm, płyciny boazerii 20 mm, cokoły 12 mm), meble 5–16 mm, drobne okucia 3–6 mm.</li>
+  <li><strong>Bryły obrotowe</strong> (kolumny, słupki, nogi, klosze): 10–24 segmentów, cieniowanie gładkie do kąta 38°. Kanelury kolumny to naprzemienne promienie pierścienia (32 wierzchołki), cieniowane płasko.
+    Profil nie powinien kończyć się w punkcie (promień 0): każdy trójkąt takiego wierzchołka jest osobną wyspą UV zbyt małą na
+    teksel i w atlasie zostaje czarna plamka. Koniec zamyka mały płaski dekiel (etap 3: czubek racy, pociski, zęby raptora).</li>
+  <li><strong>Kształty organiczne</strong> (twarze, dłonie, loki) to „glina” z metaballi: dodatnie i ujemne elipsoidy, potem cięcie płaszczyzną i decymacja do budżetu.</li>
+  <li><strong>Orientacja:</strong> rekwizyty patrzą na −Y w Blenderze (+Z w Godocie). Figura woskowa patrzy na +Y (−Z w Godocie, czyli „do przodu” wroga). Moduły ścian: płaszczyzna ściany w y = 0, dekoracja od strony −Y, szerokość od x = 0 do W.
+    Wszyscy wrogowie etapu 2 i cała broń w pierwszej osobie też patrzą na +Y (lufa w −Z Godota).</li>
+  <li><strong>Stawy jako hierarchia</strong> (etap 2): <code>Part(name, origin, parent="...")</code>. Obiekt dziecka ma
+    położenie względem osi rodzica, a glTF i Godot zachowują zagnieżdżenie, więc obrót <code>neck_1</code> niesie szyję,
+    czaszkę i żuchwę. Figura woskowa z etapu 1b zostaje płaska (7 równorzędnych części).</li>
+  <li><strong>Znaczniki</strong> (etap 2): <code>Model(markers=[("Muzzle", (x, y, z), rodzic lub None)])</code> eksportuje
+    pusty węzeł (<code>Node3D</code> w Godocie): wylot lufy, gniazdo kryształu, punkt światła latarki, miejsce pistoletu w szafce.</li>
+  <li><strong>Ekrany</strong> (etap 2): <code>kit.screen</code> buduje lekko wypukłą szybę kineskopu z UV 0..1 w osobnym slocie
+    (<code>kinds={"cctv_screen_1": "cctv_screen_1"}</code>), który nie trafia do atlasu; gra może podać mu teksturę z viewportu.</li>
+  <li><strong>Twarde części wspólne</strong> (<code>artlib/kit.py</code>): <code>seg</code> (bryła obrotowa między dwoma punktami:
+    kości, lufy, kończyny), <code>sphere</code>, <code>cone</code>, <code>thicken</code> (skorupa z grubością: płyty zbroi),
+    <code>bend</code> (gięcie tarczy; przedtem cięcia pionowe, bo płaski wielokąt po zgięciu zapada się za łuk),
+    <code>keep</code> (wycinanie ścian skorupy), <code>screen</code>. Dłonie strażnika: <code>artlib/hands.py</code>
+    (pięść z metaballi zaciśnięta na osi chwytu + rękaw munduru z guzikiem i zegarkiem).</li>
+</ul>
+<h3>Budżety (trójkąty)</h3>
+<div class="table-wrap"><table>
+<tr><th>Model</th><th class="num">Trójkąty</th><th>Atlas</th><th class="num">px/m</th><th>Uwagi</th></tr>
+<tr><td>wax_figure</td><td class="num">7 478</td><td>992×608</td><td class="num">256</td><td>7 części z osiami w stawach (tułów, głowa, kapelusz, ręce, nogi)</td></tr>
+<tr><td>bust</td><td class="num">7 251</td><td>544×288</td><td class="num">256</td><td>dwa zestawy tekstur: <code>bust</code> (marmur), <code>bust_bronze</code></td></tr>
+<tr><td>wall_window_4m</td><td class="num">2 742</td><td>736×480</td><td class="num">64</td><td>ościeże 0,5 m, łuk, obramienie, zwornik, parapet</td></tr>
+<tr><td>wall_4m / wall_2m</td><td class="num">2 362 / 1 306</td><td>608×480 / 320×480</td><td class="num">64</td><td>cokół, boazeria, lamperia, tapeta, fryz, gzyms z kostkowaniem</td></tr>
+<tr><td>bench</td><td class="num">1 672</td><td>288×480</td><td class="num">128</td><td>pikowany aksamit, toczone nogi</td></tr>
+<tr><td>stanchion (para)</td><td class="num">1 320</td><td>256×320</td><td class="num">160</td><td>także pojedynczy słupek <code>stanchion_post</code> (446)</td></tr>
+<tr><td>column</td><td class="num">1 268</td><td>256×448</td><td class="num">64</td><td>od podłogi do stropu (6 m)</td></tr>
+<tr><td>display_case</td><td class="num">1 208</td><td>672×640</td><td class="num">128</td><td>osobny obiekt szyb <code>display_case_glass</code></td></tr>
+<tr><td>window</td><td class="num">769</td><td>608×480</td><td class="num">128</td><td>osobny obiekt szyby <code>window_glass</code> (bez cienia)</td></tr>
+<tr><td>painting, sconce, emergency_light, crystal, pedestal</td><td class="num">400–530</td><td>do 480×320</td><td class="num">128–400</td><td>lampy i kryształ mają mapę emisji</td></tr>
+<tr><td>ceiling_2m</td><td class="num">250</td><td>288×160</td><td class="num">64</td><td>kaseton 2×2 m, 30 kopii w sali</td></tr>
+<tr><th colspan="5">Etap 2</th></tr>
+<tr><td>trex</td><td class="num">21 148</td><td>1952×1056</td><td class="num">112</td><td>26 części; budżet &lt; 40 000; znacznik <code>CrystalSocket</code></td></tr>
+<tr><td>knight</td><td class="num">8 516</td><td>1312×992</td><td class="num">256</td><td>14 części, w tym 6 płyt <code>plate_*</code>; mapa emisji (wizjer)</td></tr>
+<tr><td>wolf</td><td class="num">8 178</td><td>832×480</td><td class="num">256</td><td>8 części; mapa emisji (szklane oczy)</td></tr>
+<tr><td>bust_enemy</td><td class="num">7 157</td><td>352×384</td><td class="num">256</td><td>mapa emisji (pęknięcia), odłamek cokołu</td></tr>
+<tr><td>vm_shotgun</td><td class="num">3 766</td><td>544×416</td><td class="num">384</td><td>6 części, obie dłonie, znacznik <code>Muzzle</code></td></tr>
+<tr><td>cctv_bank</td><td class="num">3 440</td><td>736×896</td><td class="num">128</td><td>+ 6 osobnych materiałów ekranów</td></tr>
+<tr><td>vm_fists</td><td class="num">2 680</td><td>288×480</td><td class="num">384</td><td>dwie pięści z rękawami</td></tr>
+<tr><td>vm_pistol / vm_taser</td><td class="num">2 050 / 1 916</td><td>480×352 / 544×288</td><td class="num">512</td><td>dłoń na chwycie; paralizator ma 3 diody jako części</td></tr>
+<tr><td>ammo_pistol / ammo_shells</td><td class="num">1 860 / 2 006</td><td>224×384 / 256×320</td><td class="num">256</td><td>znajdźki w skali „do czytania z daleka”</td></tr>
+<tr><td>terminal</td><td class="num">956</td><td>544×512</td><td class="num">192</td><td>+ materiał ekranu <code>terminal_screen</code></td></tr>
+<tr><td>fuse, lantern, pistol_locker, medkit, crystal_loose</td><td class="num">226–760</td><td>do 416×672</td><td class="num">256–400</td><td>latarka ma soczewkę z emisją i znacznik <code>Light</code></td></tr>
+<tr><th colspan="5">Etap 3 (rozbudowa)</th></tr>
+<tr><td>vm_gatling</td><td class="num">7 920</td><td>800×544</td><td class="num">384</td><td>6 części (lufy, korba, taśma, dwie dłonie); znaczniki <code>Muzzle</code>, <code>CrankKnob</code></td></tr>
+<tr><td>raptor</td><td class="num">7 916</td><td>832×576</td><td class="num">256</td><td>22 części; budżet &lt; 8 000; znacznik <code>WeakPoint</code> w czaszce</td></tr>
+<tr><td>gatling_display</td><td class="num">8 868</td><td>1056×1056</td><td class="num">320</td><td>3 części: cokół z trójnogiem, <code>gun</code>, <code>chain</code> (ok. 2 600 w łańcuchu)</td></tr>
+<tr><td>ammo_rifle / vm_flare / emergency_cabinet</td><td class="num">2 932 / 2 428 / 2 408</td><td>352×288 / 384×448 / 544×448</td><td class="num">256 / 512 / 256</td><td>szafka: osobna szyba <code>glass</code> (bez cienia) i <code>flare_gun</code></td></tr>
+<tr><td>portrait</td><td class="num">1 602</td><td>864×256</td><td class="num">256</td><td>+ 10 płócien 276×346 (384 px/m) i tekstura oczu 24×12</td></tr>
+<tr><td>ammo_flares / flare_round</td><td class="num">640 / 256</td><td>192×224 / 96×128</td><td class="num">320 / 512</td><td>raca ma mapę emisji (<code>EXTRAS</code> 6,0) i znacznik <code>Light</code></td></tr>
+</table></div>
+<h3>Figura woskowa a rozgrywka</h3>
+<p>Siedem obiektów z osiami obrotu w stawach: <code>torso</code> (0; 0,95), <code>head</code> (szyja, 1,47), <code>hat</code> (1,62), <code>arm_l/arm_r</code> (barki ±0,19; 1,40), <code>leg_l/leg_r</code> (biodra ±0,1; 0,92). Środek głowy wypada na wysokości 1,55 m, czyli tam, gdzie słaby punkt w <code>src/enemies/wax_figure.gd</code> (kula r = 0,22). Całość mieści się w kapsule kolizji r 0,35, h 1,75, kapelusz wystaje nad nią do 1,8 m. Gra może obracać części (chód, zamach, poza) i rozrzucać je jako fizyczne odłamki przy rozpadzie. Próbka pokazuje to na pozie ataku ustawionej w kodzie.</p>
+
+<h2 id="etap2">Modele etapu 2: wrogowie, boss, broń, rekwizyty</h2>
+<p>Siedemnaście nowych modeli z tego samego potoku (Blender w tle, atlas pikseli, podgląd Cycles). Każdy ma identyfikator w
+<code>ArtLibrary.REGISTRY</code> razem z nazwami części, które gra będzie animować, strącać albo odczytywać.
+Modele pasują do obecnych brył kolizji i słabych punktów z <code>src/enemies/*.gd</code> oraz do pozycji broni z
+<code>src/weapons/viewmodels.gd</code>; sprawdza to <code>tests/integration/test_art_stage2.gd</code> (8 testów bez okna).</p>
+<pre><code>var wolf := ArtLibrary.instance(&amp;"wolf")          # Node3D z częściami body, head, jaw, leg_fl ...
+var parts := ArtLibrary.parts(wolf)                 # {"head": MeshInstance3D, ...} łącznie ze znacznikami
+var glow := ArtLibrary.own_materials(bust)          # własne kopie materiałów: zapowiedź ataku bez świecenia wszystkich popiersi
+var pistol := ArtLibrary.instance(&amp;"vm_pistol")   # vm_*: własne FOV 55°, spłaszczona głębia, bez cieni
+var mote := ArtLibrary.billboard("dust_mote", 4)    # materiał cząsteczki pyłu (4 klatki)</code></pre>
+<div class="note"><strong>Integracja w grze (zrobiona):</strong> wrogowie noszą modele przez
+<code>src/enemies/visuals/*_rig.gd</code> (<code>ExhibitRig</code>: animacja proceduralna części, słaby punkt jedzie z głową,
+rozpad na części modelu, przy dużym nadmiarze obrażeń na plastry, <code>MeshShards</code>); materiały wrogów to shader
+<code>src/style/exhibit.gdshader</code> (<code>ArtLibrary.exhibit(id)</code>) z uniformami na instancję: <code>awake</code>
+(chłodna obwódka od 2,5 do 9 m i jaśniejsze oczy po przebudzeniu), <code>glow</code> (zapowiedź ataku), <code>flash</code> (trafienie).
+T-Rex: <code>TRexModelRig</code> przekłada pozę <code>TRexSkeleton.Pose</code> na 26 części (IK nóg, strefy trafień z dokładnej siatki,
+rozpad na wyspy siatki). Broń: <code>ViewmodelRig</code> (zamek, łamanie luf, diody, pięść) na warstwie 20 z własnym światłem
+wypełniającym. Znajdźki: <code>ArtLibrary.pickup(id)</code> (ciepła obwódka), rekwizyty: <code>PropArt</code>. Wszystko wraca do greyboxu,
+gdy <code>ArtLibrary.models_enabled</code> jest fałszywe albo brak pliku. Kontrola wizualna i FPS: <code>bash tools/run_artint.sh [--perf]</code>.</div>
+
+<h3>Wypchany wilk</h3>
+<div class="grid2">
+  <figure><img src="img/model_wolf.jpg" alt=""><figcaption>Stary preparat: futro zjedzone przez mole (łyse placki wyschniętej skóry, dziury z wełną drzewną), szew na brzuchu i szyi, wszyta łata na prawym boku</figcaption></figure>
+  <figure><img src="img/model_wolf_closeup.jpg" alt=""><figcaption>Szklane oczy (lekka emisja, łapią światło latarki), skórzany nos, obnażone zęby</figcaption></figure>
+</div>
+<div class="table-wrap"><table>
+<tr><th>Część</th><th>Oś (Blender x, y, z)</th><th>Rodzic</th><th>Do czego</th></tr>
+<tr><td><code>body</code></td><td>(0; 0; 0,60)</td><td>—</td><td>tułów, kołysanie, skok</td></tr>
+<tr><td><code>head</code></td><td>(0; 0,48; 0,78) szyja</td><td>body</td><td>słaby punkt; środek głowy 0,84 m nad podłogą, 0,67 m z przodu (hurtbox: 0,82 / 0,62)</td></tr>
+<tr><td><code>jaw</code></td><td>(0; 0,63; 0,77) zawias</td><td>head</td><td>kłapnięcie w locie</td></tr>
+<tr><td><code>leg_fl</code>, <code>leg_fr</code>, <code>leg_bl</code>, <code>leg_br</code></td><td>barki (±0,09; 0,28; 0,62), biodra (±0,085; −0,33; 0,62)</td><td>body</td><td>chód i poza skoku (przednie do przodu, tylne w tył)</td></tr>
+<tr><td><code>tail</code></td><td>(0; −0,46; 0,71)</td><td>body</td><td>machanie, balans w skoku</td></tr>
+</table></div>
+
+<h3>Rycerz w zbroi gotyckiej</h3>
+<div class="grid3">
+  <figure><img src="img/model_knight.jpg" alt=""><figcaption>Napierśnik z żebrowaniem, fartuch z lamów, salada z ogonem i podbródkiem, spiczaste trzewiki, miecz</figcaption></figure>
+  <figure><img src="img/model_knight_closeup.jpg" alt=""><figcaption>Pusta zbroja: przez szczelinę wizjera widać żar i dwa gorące punkty</figcaption></figure>
+  <figure><img src="img/model_knight_shield.jpg" alt=""><figcaption>Tarcza trójkątna: czerwone pole, złota krokiew, krakelura, odpryski do drewna, dwa cięcia</figcaption></figure>
+</div>
+<p>Części: <code>torso</code> (talia 1,0 m), <code>head</code> (szyja 1,62 m; środek hełmu 1,79 m, słaby punkt 1,8 m),
+<code>arm_l</code>/<code>arm_r</code> (barki ±0,30; 1,52), <code>shield</code> (uchwyt (−0,10; 0,38; 1,10), dziecko <code>arm_l</code>;
+środek tarczy wypada dokładnie tam, gdzie greybox: Godot (−0,1; 1,09; −0,42)), <code>weapon</code> (rękojeść (0,38; 0,27; 1,17), dziecko
+<code>arm_r</code>, ostrze wzdłuż +Y), <code>leg_l</code>/<code>leg_r</code> (biodra ±0,12; 0,92). Sześć płyt do strącania:
+<code>plate_pauldron_l/_r</code> (pod nimi kolczuga), <code>plate_tasset_l/_r</code>, <code>plate_poleyn_l/_r</code>. Opuszczenie tarczy
+przy ogłuszeniu: obrót <code>arm_l</code> albo <code>shield</code> wokół X. Wizjer świeci z mapy emisji atlasu <code>knight</code>
+(<code>EXTRAS</code>: 2,5); rozjaśnienie przy zamachu przez <code>own_materials</code>.</p>
+
+<h3>Lewitujące popiersie</h3>
+<div class="grid2">
+  <figure><img src="img/model_bust_enemy.jpg" alt=""><figcaption>To samo popiersie co w galerii, zerwane z cokołu; pod nim unosi się odłamek cokołu</figcaption></figure>
+  <figure><img src="img/model_bust_enemy_closeup.jpg" alt=""><figcaption>Pęknięcia przez pierś, szyję i lewy policzek świecą od środka (mapa emisji)</figcaption></figure>
+</div>
+<p>Części <code>bust</code> (początek w środku płaskiego cięcia piersi) i <code>plinth</code> (−0,10 m). Środek głowy ok. 0,33 m nad
+początkiem, twarz 0,11 m z przodu. Emisja spoczynkowa jest słaba (<code>EXTRAS</code>: 1,0); zapowiedź ataku („pęka od środka,
+żarzy się”) to podniesienie <code>emission_energy_multiplier</code> na własnych kopiach materiału.</p>
+
+<h3>Szkielet T-Reksa (boss)</h3>
+<figure><img src="img/model_trex.jpg" alt=""><figcaption>11,1 m od pyska do końca ogona, 5,2 m do szczytu wyrostków nad biodrami; 21 148 trójkątów w 26 częściach</figcaption></figure>
+<div class="grid3">
+  <figure><img src="img/model_trex_skull_side.jpg" alt=""><figcaption>Czaszka z beleczek kości: okna przedoczodołowe, oczodoły i skroniowe przechodzą na wylot</figcaption></figure>
+  <figure><img src="img/model_trex_ribs.jpg" alt=""><figcaption>Klatka żeber z szeroką przerwą (0,6 m) między 5. a 6. żebrem: tam siedzi kryształ</figcaption></figure>
+  <figure><img src="img/model_trex_closeup.jpg" alt=""><figcaption>Kość kopalna z gipsowymi uzupełnieniami, żelazny pręt wzdłuż kręgosłupa z opaskami, zęby</figcaption></figure>
+</div>
+<p>Hierarchia: <code>pelvis</code> (korzeń; biodra 4,2 m) → <code>spine_1 &gt; spine_2 &gt; spine_3</code> (grzbiet) →
+<code>neck_1 &gt; neck_2 &gt; neck_3 &gt; skull &gt; jaw</code>; <code>ribs</code> (dziecko <code>spine_2</code>) z pustym węzłem
+<code>CrystalSocket</code> w Godocie (0; 3,25; −1,86); <code>arm_l</code>/<code>arm_r</code> (dzieci <code>spine_3</code>);
+<code>thigh_l &gt; shin_l &gt; foot_l</code> i prawa strona (dzieci miednicy); <code>tail_1 &gt; … &gt; tail_8</code>. Oś każdej
+części leży na krzywej kręgosłupa w stawie bliżej bioder, więc łańcuchy da się wyginać proceduralnie (ogon, szyja) i
+rozsypać przy śmierci. Muzealny montaż: pod miednicą i pod klatką wiszą urwane słupki podpór, na nogach pręty z obejmami.
+Luźny kryształ do lotu i do gniazda: model <code>crystal_loose</code> (bez podstawki i karteczki).</p>
+
+<h3>Broń w pierwszej osobie</h3>
+<div class="grid2">
+  <figure><img src="img/model_vm_shotgun_fp.jpg" alt=""><figcaption>Dwururka tak, jak widzi ją gracz (oko w <code>WeaponHolder.REST</code>, obrót <code>AIM_YAW</code>, FOV 55°)</figcaption></figure>
+  <figure><img src="img/model_vm_shotgun.jpg" alt=""><figcaption>Lufy oksydowane z szyną, grawerowany baskil, dwa kurki, orzech z radełkowaniem, obie dłonie</figcaption></figure>
+  <figure><img src="img/model_vm_pistol.jpg" alt=""><figcaption>Pistolet służbowy w stylu Browninga 1935: zamek (osobna część do odrzutu), bakelitowe okładziny, kurek</figcaption></figure>
+  <figure><img src="img/model_vm_taser.jpg" alt=""><figcaption>Paralizator: żółty korpus, gumowy chwyt, kaseta w pasy ostrzegawcze, dwa bolce, trzy zielone diody baterii na tyle</figcaption></figure>
+  <figure><img src="img/model_vm_fists.jpg" alt=""><figcaption>Pięści w czarnych rękawiczkach, rękawy munduru z guzikiem, zegarek na lewym nadgarstku</figcaption></figure>
+  <figure><img src="img/model_vm_fists_fp.jpg" alt=""><figcaption>Pięści z pozycji ciosu (<code>FIST_HIT</code>); w spoczynku (<code>FIST_REST</code>) są poza kadrem</figcaption></figure>
+</div>
+<p>Skala rzeczywista, początek tam, gdzie miał go greybox, więc modele wchodzą w obecne przesunięcia <code>REST</code> i
+<code>FIST_REST</code>. Znacznik <code>Muzzle</code> jest bezpośrednim dzieckiem korzenia (tak go szuka
+<code>WeaponHolder._muzzle_position</code>): paralizator (0; 0,01; −0,13), pistolet (0; 0,012; −0,12), dwururka (0; 0; −0,48) w
+osiach Godota. Części: <code>vm_pistol</code>: <code>pistol</code>, <code>slide</code>, <code>hand_r</code>;
+<code>vm_taser</code>: <code>taser</code>, <code>led_1</code>…<code>led_3</code> (chowane wraz ze spadkiem baterii), <code>hand_r</code>;
+<code>vm_shotgun</code>: <code>shotgun</code>, <code>barrels</code> (oś na sworzniu zawiasu: łamanie przy przeładowaniu),
+<code>hammer_l</code>, <code>hammer_r</code>, <code>hand_r</code>, <code>hand_l</code>; <code>vm_fists</code>: <code>fist_l</code> (w
+początku), <code>fist_r</code> (x = 0,40). <code>ArtLibrary.instance</code> daje materiałom <code>vm_*</code> własne FOV 55° i
+<code>z_clip_scale</code> 0,25, jak greyboxy.</p>
+
+<h3>W Godocie, z przepisem na światło</h3>
+<p><code>bash tools/run_art_lineup.sh</code> stawia modele etapu 2 w sali próbki (księżyc, kinkiety, mgła, SDFGI) i robi zrzuty
+1920 × 1080; wilk w locie i T-Rex są upozowane przez swoje części, tak jak zrobi to rozgrywka. Broń jest ustawiona dokładnie
+jak w <code>WeaponHolder</code> (<code>REST</code>, <code>AIM_YAW</code>).</p>
+<figure><img src="img/lineup_enemies.jpg" alt=""><figcaption>Rycerz w snopie księżyca (żar w wizjerze), wilk stojący i wilk w skoku (nogi, żuchwa i ogon obrócone w stawach), lewitujące popiersie 1,6 m nad podłogą</figcaption></figure>
+<div class="grid2">
+  <figure><img src="img/lineup_enemies_dark.jpg" alt=""><figcaption>Awaria prądu: latarka łapie szklane oczy wilka i pęknięcia popiersia</figcaption></figure>
+  <figure><img src="img/lineup_knight_close.jpg" alt=""><figcaption>Rycerz z bliska</figcaption></figure>
+  <figure><img src="img/lineup_trex.jpg" alt=""><figcaption>T-Rex w sali 12 m (ogon i szyja wygięte w łańcuchach), czerwone światło z kryształu w <code>CrystalSocket</code></figcaption></figure>
+  <figure><img src="img/lineup_props.jpg" alt=""><figcaption>Monitory CCTV i terminal z domyślnymi obrazami, szafka z otwartymi drzwiami, znajdźki, latarka ze światłem przy znaczniku <code>Light</code></figcaption></figure>
+  <figure><img src="img/lineup_vm_shotgun.jpg" alt=""><figcaption>Dwururka w grze (FOV broni 55°)</figcaption></figure>
+  <figure><img src="img/lineup_vm_shotgun_dark.jpg" alt=""><figcaption>Ta sama w ciemności, tylko latarka</figcaption></figure>
+</div>
+
+<h3>Znajdźki i rekwizyty</h3>
+<div class="grid3">
+  <figure><img src="img/model_ammo_pistol.jpg" alt=""><figcaption><code>ammo_pistol</code>: pudełko nabojów, wieczko otwarte</figcaption></figure>
+  <figure><img src="img/model_ammo_shells.jpg" alt=""><figcaption><code>ammo_shells</code>: pudełko nabojów śrutowych, dwa luzem</figcaption></figure>
+  <figure><img src="img/model_medkit.jpg" alt=""><figcaption><code>medkit</code>: emaliowana apteczka z czerwonym krzyżem</figcaption></figure>
+  <figure><img src="img/model_fuse.jpg" alt=""><figcaption><code>fuse</code>: porcelanowy bezpiecznik z mosiężnymi nożami</figcaption></figure>
+  <figure><img src="img/model_lantern.jpg" alt=""><figcaption><code>lantern</code>: latarka strażnika; świecąca soczewka, znacznik <code>Light</code> dla ciepłego światła</figcaption></figure>
+  <figure><img src="img/model_pistol_locker.jpg" alt=""><figcaption><code>pistol_locker</code>: szafka na ścianę; drzwi <code>door</code> na zawiasie, znacznik <code>Pistol</code> na filcu</figcaption></figure>
+  <figure><img src="img/model_cctv_bank.jpg" alt=""><figcaption><code>cctv_bank</code>: 6 monitorów, każdy ekran osobnym materiałem <code>cctv_screen_1…6</code></figcaption></figure>
+  <figure><img src="img/model_terminal.jpg" alt=""><figcaption><code>terminal</code>: stary pecet na stoliku, ekran <code>terminal_screen</code></figcaption></figure>
+  <figure><img src="img/model_crystal_loose.jpg" alt=""><figcaption><code>crystal_loose</code>: kryształ bez podstawki (lot, gniazdo w żebrach)</figcaption></figure>
+</div>
+<p>Znajdźki mają początek w środku (gra je obraca i kołysze) i są większe niż w życiu, żeby czytały się z drugiego końca sali.
+Latarka, szafka, monitory i terminal stoją na podłodze albo wiszą na ścianie (szafka: płaszczyzna ściany y = 0).</p>
+<div class="grid2">
+  <figure><img src="img/model_sprites.jpg" alt=""><figcaption>Sprite pyłu (4 klatki po 16 px, addytywny, <code>ArtLibrary.billboard("dust_mote", 4)</code>) i domyślne obrazy ekranów: <code>crt_cctv</code>, <code>crt_terminal</code></figcaption></figure>
+</div>
+<p>Ekrany: dopóki gra nie poda tekstury z kamery albo menu ulepszeń, <code>ArtLibrary</code> pokazuje na nich świecący obraz
+(<code>crt_cctv</code> albo <code>crt_terminal</code>). Każdy ekran ma własny materiał, więc wymiana jednego nie rusza innych.</p>
+
+<h2 id="etap3">Modele etapu 3: rozbudowa (kartaczownica, rakietnica, raptor, portrety)</h2>
+<p>Dziewięć nowych modeli do rozbudowy pierwszego obszaru (<code>docs/superpowers/specs/2026-10-01-rozbudowa-projekt.md</code>, §1–§2),
+z tego samego potoku. Każdy ma identyfikator w <code>ArtLibrary.REGISTRY</code> z nazwami części i znaczników, a
+<code>tests/integration/test_art_stage3.gd</code> (6 testów bez okna) pilnuje części, osi, znaczników, rozmiarów i budżetów.
+Współrzędne w tabelach podaję <strong>w osiach Godota</strong> (Blender (x, y, z) → Godot (x, z, −y)), bo tak je zobaczy rozgrywka.</p>
+<div class="note"><strong>Nowe narzędzia potoku.</strong>
+<code>artlib/pixelfont.py</code>: font 5×7 z polskimi znakami (Ą Ć Ę Ł Ń Ó Ś Ź Ż i małe litery), wariant pogrubiony; <code>stamp()</code>
+kładzie napis w metrowym UV powierzchni dokładnie na tekselach, więc litery są ostre. Koniec z pseudo-tekstem tam, gdzie słowa mają
+znaczenie: szablon na szafce, mosiężna tabliczka, nadruki na pudełkach.
+<code>artlib/canvas.py</code>: malarz obrazów olejnych w 2D (warstwy z reliefem oświetlone jednym światłem z lewej góry: modelunek,
+cienie rzucane, okluzja; potem własna paleta obrazu, dither 4×4, werniks, drobna krakelura).
+<code>Model.textures</code> / <code>Model.sheets</code>: model może zapisać dodatkowe płaskie zestawy tekstur (płótna) i arkusze podglądu.</div>
+
+<h3>Kartaczownica (Gatling 1871) w pierwszej osobie i na wystawie</h3>
+<div class="grid2">
+  <figure><img src="img/model_vm_gatling_fp.jpg" alt=""><figcaption>Z oczu gracza (<code>REST</code>, <code>AIM_YAW</code>, FOV 55°): noszona nisko, przy biodrze; widać wiązkę luf, kosz zasilający i taśmę</figcaption></figure>
+  <figure><img src="img/model_vm_gatling.jpg" alt=""><figcaption>Sześć oksydowanych luf w trzech pierścieniach, mosiężna komora z gałką kaskabelu i datą „1871”, korba z prawej, orzechowy chwyt przedni, płócienna taśma z nabojami z lewej</figcaption></figure>
+  <figure><img src="img/lineup_vm_gatling.jpg" alt=""><figcaption>W grze (sala próbki)</figcaption></figure>
+  <figure><img src="img/lineup_vm_gatling_crank.jpg" alt=""><figcaption>Korba obrócona do góry, prawa dłoń przesunięta razem ze znacznikiem <code>CrankKnob</code> (przepis poniżej), lufy obrócone</figcaption></figure>
+</div>
+<div class="table-wrap"><table>
+<tr><th>Część / znacznik</th><th>Oś (Godot)</th><th>Rodzic</th><th>Do czego</th></tr>
+<tr><td><code>gatling</code></td><td>(0; 0; 0)</td><td>—</td><td>komora, kosz, rama, łożysko przednie, chwyt, przyrządy celownicze</td></tr>
+<tr><td><code>barrels</code></td><td>(0; −0,06; −0,16) na osi obrotu</td><td>—</td><td>wirowanie: <code>rotation.z</code> (oś wzdłuż −Z)</td></tr>
+<tr><td><code>crank</code></td><td>(0,10; −0,06; −0,03) na wałku</td><td>—</td><td>kręcenie: <code>rotation.x</code></td></tr>
+<tr><td><code>belt</code></td><td>(−0,035; 0,029; −0,05) u wlotu kosza</td><td>—</td><td>kołysanie taśmy przy strzelaniu</td></tr>
+<tr><td><code>hand_r</code></td><td>(0,145; −0,155; −0,03) = gałka korby</td><td>—</td><td>prawa dłoń na gałce</td></tr>
+<tr><td><code>hand_l</code></td><td>(0; −0,20; −0,515)</td><td>—</td><td>lewa dłoń na chwycie przednim (z zegarkiem)</td></tr>
+<tr><td><code>Muzzle</code></td><td>(0; −0,028; −0,788)</td><td>korzeń</td><td>wylot górnej lufy (pozycja strzału); nie wiruje z lufami</td></tr>
+<tr><td><code>CrankKnob</code></td><td>(0,145; −0,155; −0,03)</td><td><code>crank</code></td><td>gałka korby</td></tr>
+</table></div>
+<p><strong>Kręcenie korbą:</strong> co klatkę <code>hand_r.position = pozycja_spoczynkowa + (crank.transform * knob.position − gałka_w_spoczynku)</code>,
+bez obracania dłoni (tak robi <code>art_lineup_runner.gd</code>). W spoczynku ramię korby wisi w dół i dłoń jest tuż pod kadrem; przy
+obrocie pojawia się w prawym dolnym rogu, co dobrze sprzedaje „kręcenie”.</p>
+<div class="grid3">
+  <figure><img src="img/model_gatling_display.jpg" alt=""><figcaption><code>gatling_display</code>: to samo działo na trójnogu na orzechowym cokole, owinięte łańcuchem z mosiężną kłódką</figcaption></figure>
+  <figure><img src="img/model_gatling_display_plaque.jpg" alt=""><figcaption>Grawerowana tabliczka: prawdziwy napis „Kartaczownica, 1871 / system Gatlinga”</figcaption></figure>
+  <figure><img src="img/model_gatling_display_chain.jpg" alt=""><figcaption>Łańcuch (część <code>chain</code>) owinięty wokół luf i sworznia trójnogu, zamknięty kłódką</figcaption></figure>
+</div>
+<p>Wystawa: początek na podłodze w środku cokołu, front do +Z. Części: <code>gatling_display</code> (cokół, tabliczka, trójnóg: zostają),
+<code>gun</code> (całe działo w jednym kawałku, oś na czopach (0; 0,97; −0,08): schować po podniesieniu), <code>chain</code> (łańcuch i kłódka,
+oś przy kłódce (0; 0,65; 0,01): schować albo zrzucić jako odłamek, gdy pęknie od strzału ze strzelby lub trzech ciosów).</p>
+
+<h3>Rakietnica sygnałowa, raca i szafka ratunkowa</h3>
+<div class="grid3">
+  <figure><img src="img/model_vm_flare.jpg" alt=""><figcaption><code>vm_flare</code>: pomarańczowa łamana rakietnica 26,5 mm, czarny sworzeń, kurek, zatrzask, kółko na smycz; napis „26,5mm” na lufie</figcaption></figure>
+  <figure><img src="img/lineup_vm_flare.jpg" alt=""><figcaption>W grze; w komorze widać mosiężne dno naboju</figcaption></figure>
+  <figure><img src="img/model_flare_round.jpg" alt=""><figcaption><code>flare_round</code>: pocisk w locie, żarząca się gwiazda magnezjowa (emisja, <code>EXTRAS</code> 6,0)</figcaption></figure>
+  <figure><img src="img/model_emergency_cabinet_front.jpg" alt=""><figcaption><code>emergency_cabinet</code>: „W RAZIE POŻARU / ZBIĆ SZYBKĘ” prawdziwymi literami (pogrubiony font pikselowy)</figcaption></figure>
+  <figure><img src="img/lineup_cabinet_close.jpg" alt=""><figcaption>Szafka w grze: szyba (odbicia), rakietnica na hakach, dwie zapasowe race w klipsach, młotek na łańcuszku</figcaption></figure>
+  <figure><img src="img/lineup_raptors_flare.jpg" alt=""><figcaption>Awaria prądu: jedyne światło to raca wbita w posadzkę (OmniLight przy znaczniku <code>Light</code>)</figcaption></figure>
+</div>
+<div class="table-wrap"><table>
+<tr><th>Model</th><th>Części i znaczniki (Godot)</th><th>Uwagi</th></tr>
+<tr><td><code>vm_flare</code></td><td><code>flare</code> (0; 0; 0), <code>barrel</code> (0; −0,018; −0,004) na sworzniu, <code>hand_r</code>; <code>Muzzle</code> (0; 0,014; −0,13)</td><td>łamanie: <code>barrel.rotation.x</code> ujemne (ok. −0,6 rad) = wylot w dół; <code>Muzzle</code> nie jedzie z lufą</td></tr>
+<tr><td><code>flare_round</code></td><td><code>flare_round</code> (środek), <code>Light</code> (0; 0; −0,058) przy czubku</td><td>leci wzdłuż −Z; 0,105 m, trochę większy niż w życiu; światło na <code>Light</code></td></tr>
+<tr><td><code>emergency_cabinet</code></td><td><code>emergency_cabinet</code> (0; 0; 0), <code>glass</code> (0; 0,285; 0,146), <code>flare_gun</code> (0; 0,29; 0,07)</td><td>początek na płaszczyźnie ściany u dołu na środku, wystaje w +Z (jak <code>pistol_locker</code>); 0,46 × 0,64 × 0,15 m; szybę i broń chowa gra</td></tr>
+</table></div>
+
+<h3>Szkielet welociraptora</h3>
+<figure><img src="img/model_raptor.jpg" alt=""><figcaption>2,44 m od pyska do końca ogona, biodra 0,84 m, czubek czaszki ok. 1,05 m; 7 916 trójkątów w 22 częściach</figcaption></figure>
+<div class="grid3">
+  <figure><img src="img/model_raptor_side.jpg" alt=""><figcaption>Sylwetka: głowa nisko i do przodu na krótkiej esowatej szyi, sztywny, lekko uniesiony ogon, złożone długie ręce</figcaption></figure>
+  <figure><img src="img/model_raptor_skull_side.jpg" alt=""><figcaption>Czaszka z beleczek: wielki oczodół, okno przedoczodołowe, „wklęsły” pysk, haczykowate zęby, żuchwa uchylona</figcaption></figure>
+  <figure><img src="img/model_raptor_foot_side.jpg" alt=""><figcaption>Stopa: palce III i IV na ziemi, uniesiony palec II z wielkim sierpowatym pazurem</figcaption></figure>
+  <figure><img src="img/lineup_raptors.jpg" alt=""><figcaption>Stado trzech w sali próbki (pozy ustawione przez stawy)</figcaption></figure>
+  <figure><img src="img/lineup_raptor_close.jpg" alt=""><figcaption>Z bliska</figcaption></figure>
+  <figure><img src="img/model_raptor_closeup.jpg" alt=""><figcaption>Czaszka z przodu</figcaption></figure>
+</div>
+<p>Ta sama kość kopalna, gipsowe uzupełnienia i ta sama rampa co T-Rex, cienki żelazny pręt wzdłuż grzbietu i urwany pręt podpory
+pod biodrami (zerwał się z tego samego rodzaju montażu). Kość łonowa skierowana do tyłu, obojczyk-widełki na piersi, ogon usztywniony
+wiązkami cienkich prętów kostnych. Hierarchia: <code>pelvis</code> (korzeń, (0; 0,84; 0)) → <code>spine_1 &gt; spine_2</code>;
+<code>ribs</code>, <code>neck_1</code>, <code>arm_l</code>, <code>arm_r</code> to dzieci <code>spine_2</code>; <code>neck_1 &gt; neck_2 &gt; skull &gt;
+jaw</code>; <code>thigh_l &gt; shin_l &gt; foot_l</code> i prawa strona (dzieci miednicy); <code>tail_1 &gt; … &gt; tail_6</code>. Oś każdej
+części leży w stawie bliżej bioder. <strong>Słaby punkt:</strong> czaszka; znacznik <code>WeakPoint</code> (dziecko <code>skull</code>) w jej środku,
+w Godocie (0; 0,957; −0,904). Żuchwa ma oś na zawiasie (kłapnięcie: <code>jaw.rotation.x</code> ujemne otwiera szerzej).</p>
+
+<h3>Portret (wróg i zwykłe obrazy)</h3>
+<figure><img src="img/model_portrait_canvases.jpg" alt=""><figcaption>Dziesięć płócien: sześć portretów (szlachcic w peruce, dama z wachlarzem, generał, dziecko z psem, biskup, kupiec) i cztery obrazy „bezpieczne” (pejzaż z ruinami, burza na morzu, martwa natura z cytryną, kwiaty)</figcaption></figure>
+<div class="grid3">
+  <figure><img src="img/lineup_portraits.jpg" alt=""><figcaption>W galerii próbki, przy kinkietach</figcaption></figure>
+  <figure><img src="img/lineup_portrait_close.jpg" alt=""><figcaption>Oczy szlachcica przesunięte w bok materiałem <code>portrait_eyes</code> (śledzą gracza)</figcaption></figure>
+  <figure><img src="img/model_portrait_face.jpg" alt=""><figcaption>Twarz: modelunek z reliefu, cień nosa, oczodoły, łatki oczu nad płótnem</figcaption></figure>
+  <figure><img src="img/model_portrait.jpg" alt=""><figcaption>Złocona rama: wklęsłe profile, akantowe narożniki, muszle w połowie boków, grzebień na górze</figcaption></figure>
+  <figure><img src="img/model_portrait_corner.jpg" alt=""><figcaption>Ornament rzeźbiony w teksturze: perełki, kanelury, jajownik, sznur; złoto przetarte do czerwonego pulmentu</figcaption></figure>
+</div>
+<div class="table-wrap"><table>
+<tr><th>Część / znacznik</th><th>Oś (Godot)</th><th>Materiał</th><th>Do czego</th></tr>
+<tr><td><code>frame</code></td><td>(0; 0; 0) na ścianie</td><td><code>portrait</code> (atlas)</td><td>rama 0,98 × 1,16 m (z ornamentem ok. 1,05 × 1,24), głęboka na 0,12 m, zamknięta z tyłu</td></tr>
+<tr><td><code>canvas</code></td><td>(0; 0; 0)</td><td><code>canvas_&lt;nazwa&gt;</code></td><td>płótno 0,72 × 0,9 m, UV 0..1; obraz wybiera zamiana materiału</td></tr>
+<tr><td><code>eyes</code></td><td>(0; 0,195; 0,0315)</td><td><code>portrait_eyes</code></td><td>dwie „migdałowe” łatki 1,5 mm przed płótnem; na obrazach bez twarzy ukryć</td></tr>
+<tr><td><code>WeakPoint</code></td><td>(0; 0,195; 0,032)</td><td>—</td><td>słaby punkt ×2 (oczy), dziecko <code>eyes</code>; oczy ±0,034 m w poziomie</td></tr>
+</table></div>
+<pre><code>var pic := ArtLibrary.instance(&amp;"portrait", {"canvas_aristocrat": "canvas_bishop"})   # wybór obrazu
+pic.find_child("eyes", true, false).visible = "canvas_bishop" in ArtLibrary.PORTRAIT_FACES
+for mat in ArtLibrary.own_materials(pic):                     # własne kopie: oczy tylko tego portretu
+    if mat.resource_name == ArtLibrary.PORTRAIT_EYES_MATERIAL:
+        mat.uv1_offset = Vector3(look.x, look.y, 0.0)          # look w ArtLibrary.PORTRAIT_EYES_REACH (0,2; 0,08)</code></pre>
+<p>Montaż: początek na płaszczyźnie ściany w środku płótna, obraz patrzy w +Z (jak inne rekwizyty); „wysunięcie ramy o 0,5 m” to
+po prostu przesunięcie całego modelu wzdłuż jego +Z. Kierunek oczu: <code>uv1_offset.x</code> od −0,2 do +0,2 przesuwa tęczówki od
+prawej do lewej strony widza, <code>uv1_offset.y</code> od −0,08 do +0,08 w dół i w górę; 0 = patrzy prosto z obrazu. Tekstura oczu ma
+płaską twardówkę, więc przesuwa się tylko tęczówka (po całych tekselach, jak na pikselowym obrazie przystało). Portret może być
+„obudzony” albo zwykły na każdym z sześciu płócien z twarzą: tak zostaje napięcie, bo każdy portret może ożyć.</p>
+
+<h3>Znajdźki: amunicja</h3>
+<div class="grid2">
+  <figure><img src="img/model_ammo_rifle.jpg" alt=""><figcaption><code>ammo_rifle</code>: oliwkowa skrzynka z szablonem „NABOJE”, taśma z nabojami w środku i przewieszona przez bok</figcaption></figure>
+  <figure><img src="img/model_ammo_flares.jpg" alt=""><figcaption><code>ammo_flares</code>: pudełko czterech rac, nadruk „RACE / SYGNAŁOWE”</figcaption></figure>
+</div>
+<p>Obie z początkiem w środku (gra je obraca i kołysze), większe niż w życiu, jak znajdźki etapu 2.</p>
+
+<h3>W Godocie: stado, galeria, zbrojownia</h3>
+<p><code>bash tools/run_art_lineup.sh --shots=raptors,raptors_flare,raptor_close,portraits,portraits_dark,portrait_close,armoury,armoury_dark,cabinet_close,vm_gatling,vm_gatling_crank,vm_gatling_dark,vm_flare</code>.
+Ujęcie <code>raptors_flare</code> gasi wszystkie lampy i latarkę: scenę oświetla tylko raca wbita w posadzkę.</p>
+<div class="grid2">
+  <figure><img src="img/lineup_armoury.jpg" alt=""><figcaption>Wystawa kartaczownicy w snopie księżyca, znajdźki na posadzce</figcaption></figure>
+  <figure><img src="img/lineup_raptors_flare.jpg" alt=""><figcaption>Stado raptorów w czerwonym świetle racy</figcaption></figure>
+</div>
+<div class="note"><strong>Integracja w grze (zrobiona):</strong> kartaczownica i rakietnica to <code>ViewmodelRig</code>
+(lufy wirują z rozkręcaniem, korba się kręci, a prawa dłoń jedzie za <code>CrankKnob</code>, taśma szarpie przy każdym
+strzale, długa seria rozżarza lufy, gwiazda ognia przy <code>Muzzle</code>; dźwięk, dym i odrzut w <code>GatlingDriver</code>;
+rakietnica łamie lufę do przeładowania). Raca w locie i wbita to model <code>flare_round</code>, światło przy znaczniku
+<code>Light</code>. Raptor: <code>RaptorRig</code> (bieg, przysiad z sykiem, skok, kłapnięcie, ogon; strefa czaszki na
+<code>WeakPoint</code>; 18 wywołań rysowania i 7 rzucających cień zamiast 79 w greyboksie: żebra i kręgi złączone z rodzicem,
+ogon zgina się w trzech stawach). Portret: <code>PortraitRig</code> (płótno wg <code>PaintingArt.CANVASES</code>, oczy
+śledzą strażnika przez <code>uv1_offset</code> do 0,7 zasięgu, obwódka dopiero po wysunięciu ramy, zapowiedź: kula farby
+w ustach, rozpad na drzazgi ramy i strzępy płótna <code>PanelShards</code>); <code>WallPainting</code> nosi ten sam model,
+na <code>PaintingArt.SCENE_IDS</code> bez oczu. Wystawa, szafka i amunicja na swoich modelach. Kontrola:
+<code>bash tools/run_artint2.sh [--shots=weapons,raptors,portraits,props]</code>, testy: <code>tests/integration/test_art_stage3_game.gd</code>.</div>
+
+<h2 id="zestaw">Zestaw modułowy holu (etap 2b)</h2>
+<p>Cały hol i skrzydła można ubrać z jednego zestawu: <strong>119 modeli</strong> (70 tys. trójkątów razem), <strong>28 dodatkowych zestawów tekstur</strong> na tych samych siatkach i <strong>16 nowych tekstur kafelkowych</strong> (64 px/m) na pola ścian, podłóg i sufitów. Poziom jest budowany w kodzie z danych (<code>LobbyLayout</code> → <code>LevelBuilder</code> → greyboxy <code>LevelKit</code>), więc zestaw jest pomyślany tak, żeby każdy element dało się postawić z samych danych: <em>(id greyboxa, rozmiar, pomieszczenie, kierunek)</em>. Logikę rozmieszczenia zawiera <code>ArtKit</code> (<code>src/style/art_kit.gd</code>), światło <code>LobbyLightRecipe</code> (<code>src/style/lobby_light_recipe.gd</code>). Dowodem jest <code>LobbyKitPreview</code>: prawdziwy układ holu ubrany zestawem i oświetlony przepisem, nie scena ułożona ręcznie.</p>
+
+<figure><img src="img/kit_wide.jpg" alt="Hol główny nocą, szeroki widok"><figcaption><b>wide</b> — hol 36 × 44 × 14 m: marmurowa szachownica z czerwonymi rombami, cztery kolumny z rosso i jońskimi głowicami, schody z tralkami, balkon na filarach, kasetony ze złoconymi rozetami, snopy księżyca z latarni dachowych na T-Reksie, kasa i punkt informacji.</figcaption></figure>
+<div class="grid2">
+  <figure><img src="img/kit_hall_north.jpg" alt=""><figcaption><b>hall_north</b> — oś holu na północ: snop przez latarnię, balkon w kształcie U, lada <em>INFORMACJA</em>.</figcaption></figure>
+  <figure><img src="img/kit_signs.jpg" alt=""><figcaption><b>signs</b> — wejście do galerii: boniowany portal z łukiem płaskim i zwornikiem, tablica <em>GALERIA RZEŹBY</em> na fryzie balkonu, pilastry piętra, schody zachodnie w ciosach.</figcaption></figure>
+  <figure><img src="img/kit_balcony.jpg" alt=""><figcaption><b>balcony</b> — z balkonu zachodniego: balustrada z postumentami i kulami, kolumny holu, mgła w świetle księżyca.</figcaption></figure>
+  <figure><img src="img/kit_doorway.jpg" alt=""><figcaption><b>doorway</b> — przejście do galerii: portal, obudowa ościeży z kasetonami, otwarte skrzydła z przeszkleniem, galeria za nimi; na podłodze bordiura z meandrem.</figcaption></figure>
+  <figure><img src="img/kit_stair.jpg" alt=""><figcaption><b>stair</b> — schody zachodnie: 40 stopni 0,15 × 0,40 m z marmuru, policzek i balustrada po skosie, słupek z latarnią u stóp.</figcaption></figure>
+  <figure><img src="img/kit_booth.jpg" alt=""><figcaption><b>booth</b> — kasa: orzech i szkło, szyld <em>KASA</em> złotem na czarnym szkle, blat z marmuru, szuflada biletów; w tle snop na T-Reksie.</figcaption></figure>
+  <figure><img src="img/kit_trex.jpg" alt=""><figcaption><b>trex</b> — cokół T-Reksa z wapienia z płycinami, zielonym marmurem na wierzchu i mosiężną tablicą <em>Tyrannosaurus rex · późna kreda · 68–66 mln lat temu</em>.</figcaption></figure>
+  <figure><img src="img/kit_gallery.jpg" alt=""><figcaption><b>gallery</b> — galeria rzeźby: adamaszek, boazeria, gzyms, kasetony z orzecha (etap 1b), obrazy w złoconych ramach.</figcaption></figure>
+  <figure><img src="img/kit_security.jpg" alt=""><figcaption><b>security</b> — pokój ochrony: dwukolorowa farba instytucjonalna z odbojnicą, linoleum w szachownicę, sufit z płyt akustycznych, świetlówka.</figcaption></figure>
+  <figure><img src="img/kit_diorama.jpg" alt=""><figcaption><b>diorama</b> — diorama przyrody: malowana panorama (niebo, dwa pasma gór, świerki, łąka) obiegająca salę, głazy, martwe drzewa, sztuczna trawa, płotki; światło z ukrytych reflektorów pod lambrekinem.</figcaption></figure>
+  <figure><img src="img/kit_armory.jpg" alt=""><figcaption><b>armory</b> — zbrojownia: mur z łamanego kamienia, posadzka z płyt, belki z wędzonego dębu na krońsztejnach, chorągwie z orłem, lwem i krokwiami, stojaki z bronią drzewcową.</figcaption></figure>
+  <figure><img src="img/kit_blackout.jpg" alt=""><figcaption><b>blackout</b> — awaria prądu: zostają księżyc, lampy awaryjne, znaki <em>WYJŚCIE</em> i latarka.</figcaption></figure>
+</div>
+
+<h3>Jak to jest zbudowane: trzy warstwy</h3>
+<ol>
+  <li><strong>Pola</strong> (ściany, podłogi, sufity, ościeża, masa schodów) to nadal proste bryły z greyboxa, ale z materiałem kafelkowym pomieszczenia: <code>ArtKit.field(room, role)</code>. Shader <code>src/style/arch_tiled.gdshader</code> mapuje teksturę 64 px/m po położeniu w świecie, <strong>jedną osią na ścianę</strong> (bez mieszania, więc teksele zostają ostre), każdą w pionie i bez lustra (spoiny ciosów zawsze poziome), z własną ramą stycznych dla mapy normalnych i z pochodnymi z położenia (brak jednopikselowych szwów na krawędziach). Rozmiar kafla to rozmiar obrazka / 64. Bryłę dowolnej wielkości można więc ciąć i rozciągać; spoiny sąsiednich brył schodzą się na siatce świata (warstwy ciosów co 0,5 m od y = 0).</li>
+  <li><strong>Pasy</strong> (cokół, boazeria, gzyms, fryz, rury, odbojnica) to moduły 4 / 2 / 1 / 0,5 m z wypieczonym atlasem (AO, jasne krawędzie). <code>ArtKit.dress_wall(face)</code> układa je na jednej ścianie według stylu pomieszczenia: tnie dolne pasy na drzwiach, górne przeprowadza nad nimi, obniża gzyms pod płytą balkonu, stawia pilastry na piętrze holu.</li>
+  <li><strong>Elementy</strong> (kolumny, cokół T-Reksa, balustrady, schody, portale, drzwi, lampy, kasa, szafki, rekwizyty) zastępują greyboxy tego samego id: <code>ArtKit.piece(kit, size, room)</code>, <code>stairs(...)</code>, <code>passage(...)</code>, <code>leaf(...)</code>, <code>fixture(kit)</code>. Odmiany pomieszczeń to <strong>zestawy tekstur na tej samej siatce</strong> (<code>ArtLibrary.KIT_SETS</code>, zamiana nazwy materiału w <code>ArtLibrary.model(id, {id: zestaw})</code>), a nie kopie siatek.</li>
+</ol>
+
+<h3>Konwencje</h3>
+<ul>
+  <li><strong>Orientacja jak w <code>LevelKit</code>:</strong> początek w środku podstawy, +Y w górę, <strong>przód na −Z</strong> (w Blenderze +Y). Modele zestawu buduje się jak ściany etapu 1b (widz na −Y) i na końcu obraca o 180° wokół pionu (<code>archkit.turn</code>: obrót, nie lustro, więc napisy dalej się czytają). Wymiana greyboxa na model nie wymaga więc dodatkowego obrotu.</li>
+  <li><strong>Pasy przyścienne:</strong> x od −W/2 do W/2, płaszczyzna ściany z = 0, nic za nią, dekoracja po stronie −Z. Punkt odniesienia (początek): dolne pasy na podłodze, górne na suficie (wiszą), gzyms pośredni holu i balkon: górną krawędzią. Ściana „z twarzy” ma ramę <code>ArtKit.face_transform(a, b, do_pokoju)</code>: początek na podłodze na końcu ściany, +X wzdłuż, −Z do pokoju.</li>
+  <li><strong>Oprawy światła:</strong> początek tam, gdzie świeci światło (tam stawia się <code>Light3D</code>), uchwyt biegnie w +Z do ściany albo w górę, jak zakłada <code>LevelLighting</code>.</li>
+  <li><strong>Skrzydła drzwi i fałszywe panele:</strong> rama liścia z <code>Door</code> (początek w środku podstawy liścia, grubość 0,12 m, +Z = strona pokoju A). Panel ma wykończoną stronę +Z (tam <code>Door</code> go stawia, gdy <code>face_room == room_a</code>).</li>
+  <li><strong>Schody:</strong> rama <code>StairsSpec.frame()</code> (środek dolnej krawędzi pierwszego stopnia, −Z w górę biegu).</li>
+  <li><strong>Materiały zestawu w plikach .glb</strong> mają nazwy: nazwa modelu (atlas), <code>glass</code>, <code>tile:&lt;tekstura&gt;</code> (pole mapowane w świecie) albo <code>tilelocal:&lt;tekstura&gt;</code> (w przestrzeni obiektu: przesuwany fałszywy panel zachowuje wzór). <code>ArtLibrary.material()</code> rozpoznaje je sam.</li>
+</ul>
+
+<h3>Pola pomieszczeń (tekstury kafelkowe 64 px/m)</h3>
+<figure><img src="img/kit_backdrop.jpg" alt="Panorama dioramy"><figcaption><code>backdrop</code> — malowana panorama dioramy, 16 × 8 m (1024 × 512 px), okresowa w poziomie: obiega salę bez szwu. Po malowaniu kolory są przyciągane do 33-kolorowej palety.</figcaption></figure>
+<div class="table-wrap"><table>
+<tr><th>Tekstura</th><th>Kafel</th><th>Co to jest</th><th>Gdzie</th></tr>
+<tr><td><code>limestone_rustic</code></td><td>6 × 3 m</td><td>boniowanie pasowe: warstwy 0,5 m z głębokim rowkiem V na spoinie wspornej, bloki 1–2 m w przesuniętym wiązaniu, oświetlona górna faza, cień dolnej</td><td>hol, parter (do 6 m)</td></tr>
+<tr><td><code>limestone_ashlar</code></td><td>4 × 2 m</td><td>gładkie ciosy 0,75–1,5 m, spoina na 1 teksel z jasną krawędzią nad nią</td><td>hol, piętro; masa schodów</td></tr>
+<tr><td><code>limestone</code></td><td>2 × 2 m</td><td>wapień gładki (plamki muszli, obróbka)</td><td>ościeża, płyta balkonu</td></tr>
+<tr><td><code>marble_hall</code></td><td>4 × 4 m</td><td>szachownica 2 m: kremowe botticino i niebieskoszare bardiglio, romb z rosso na każdym narożu, fuga 1 teksel; przesunięcie o 1 m kładzie płytę na środku holu</td><td>posadzka holu</td></tr>
+<tr><td><code>stone_rubble</code></td><td>4 × 2 m</td><td>mur z łamanego kamienia w nierównych warstwach, zaokrąglone krawędzie, głęboka zaprawa</td><td>zbrojownia, podziemie</td></tr>
+<tr><td><code>flagstone</code></td><td>4 × 4 m</td><td>płyty kamienne, wytarte środki, szczerbione krawędzie, rysy</td><td>zbrojownia, podziemie</td></tr>
+<tr><td><code>backdrop</code></td><td>16 × 8 m</td><td>malowana panorama (patrz wyżej)</td><td>ściany dioramy</td></tr>
+<tr><td><code>grass_fake</code></td><td>2 × 2 m</td><td>flokowana trawa z kępami, słomą, liśćmi i kamykami</td><td>poletka dioramy</td></tr>
+<tr><td><code>terrazzo</code></td><td>2 × 2 m</td><td>lastryko z odłamkami pięciu marmurów, mosiężne listwy co 1 m</td><td>chodnik dioramy</td></tr>
+<tr><td><code>paint_wall</code></td><td>2 × 3 m</td><td>farba instytucjonalna: ciemnozielona lamperia do 1,2 m, linia, jasna szarozieleń wyżej</td><td>pokój ochrony, korytarz personelu</td></tr>
+<tr><td><code>linoleum</code></td><td>2 × 2 m</td><td>płytki 0,5 m, bordo i krem, marmurkowe smugi, wosk, przetarcia</td><td>j.w.</td></tr>
+<tr><td><code>ceiling_tiles</code></td><td>4 × 4 m</td><td>płyty akustyczne 0,5 m w ruszcie T, spękania, zacieki</td><td>j.w.</td></tr>
+<tr><td><code>concrete</code></td><td>4 × 4 m</td><td>wylewka z nacięciami co 2 m, plamy, wżery</td><td>korytarze techniczne</td></tr>
+<tr><td><code>brick</code></td><td>4 × 2 m</td><td>cegła w wiązaniu krzyżykowym, przepalone cegły, łaty odpadającego tynku</td><td>schowek, pokoje sekretne, szyb</td></tr>
+<tr><td><code>boards</code></td><td>2 × 2 m</td><td>deski sosnowe 12,5 cm, styki, gwoździe</td><td>podłoga schowka i sekretów</td></tr>
+<tr><td><code>timber</code></td><td>2 × 1 m</td><td>wędzony dąb, ślady ciosła, pęknięcia wzdłuż włókien (też funkcja atlasów belek)</td><td>zbrojownia</td></tr>
+</table></div>
+<p>Poza nimi zestaw używa tekstur etapu 1b: <code>wallpaper</code> (galeria), <code>marble_floor</code> (galeria), <code>plaster</code> (korytarze, sufity; w dioramie z odcieniem <code>ceiling_tint</code>, w studniach latarni przyciemniony, żeby księżyc nie robił z nich świecących płyt).</p>
+
+<h3>Style pomieszczeń</h3>
+<div class="table-wrap"><table>
+<tr><th>Pomieszczenie</th><th>Ściany</th><th>Podłoga / sufit</th><th>Pasy (dół → góra)</th><th>Ościeża, drzwi, reszta</th></tr>
+<tr><td>hol (+ balkon)</td><td>boniowanie do 6 m, ciosy wyżej; studnie latarni: ciemny tynk</td><td><code>marble_hall</code> z bordiurą i medalionem / kasetony <code>hall_coffer_2m</code> (też pod balkonem)</td><td><code>hall_plinth_*</code>, <code>hall_string_*</code> (6 m; pod balkonem 5,6 m), <code>hall_upper_base_*</code> (na balkonie), pilastry co ~5,5 m, <code>hall_cornice_*</code></td><td>portal <code>hall_arch_4m</code> + <code>hall_door_reveal_4m</code>, kolumny <code>hall_column</code>, balkon (fryz, filary, balustrada), schody, latarnie</td></tr>
+<tr><td>galeria</td><td>adamaszek</td><td><code>marble_floor</code> / kasetony <code>ceiling_2m</code></td><td><code>gallery_base_*</code>, <code>gallery_top_*</code></td><td><code>doorframe_4x4_5</code> (orzech), <code>doorframe_2x2_8</code>, ramy obrazów</td></tr>
+<tr><td>zbrojownia</td><td>łamany kamień</td><td>płyty / tynk + belki <code>timber_beam_4m</code> co 4 m na krońsztejnach</td><td><code>hall_plinth_*</code> w zestawie <code>armory_plinth_*</code>, <code>armory_top_*</code></td><td><code>doorframe_4x4_5_stone</code>, chorągwie, stojaki z bronią, <code>false_panel_armory</code></td></tr>
+<tr><td>diorama</td><td>panorama</td><td>lastryko / tynk ciemnoniebieski</td><td><code>diorama_base_*</code>, <code>diorama_top_*</code> (lambrekin)</td><td><code>doorframe_4x4_5_paint</code>, <code>doorframe_2x2_6_dark</code>, głazy, drzewa, trawa, płotki</td></tr>
+<tr><td>korytarze techniczne</td><td>tynk</td><td>wylewka / tynk</td><td><code>skirting_*</code>, <code>corridor_pipes_*</code></td><td><code>doorframe_2x2_8</code>, drzwi przesuwne</td></tr>
+<tr><td>korytarz personelu, ochrona</td><td>farba dwukolorowa</td><td>linoleum / płyty akustyczne</td><td><code>skirting_black_*</code>, <code>security_rail_*</code> (1,2 m)</td><td><code>doorframe_2x2_6</code>, drzwi z tabliczką, szafki</td></tr>
+<tr><td>schowek, pokoje sekretne, szyb</td><td>cegła</td><td>deski (szyb: wylewka) / tynk, cegła</td><td><code>skirting_pine_*</code> (schowek)</td><td><code>false_panel_hall</code>, <code>painting_panel</code>, <code>vent_grille</code></td></tr>
+</table></div>
+
+<h3>Elementy zestawu</h3>
+<div class="grid3">
+  <figure><img src="img/model_hall_column.jpg" alt=""><figcaption><code>hall_column</code>: 14 m, trzon rosso z kanelurami i entazą, głowica jońska kątowa (cztery woluty po przekątnych), baza attycka na cokole z verde; zestaw <code>hall_column_grey</code></figcaption></figure>
+  <figure><img src="img/model_hall_arch_4m.jpg" alt=""><figcaption><code>hall_arch_4m</code>: boniowany portal 6,6 × 5,5 m (mieści się pod płytą balkonu 5,6 m), łuk płaski z 9 klińców, zwornik z konsolą; otwór zostaje prostokątny, więc skrzydła swobodnie się otwierają</figcaption></figure>
+  <figure><img src="img/model_hall_cornice_4m.jpg" alt=""><figcaption><code>hall_cornice_4m</code>: belkowanie 1,5 m pod stropem holu: trzy fascje, fryz, ząbki, modyliony co 0,5 m, gzyms</figcaption></figure>
+  <figure><img src="img/model_balustrade_2m.jpg" alt=""><figcaption><code>balustrade_2m</code>: tralki co 0,25 m, <code>balustrade_pedestal</code> z kulą co ~4 m</figcaption></figure>
+  <figure><img src="img/model_stair_balustrade_4m.jpg" alt=""><figcaption><code>stair_balustrade_4m</code> na <code>stair_stringer_4m</code>: jedna tralka na stopień, poręcz po skosie 0,15/0,40</figcaption></figure>
+  <figure><img src="img/model_stair_newel.jpg" alt=""><figcaption><code>stair_newel</code>: słupek u stóp schodów z mosiężną latarnią (znacznik <code>Light</code>)</figcaption></figure>
+  <figure><img src="img/model_skylight_bay_3m.jpg" alt=""><figcaption><code>skylight_bay_3m</code>: przęsło żeliwnej latarni dachowej: krokwie co 0,5 m pasują szprosami snopy księżyca, łukowe żebro, szkło bez cienia</figcaption></figure>
+  <figure><img src="img/model_hall_coffer_2m.jpg" alt=""><figcaption><code>hall_coffer_2m</code>: kaseton 2 × 2 m, złocony wałek i rozeta (210 trójkątów, bo stoi ich ~400)</figcaption></figure>
+  <figure><img src="img/model_floor_medallion.jpg" alt=""><figcaption><code>floor_medallion</code>: róża wiatrów 5,8 m z marmurów i mosiądzu</figcaption></figure>
+  <figure><img src="img/model_floor_border_4m.jpg" alt=""><figcaption><code>floor_border_4m</code>: bordiura 1 m z meandrem co 0,5 m (moduły łączą się w ciągły wzór)</figcaption></figure>
+  <figure><img src="img/model_trex_pedestal.jpg" alt=""><figcaption><code>trex_pedestal</code>: 12 × 1,2 × 6 m, profile obiegające obrys (fazowane narożniki, bez ukrytych ścian w atlasie)</figcaption></figure>
+  <figure><img src="img/model_plaque_trex.jpg" alt=""><figcaption><code>plaque_trex</code>: prawdziwe litery z czcionki 5 × 7 z polskimi znakami (<code>artlib/font.py</code>)</figcaption></figure>
+  <figure><img src="img/model_ticket_booth.jpg" alt=""><figcaption><code>ticket_booth</code>: części <code>drawer</code>, <code>ticket_booth_glass</code>; szyld <em>KASA</em></figcaption></figure>
+  <figure><img src="img/model_info_desk.jpg" alt=""><figcaption><code>info_desk</code>: lada w kształcie stadionu, dwustronny szyld <em>INFORMACJA</em>, dzwonek, lampka</figcaption></figure>
+  <figure><img src="img/model_fuse_box.jpg" alt=""><figcaption><code>fuse_box</code>: dźwignia <code>lever</code> (oś X), lampki <code>lamp_red</code> / <code>lamp_green</code>, gniazda <code>Fuse_A</code> / <code>Fuse_B</code>, tabliczka <em>BEZPIECZNIKI</em></figcaption></figure>
+  <figure><img src="img/model_exit_sign.jpg" alt=""><figcaption><code>exit_sign</code>: podświetlany <em>WYJŚCIE</em> z biegnącym człowiekiem, lampa awaryjna pod spodem</figcaption></figure>
+  <figure><img src="img/model_sign_room.jpg" alt=""><figcaption><code>sign_room</code>: <em>GALERIA RZEŹBY</em>, <em>ZBROJOWNIA</em>, <em>DIORAMA PRZYRODY</em>, <em>HOL GŁÓWNY</em>, <em>TYLKO DLA PERSONELU</em> (zestawy tekstur)</figcaption></figure>
+  <figure><img src="img/model_chandelier.jpg" alt=""><figcaption><code>chandelier</code>: dwa piętra ramion, 16 świec, kryształowe krople</figcaption></figure>
+  <figure><img src="img/model_door_grand_leaf_l.jpg" alt=""><figcaption><code>door_grand_leaf_l</code> / <code>_r</code>: skrzydło drzwi skrzydeł (2 × 4,5 m) z przeszkleniem i mosiądzem</figcaption></figure>
+  <figure><img src="img/model_door_slide_leaf.jpg" alt=""><figcaption><code>door_slide_leaf</code>: stalowe drzwi serwisowe z bulajem i pasami ostrzegawczymi</figcaption></figure>
+  <figure><img src="img/model_grate_leaf_3m.jpg" alt=""><figcaption><code>grate_leaf_3m</code>: skrzydło kraty, 16 prętów po przekątnej, 0,13 m światła między nimi (pociski przejdą, gdy pręty dostaną osobne kolizje)</figcaption></figure>
+  <figure><img src="img/model_vent_grille.jpg" alt=""><figcaption><code>vent_grille</code>: klapa z żaluzjami, obustronna</figcaption></figure>
+  <figure><img src="img/model_weapon_rack.jpg" alt=""><figcaption><code>weapon_rack</code>: halabarda, gizarma, partyzana, tarcza z mieczami</figcaption></figure>
+  <figure><img src="img/model_banner.jpg" alt=""><figcaption><code>banner</code>: orzeł w koronie; zestawy <code>banner_lion</code>, <code>banner_chevron</code></figcaption></figure>
+  <figure><img src="img/model_rock_a.jpg" alt=""><figcaption><code>rock_a</code> / <code>rock_b</code>: głazy z mchem na górnych ścianach</figcaption></figure>
+  <figure><img src="img/model_dead_tree.jpg" alt=""><figcaption><code>dead_tree</code>: złamane burzą drzewo 5,5 m</figcaption></figure>
+  <figure><img src="img/model_locker_05m.jpg" alt=""><figcaption><code>locker_05m</code>: szafka z drzwiami <code>door</code> na zawiasie</figcaption></figure>
+  <figure><img src="img/model_frame_3x2.jpg" alt=""><figcaption><code>frame_3x2</code> i inne ramy: płótna jako zestawy (pejzaż, morze, martwa natura, portret)</figcaption></figure>
+</div>
+<div class="table-wrap"><table>
+<tr><th>Rodzina (id)</th><th class="num">Trójkąty</th><th>Atlas (4 m / główny)</th><th class="num">px/m</th><th>Uwagi</th></tr>
+<tr><td><code>hall_plinth_*</code>, <code>hall_upper_base_*</code>, <code>hall_string_*</code></td><td class="num">18–24</td><td>288×96</td><td class="num">64</td><td>profile z otwartymi końcami (narożniki wewnętrzne przez przenikanie); spoina główna co 1 m</td></tr>
+<tr><td><code>hall_cornice_*</code></td><td class="num">356–2 512</td><td>352×384</td><td class="num">64</td><td>modyliony co 0,5 m, ząbki co 0,125 m: każda długość zachowuje rytm</td></tr>
+<tr><td><code>hall_column</code></td><td class="num">4 934</td><td>1120×672</td><td class="num">64</td><td>14 m, rozmiar greyboxa 1,6 m</td></tr>
+<tr><td><code>hall_pilaster_base / _shaft / _capital</code></td><td class="num">78 / 276 / 858</td><td>≤160×288</td><td class="num">64</td><td>trzon 1 m skalowany w Y</td></tr>
+<tr><td><code>hall_arch_4m</code>, <code>hall_door_reveal_4m</code></td><td class="num">1 540 / 720</td><td>736×512</td><td class="num">64</td><td>ościeże skalowane w Z do grubości muru</td></tr>
+<tr><td><code>balcony_fascia_*</code>, <code>_end</code></td><td class="num">106–384</td><td>288×160</td><td class="num">64</td><td>z belką 0,15 m pod płytą</td></tr>
+<tr><td><code>balustrade_2m / _1m</code>, <code>balustrade_pedestal</code>, <code>balcony_pier</code></td><td class="num">1 968 / 1 072 / 392 / 528</td><td>≤352×672</td><td class="num">64</td><td>symetryczne przód–tył</td></tr>
+<tr><td><code>stair_step_4m / _1m</code>, <code>stair_wedge</code>, <code>stair_stringer_4m</code>, <code>stair_balustrade_4m</code>, <code>stair_newel</code></td><td class="num">26 / 6 / 20 / 2 372 / 866</td><td>≤768×416</td><td class="num">64–128</td><td>klin bez atlasu (pole <code>stair</code> pomieszczenia)</td></tr>
+<tr><td><code>hall_coffer_2m</code>, <code>skylight_bay_3m</code>, <code>skylight_gable_3m</code></td><td class="num">210 / 1 184 / 353</td><td>448×768</td><td class="num">64</td><td>szkło osobnym obiektem, bez cienia</td></tr>
+<tr><td><code>floor_border_*</code>, <code>floor_border_corner</code>, <code>floor_medallion</code></td><td class="num">44 / 44 / 62</td><td>384×384</td><td class="num">64</td><td>4 mm nad posadzką</td></tr>
+<tr><td><code>trex_pedestal</code>, <code>plaque_trex</code></td><td class="num">658 / 172</td><td>832×1024 / 480×256</td><td class="num">64 / 256</td><td></td></tr>
+<tr><td><code>ticket_booth</code>, <code>info_desk</code>, <code>bench_hall</code></td><td class="num">2 460 / ~2 000 / 1 728</td><td>≤1792×1376</td><td class="num">96–128</td><td></td></tr>
+<tr><td><code>fuse_box</code>, <code>locker_05m</code></td><td class="num">834 / 924</td><td>832×448 / 800×768</td><td class="num">256</td><td>części ruchome</td></tr>
+<tr><td><code>exit_sign</code>, <code>emergency_lamp</code>, <code>sign_room</code>, <code>sign_staff</code></td><td class="num">232 / 484 / 56 / 44</td><td>≤608×448</td><td class="num">128–512</td><td>litery z <code>artlib/font.py</code></td></tr>
+<tr><td><code>column_lamp</code>, <code>ceiling_lamp</code>, <code>chandelier</code>, <code>tube_lamp</code>, <code>bulb</code>, <code>desk_lamp</code></td><td class="num">224–4 944</td><td>≤800×544</td><td class="num">192–512</td><td>emisja w <code>EXTRAS</code></td></tr>
+<tr><td><code>gallery_base_*</code>, <code>gallery_top_*</code></td><td class="num">206–1 800</td><td>288×512</td><td class="num">64</td><td>profile ściany etapu 1b rozcięte na pasy</td></tr>
+<tr><td><code>skirting_*</code>, <code>diorama_base_*</code>, <code>diorama_top_*</code>, <code>security_rail_*</code>, <code>armory_top_*</code></td><td class="num">10–378</td><td>≤288×128</td><td class="num">64</td><td></td></tr>
+<tr><td><code>corridor_pipes_*</code></td><td class="num">524–1 916</td><td>288×544</td><td class="num">128</td><td>trzy rury na wspornikach co 1 m</td></tr>
+<tr><td>drzwi: <code>door_grand_leaf_l/_r</code>, <code>door_staff_leaf</code>, <code>door_slide_leaf</code></td><td class="num">616–968</td><td>≤896×576</td><td class="num">128</td><td>obie strony wykończone</td></tr>
+<tr><td>ościeżnice: <code>doorframe_4x4_5</code>, <code>_2x2_8</code>, <code>_2x2_6</code></td><td class="num">36–250</td><td>≤384×288</td><td class="num">64–128</td><td>jedna twarz; po jednej na stronę przejścia</td></tr>
+<tr><td>panele: <code>false_panel_hall</code>, <code>false_panel_armory</code>, <code>painting_panel</code>, <code>vent_grille</code></td><td class="num">28–2 652</td><td>≤992×640</td><td class="num">64–128</td><td>pola <code>tilelocal:</code></td></tr>
+<tr><td><code>grate_leaf_3m</code>, <code>grate_frame_6m</code></td><td class="num">5 452 / 2 824</td><td>1024×832</td><td class="num">128 / 64</td><td></td></tr>
+<tr><td><code>timber_beam_4m</code>, <code>timber_corbel</code>, <code>weapon_rack</code>, <code>banner</code></td><td class="num">176–1 136</td><td>≤512×800</td><td class="num">64–128</td><td></td></tr>
+<tr><td><code>rock_a/_b</code>, <code>dead_tree</code>, <code>grass_tuft</code>, <code>fence_rail_2m/_1m</code>, <code>fence_post</code></td><td class="num">6–544</td><td>≤448×832</td><td class="num">64–256</td><td>trawa: alpha scissor, dwustronna</td></tr>
+<tr><td>ramy: <code>frame_3x2</code>, <code>frame_3_5x2_2</code>, <code>frame_2_4x1_8</code>, <code>frame_1_2x0_9</code>, <code>frame_0_6x0_8</code></td><td class="num">74–294</td><td>≤448×448</td><td class="num">128</td><td>płótna jako zestawy</td></tr>
+</table></div>
+<p>Pełny spis z liczbami prosto z plików: <code>python tools/art/kit_table.py</code> (albo <code>--html</code>).</p>
+
+<h3 id="rozmieszczenie">Tabela rozmieszczenia: id greyboxa → model</h3>
+<p>Wykonywalna wersja tej tabeli to <code>ArtKit</code>; <code>LobbyKitPreview</code> (<code>src/style/lobby_kit_preview.gd</code>) pokazuje, jak z niej korzystać na danych <code>LobbyLayout</code>.</p>
+<div class="table-wrap"><table>
+<tr><th>Id (<code>LevelKit</code>)</th><th>Modele</th><th>Oś / rama</th><th>Dopasowanie do rozmiaru</th></tr>
+<tr><td><code>floor</code>, <code>threshold</code>, <code>slab</code>, <code>ceiling</code>, <code>lintel</code>, <code>wall</code> (skorupa)</td><td>bryła greyboxa + <code>ArtKit.field(room, ArtKit.shell_role(kit))</code>; ściany i nadproża (widać je jako ścianę nad drzwiami, więc biorą pole ściany) przez <code>ArtKit.wall_layers</code>: w holu podział na 6 m (boniowanie / ciosy) i powyżej 14 m (studnie latarni)</td><td>—</td><td>dowolny (mapowanie w świecie)</td></tr>
+<tr><td>twarz ściany (rekord z <code>LevelLayout</code>)</td><td><code>ArtKit.dress_wall({room, length, height, openings, soffits, balcony})</code>: pasy stylu, pilastry holu</td><td><code>ArtKit.face_transform(a, b, do_pokoju)</code> + wysokość podłogi pokoju</td><td>moduły 4/2/1/0,5 m; długość wielokrotna 0,5 m składana bez rozciągania, inna: jeden rozmiar rozciągnięty najwyżej ±25 %; dolne pasy przerwane na otworach, górne nad nimi</td></tr>
+<tr><td>sufit pokoju</td><td><code>ArtKit.dress_ceiling(room, size)</code>: <code>hall_coffer_2m</code> (hol, pod balkonem), <code>ceiling_2m</code> (galeria), <code>timber_beam_4m</code> + <code>timber_corbel</code> (zbrojownia)</td><td>środek spodu bryły sufitu</td><td>kasetony: n = round(rozmiar / 2) na oś, rozciągnięte w X/Z; w holu prostokąty sufitu minus studnie latarni</td></tr>
+<tr><td>podłoga pokoju</td><td><code>ArtKit.dress_floor(room, rect)</code>: <code>floor_border_*</code> + 4 × <code>floor_border_corner</code> + <code>floor_medallion</code></td><td>prostokąt pokoju</td><td>bordiura 1 m wzdłuż ścian</td></tr>
+<tr><td><code>column</code></td><td><code>hall_column</code> (hol; skala rozmiar / (1,6; 14; 1,6)); gdzie indziej <code>column</code> z etapu 1b</td><td>środek podstawy</td><td>skalowanie</td></tr>
+<tr><td><code>pedestal</code> (≥ 6 m)</td><td><code>trex_pedestal</code> + 2 × <code>plaque_trex</code> na środkowych płycinach (z = ±(d/2 + 0,03), y = 0,64 · h / 1,2)</td><td>środek podstawy</td><td>skalowanie</td></tr>
+<tr><td><code>balcony</code> (płyta)</td><td>bryła z polem <code>slab</code>; <code>balcony_fascia_*</code> na wolnych krawędziach (nie przy ścianie holu, nie przy innej płycie), <code>balcony_fascia_end</code> gdzie fryz kończy się w powietrzu (przy schodach); kasetony pod spodem</td><td>rama twarzy skierowana od płyty; punkt odniesienia = wierzch płyty</td><td>moduły</td></tr>
+<tr><td><code>balcony_post</code></td><td><code>balcony_pier</code></td><td>środek podstawy</td><td>skala rozmiar / (0,6; 5,6; 0,6)</td></tr>
+<tr><td><code>railing</code> (balkon)</td><td><code>balustrade_pedestal</code> na końcach i co ~4 m, między nimi <code>balustrade_2m / _1m</code></td><td>środek podstawy na osi poręczy</td><td>moduły; symetryczna, obrót bez znaczenia</td></tr>
+<tr><td><code>stairs</code> + poręcze schodów z <code>LevelBuilder</code></td><td><code>ArtKit.stairs(w, rise, run, steps, open_left, open_right, room)</code>: stopnie, klin, policzki i balustrady co 4 m biegu na otwartych bokach, <code>stair_newel</code> u stóp</td><td><code>StairsSpec.frame()</code></td><td>stopnie skalowane do wysokości i głębokości; kolizje poręczy greyboxa zostają (niewidoczne)</td></tr>
+<tr><td><code>skylight</code></td><td><code>skylight_bay_3m</code> co ~3 m wzdłuż dłuższego boku + <code>skylight_gable_3m</code> na obu końcach</td><td>środek podstawy (spód krawężnika)</td><td>przęsła rozciągnięte do długości</td></tr>
+<tr><td><code>door_frame</code> (przejście)</td><td><code>ArtKit.passage(w, h, d, room_a, room_b)</code>: ościeżnica stylu każdej strony; 4 × 4,5 m od holu: <code>hall_arch_4m</code> + <code>hall_door_reveal_4m</code></td><td>rama <code>Door</code> (środek podłogi przejścia, −Z od A do B); strona A obrócona o π</td><td>ościeże skalowane w Z do d / 2</td></tr>
+<tr><td><code>door_leaf</code></td><td><code>ArtKit.leaf(kit, size, style, side, face_room)</code>: DOUBLE_SWING → <code>door_grand_leaf_l</code> (side = +1: zawias na −X) / <code>_r</code>; SWING → <code>door_staff_leaf</code>; SLIDE → <code>door_slide_leaf</code></td><td>środek podstawy liścia</td><td>skala do (w, h, 0,12)</td></tr>
+<tr><td><code>false_panel</code>, <code>painting_panel</code>, <code>vent_grille</code></td><td><code>false_panel_hall</code> (balkon), <code>false_panel_armory</code> (zbrojownia), <code>painting_panel</code>, <code>vent_grille</code></td><td>środek podstawy; wykończenie na +Z (strona A)</td><td>skala</td></tr>
+<tr><td><code>grate</code> (liść 6 × 5 m)</td><td>2 × <code>grate_leaf_3m</code> na x = ±1,5 + <code>grate_frame_6m</code> na twarzy holu</td><td>rama liścia</td><td>skala; pręty na x = −1,35 + 0,18 k</td></tr>
+<tr><td><code>ticket_booth</code>, <code>info_desk</code>, <code>fuse_box</code></td><td>te same id (części: <code>drawer</code>; <code>lever</code>, <code>lamp_red</code>, <code>lamp_green</code>)</td><td>środek podstawy, przód −Z</td><td>skala rozmiar / natywny</td></tr>
+<tr><td><code>bench</code></td><td><code>bench_hall</code> (hol, ≥ 2,6 m), inaczej <code>bench</code> z etapu 1b obrócona o π</td><td>środek podstawy</td><td>skala</td></tr>
+<tr><td><code>lockers</code></td><td>round(w / 0,5) × <code>locker_05m</code> wzdłuż X</td><td>środek podstawy</td><td>skala w Z do głębokości</td></tr>
+<tr><td><code>painting</code></td><td>najbliższa rozmiarem <code>frame_*</code>, płótno z zestawów (po indeksie)</td><td>środek dolnej krawędzi ramy, tył 5 cm za osią</td><td>skala X/Y</td></tr>
+<tr><td><code>rock</code>, <code>grass</code>, <code>fence</code></td><td><code>rock_a</code>/<code>rock_b</code> na zmianę; poletko z polem <code>grass_fake</code> + <code>grass_tuft</code> ~1,3/m²; <code>fence_rail_*</code> + <code>fence_post</code></td><td>środek podstawy</td><td>skala / moduły</td></tr>
+<tr><td>oprawy: <code>sconce</code>, <code>column_lamp</code>, <code>ceiling_lamp</code>, <code>tube_lamp</code>, <code>bulb</code>, <code>desk_lamp</code>, <code>exit_sign</code>, <code>emergency_lamp</code></td><td><code>ArtKit.fixture(kit)</code> (<code>sconce</code> to model etapu 1b obrócony o π, przesunięty o (0; −0,2; 0,28))</td><td>początek = światło</td><td>stałe</td></tr>
+<tr><td>bez zestawu (zostaje greybox)</td><td><code>case</code>, <code>crystal_case</code>, <code>desk</code>, <code>chair</code>, <code>bust_plinth</code>, <code>sculpture</code>, <code>crate</code>, <code>armor_rack</code>, <code>plaque</code>, <code>cctv_wall</code>, <code>shelf</code>, <code>plinth</code>, <code>landing</code> (rekwizyty i eksponaty spoza zakresu; część ma modele etapu 1b/2)</td><td>—</td><td>—</td></tr>
+</table></div>
+
+<h3 id="swiatlo-hol">Przepis na światło holu</h3>
+<p>Ten sam język co w próbce, przeskalowany do budynku: <code>LobbyLightRecipe</code> (dane i fabryki, nie podłączone do poziomu). Zasada kontrastu mgły zostaje: księżyc oświetla mgłę 9×, lampy 0,12–0,3×.</p>
+<div class="table-wrap"><table>
+<tr><th>Grupa</th><th>Ustawienia</th><th>Po co</th></tr>
+<tr><td>SDFGI</td><td>4 kaskady, najmniejsza komórka 0,15 m (kaskada 0 ≈ 19 m wokół kamery, całość ≈ 150 m), skala Y 75 %, okluzja</td><td>cały budynek z każdego miejsca, pół holu w najdrobniejszej kaskadzie; hol ma 14 m wysokości</td></tr>
+<tr><td>Mgła</td><td>globalnie 0; długość 40 m, siatka 160 × 90 × 96, GI inject 0,08</td><td>długie widoki holu; mało GI w mgle, bo inaczej cały hol mętnieje na niebiesko</td></tr>
+<tr><td>FogVolume na pokój</td><td>hol 0,013, galeria 0,018, zbrojownia 0,022 (ciepła), diorama 0,014, korytarze 0,012, ochrona 0,006, schowek 0,03</td><td>kurz tam, gdzie powietrze stoi; hol rzadziej, bo patrzy się przez 40 m</td></tr>
+<tr><td>Księżyc</td><td>(0,55; 0,67; 1,0), 2,4, mgła 9; kierunek (−0,28; −0,9; −0,33); cienie do 70 m, podziały 0,08 / 0,2 / 0,5</td><td>stromo przez trzy latarnie, snopy lądują na T-Reksie i posadzce</td></tr>
+<tr><td>ReflectionProbe</td><td>hol i galeria: cały pokój, box projection, interior, raz, punkt przechwytu obniżony (hol −4 m)</td><td>marmur tam, gdzie SSR nie sięga</td></tr>
+<tr><td>SSR / SSAO / SSIL</td><td>96 kroków (hol ma 44 m), SSAO r 1,0, SSIL r 5,0</td><td>odbicia wzdłuż posadzki, styki mebli, ciepły odblask</td></tr>
+<tr><td>Budżet cieni</td><td>hol 6 (lampy kolumn), galeria i zbrojownia 2, diorama 2, ochrona 1, korytarze 0; zanik lamp od 40 m (hol) / 30 m (skrzydła)</td><td>cienie tylko tam, gdzie je widać</td></tr>
+<tr><td>Oprawy</td><td>kinkiety ×1,6 energii (ciepłe plamy na wapieniu), lampy kolumn ×1,25 z cieniem; awaryjne i znaki mocniej w mgle (0,6)</td><td>czerwona poświata przy wyjściach czyta się z daleka</td></tr>
+<tr><td>Dodatkowe światła</td><td>hol: 8 ciepłych reflektorów za balustradą balkonu, świecących w górę po ścianie piętra; diorama: 8 reflektorów pod lambrekinem (ciepłe na długie ściany, chłodne na tylną); bez cieni</td><td>piętro holu i malowana panorama muszą być widoczne nocą</td></tr>
+</table></div>
+
+<h3>Wydajność i dowód</h3>
+<p><code>bash tools/run_kit_preview.sh</code> buduje cały lobby-układ z zestawem (około 2,4 s), robi zrzuty 1920 × 1080 do <code>tests/_out/kit/</code> i mierzy FPS. Wynik na RTX 2080 Ti, pełna jakość (SDFGI, MSAA 4×, mgła, SSR): <strong>140 FPS w widoku <code>wide</code>, 145 z balkonu, 166 w przejściu do galerii</strong> (7,1 / 6,9 / 6,0 ms); preset „low” (<code>--preset=low</code>: bez SDFGI i SSIL, mgła 64 × 64): 258 / 263 / 317 FPS. Scena to cały budynek naraz: 2 299 obiektów z siatką, 0,73 mln trójkątów (z T-Reksem i rekwizytami etapu 2), 99 świateł (62 z układu, 18 przy znakach wyjścia nad drzwiami, 19 z przepisu i dekoracji). Pomiary jednego uruchomienia wahają się o kilka procent; raz, gdy równolegle pracował inny proces, spadły do 117 / 79, więc mierzyć przy pustym komputerze.</p>
+<div class="table-wrap"><table>
+<tr><th>Widok</th><th class="num">Pełna jakość</th><th class="num">Preset low</th></tr>
+<tr><td><code>wide</code> (hol z kasy na północny zachód)</td><td class="num">140</td><td class="num">258</td></tr>
+<tr><td><code>balcony</code> (z balkonu zachodniego na hol)</td><td class="num">145</td><td class="num">263</td></tr>
+<tr><td><code>doorway</code> (przejście do galerii)</td><td class="num">166</td><td class="num">317</td></tr>
+</table></div>
+<ul>
+  <li>Najwięcej instancji to kasetony (~400), stopnie (80), moduły pasów i balustrad. Wszystkie dzielą materiały, więc zamiana na <code>MultiMeshInstance3D</code> jest prosta i zdejmie większość kosztu CPU; na razie niepotrzebna.</li>
+  <li>Trójkąty: zestaw sam w sobie jest lekki (kaseton 210, cały hol ~0,7 mln z T-Reksem i rekwizytami).</li>
+</ul>
+
+<h3>Notatki dla integratora (wymiana greyboxów)</h3>
+<ol>
+  <li><code>LevelKit.visual(kit, size, tint)</code> → <code>ArtKit.piece(kit, size, room)</code> (null = zostaw greybox). Potrzebne jest pomieszczenie elementu (metadane <code>kit_room</code>).</li>
+  <li>Skorupa: materiał bryły = <code>ArtKit.field(room, ArtKit.shell_role(kit))</code>, ściany przez <code>ArtKit.wall_layers(room, aabb)</code>. Dla przejść właścicielem jest otwór: bierz <code>room_a</code>. Podłogę progu bierz od pokoju, po którym się chodzi (<code>walk_owner</code>).</li>
+  <li>Ściany potrzebują rekordów twarzy: <code>{room, length, height, openings: [[x0, x1, y0, y1]], soffits: [[x0, x1, y]], balcony: [[x0, x1]]}</code> w ramie <code>face_transform</code>. Sposób liczenia z danych układu: <code>LobbyKitPreview._faces_on_edge</code>.</li>
+  <li><code>Door</code>: liście przez <code>ArtKit.leaf</code> (znak przesunięcia liścia od zawiasu = <code>side</code>), ościeżnice przez <code>ArtKit.passage</code> zamiast <code>door_frame</code>. Kolizje liści zostają pudełkami.</li>
+  <li>Schody: <code>ArtKit.stairs</code> w ramie <code>StairsSpec.frame()</code> zamiast wizualu <code>stairs</code>; poręcze schodów z <code>LevelBuilder</code> zostawić jako same kolizje.</li>
+  <li>Krata: żeby pociski przechodziły między prętami, jedno pudełko liścia trzeba zamienić na 16 wąskich (pozycje w opisie <code>grate_leaf_3m</code>).</li>
+  <li>Awaria prądu: poza lampami trzeba wyzerować emisję materiałów opraw (<code>LobbyKitPreview.set_main_lights</code> pokazuje listę).</li>
+  <li>Modele zestawu nie mają kolizji: zostają kształty z <code>LevelKit.collision_shapes</code>.</li>
+  <li>Oświetlenie: <code>LevelLighting</code> może przejąć <code>LobbyLightRecipe.make_environment / make_moon / make_fog / make_probe / tune</code> i <code>EXTRA_LIGHTS</code>.</li>
+  <li><code>LobbyKitPreview</code> dokłada też dekoracje, których układ jeszcze nie ma (tablice nad drzwiami, żyrandol, chorągwie, stojaki, drzewa, obrazy w galerii): to propozycje, oznaczone w kodzie.</li>
+</ol>
+<p>Wszystkie punkty powyżej są już zrobione w prawdziwym poziomie (opis niżej); podgląd nie liczy już nic sam, tylko buduje <code>LobbyLevel</code>.</p>
+
+<h3 id="zestaw-w-grze">Zestaw w grze (etap 3: integracja)</h3>
+<p>Prawdziwe lobby wygląda jak podgląd, bo <em>jest</em> tym samym kodem. <code>LevelBuilder</code> (flaga <code>art</code>, domyślnie <code>LevelArt.enabled</code>) daje każdemu elementowi <code>LevelKit</code> wygląd z <code>LevelArt</code>, a kolizje zostają z greyboxa (test porównuje je kształt po kształcie).</p>
+<ul>
+  <li><strong>Skorupa</strong>: <code>LevelArt.shell_look</code> (pola pomieszczeń, podział ściany holu na 6 m, ciemne studnie latarni). <strong>Ściany, sufity, podłogi, fryz balkonu</strong>: <code>LevelArt.dress</code> pod <code>Structure/Dressing</code>; rekordy twarzy liczy <code>LevelArt.wall_faces</code>. Kasetony, belki i bordiura nie rzucają cieni.</li>
+  <li><strong>Elementy</strong>: <code>LevelArt.piece_look</code> → <code>ArtKit.piece</code>. Rzeźba obraca się ku głównym drzwiom sali, popiersia ku jej środkowi; drobne meble mają <code>visibility_range_end</code> 60 m. Szafka z bezpiecznikami to <code>FuseBoxArt</code>: lampki i dźwignia czytają stan gry (element <code>fuse_box_front</code> i <code>Events.power_cut</code>), niczego nie zmieniając.</li>
+  <li><strong>Schody</strong>: <code>ArtKit.stairs</code> (balustrady tylko w holu; w szybie i klatce ściany są poręczą); poręcze z <code>LevelBuilder</code> to same kolizje. <strong>Drzwi</strong>: <code>Door</code> bierze liście, ościeżnice, panele, kratę i lampki blokady z zestawu; krata o liściu 3 m ma 16 kolizji prętów jak model (pocisk przechodzi w 13 cm szczelinie).</li>
+  <li><strong>Nowe modele</strong> (<code>tools/art/models/kit_room_props.py</code>): skrzynia muzealna, biurko i krzesło z dębu, regał archiwalny, półzbroja gotycka na stojaku (blachy z modelu rycerza, bez nóg i bez żaru w hełmie), posąg peplophoros 3,4 m na cokole, wysoka gablota kryształu (szyby jako <code>material_override</code>: gra je tłucze), gabloty stołowe 2 m, mosiężna tabliczka. Popiersia na postumentach to <code>pedestal</code> + <code>bust</code> / <code>bust_bronze</code>.</li>
+  <li><strong>Dekoracje w danych</strong> (<code>LobbyLayout._dressing</code>): tablice nad drzwiami skrzydeł, żyrandol (jego światło to <code>LightSpec</code> z oprawą <code>chandelier</code>), chorągwie i stojaki z bronią w zbrojowni, dwa martwe drzewa w dioramie (kolizja tylko pnia), dziesięć miejsc <code>SCENE_SPOTS</code> na obrazy-pejzaże (<code>WallPainting</code> z <code>PaintingArt.SCENE_IDS</code>: nigdy się nie budzą, nie zdradzają portretów).</li>
+  <li><strong>Światło</strong>: <code>LevelLighting.build(..., recipe)</code> bierze środowisko, księżyc, mgłę w pomieszczeniach, sondy i budżety cieni z <code>LobbyLightRecipe</code>; cień daje tylko lampa, której chce układ, i tylko w budżecie pokoju. Dodatkowe światła: reflektory za balustradą, pas na panoramie dioramy, chorągwie i stojaki zbrojowni, ściany galerii, kule na słupkach schodów. Świecące części elementów (lampka kasy, lada, gabloty, słupki schodów) wchodzą do obwodu pokoju (węzeł w <code>main_lights_fixtures</code> z <code>lit_targets</code>), więc awaria prądu i odcięcie zasilania holu gaszą je razem z lampami; znaki wyjścia i lampy awaryjne świecą dalej.</li>
+  <li><strong>Księżyc</strong>: cienie do 100 m na każdym presecie. Przy 45 m dalekie wnętrza dostawały księżyc bez cienia (hol widziany z pokoju ochrony korytarzem świecił na niebiesko); dwa podziały przy 100 m kosztują tyle samo co przy 45 m.</li>
+</ul>
+<p><strong>Jakość grafiki</strong> (<code>GraphicsQuality</code>, opcja „Jakość grafiki”, na żywo; pierwszy start wybiera ją z karty): <em>niska</em> bez SDFGI, SSR i SSIL, FXAA zamiast MSAA, mgła 64 × 48, bez cieni lamp, skala renderu 80 %; <em>średnia</em> SDFGI w połowie rozdzielczości, 3 kaskady, SSR 32 kroki, MSAA 2×, cienie tylko lamp kolumn; <em>wysoka</em> = przepis; <em>bardzo wysoka</em> 4 podziały księżyca, większe atlasy, więcej promieni GI i SSIL. Pomiar (<code>bash tools/run_dressed.sh perf --preset=…</code>, okno 1920 × 1080, RTX 2080 Ti): hol oświetlony z 40 obudzonymi eksponatami / walka z bossem po odcięciu prądu z ~44 eksponatami.</p>
+<div class="table-wrap"><table>
+<tr><th>Preset</th><th class="num">Hol, 40 eksponatów</th><th class="num">Walka z bossem</th></tr>
+<tr><td>niska</td><td class="num">235–243 FPS</td><td class="num">173–174 FPS</td></tr>
+<tr><td>średnia</td><td class="num">146 FPS</td><td class="num">143 FPS</td></tr>
+<tr><td>wysoka</td><td class="num">116–118 FPS</td><td class="num">114–117 FPS</td></tr>
+<tr><td>bardzo wysoka</td><td class="num">82 FPS</td><td class="num">90 FPS</td></tr>
+</table></div>
+<ul>
+  <li>Budowa ubranego lobby: ~0,09 s (headless, zasoby w pamięci), w grze 0,3–0,4 s; pierwsza noc sesji ~3,6 s, bo czyta modele z dysku (za czarnym przejściem <code>SceneFlow</code>). <code>LevelArt.warm_up()</code> zaczyna to czytanie w tle; wystarczy go wywołać w menu głównym.</li>
+  <li>Zmierzone i odrzucone: <code>MultiMeshInstance3D</code> z modułów (kasetony, pasy, stopnie: 2 132 → 802 instancje) dało <em>więcej</em> wywołań rysowania i mniej FPS (Forward+ już łączy te same siatki, a partia na komórkę 16 m gorzej się odrzuca); okludery w grubych ścianach nie zmieniły nic w holu. Trawa dioramy zostaje <code>MultiMesh</code>em.</li>
+</ul>
+
+<h3>Uczciwie: słabe punkty zestawu</h3>
+<ul>
+  <li><strong>Piętro holu żyje dzięki światłu, którego układ nie ma.</strong> Same balkonowe kinkiety zostawiają ścianę nad balkonem, pilastry i belkowanie w czerni; przepis dokłada 8 ciepłych reflektorów ukrytych za balustradą (<code>EXTRA_LIGHTS</code>). Bez nich hol traci połowę bogactwa.</li>
+  <li><strong>Mur zbrojowni i płyty podłogi są regularne</strong> (bliżej ciosów niż łamanego kamienia). Z daleka czyta się dobrze, z bliska przydałby się drugi rozmiar kamieni.</li>
+  <li><strong>Kasetony przy studniach latarni</strong> są rozciągane nierówno (do 0,75 × 1,25), bo prostokąty sufitu między studniami nie są wielokrotnością 2 m. Przydałby się moduł 1 m.</li>
+  <li><strong>Narożniki wewnętrzne</strong> pasów to przenikanie profili (poprawny ucios), a zewnętrzne zamyka ościeżnica albo <code>balcony_fascia_end</code>; osobnych naroży zewnętrznych i kolan rur nie ma.</li>
+  <li><strong>Panorama dioramy</strong> powtarza się co 16 m i jest „proceduralnie malarska”, bez planu pierwszego; z bliska widać, że to szum. Podłoga dioramy (lastryko) jest ciemna.</li>
+  <li><strong>Płótna w ramach</strong> są proste (pejzaż z etapu 1b, morze, martwa natura, portret).</li>
+  <li><strong>AO w Pythonie jest wolne</strong>: duże rekwizyty pieką się 1–2 min (kasa, lada), cały zestaw około 15 min na jednym rdzeniu; budowa równoległa kilku modułów naraz skraca to kilkukrotnie.</li>
+  <li><strong>Podgląd duplikuje trochę logiki poziomu</strong> (rama przejścia, światła, pozy drzwi), bo nie wolno mu ruszać kodu poziomu.</li>
+</ul>
+
+<h2 id="swiatlo">Przepis na światło</h2>
+<p>Dokładne wartości z <code>src/style/style_sample.gd</code>. To punkt wyjścia dla całej gry.</p>
+<h3>Environment</h3>
+<div class="table-wrap"><table>
+<tr><th>Grupa</th><th>Ustawienia</th><th>Po co</th></tr>
+<tr><td>Tło</td><td>niebo z shadera <code>night_sky.gdshader</code> (gradient, księżyc z halo w kierunku światła kierunkowego, gwiazdy wielkości piksela, smugi chmur), radiance 64</td><td>widać je tylko przez okna</td></tr>
+<tr><td>Ambient</td><td>kolor <code>(0.30, 0.38, 0.60)</code>, energia 0,12; odbicia: tło</td><td>chłodny „oddech” nocy w cieniach</td></tr>
+<tr><td>Tonemap</td><td>AgX, ekspozycja 1,0</td><td>miękkie przejścia w jasnych klozach i snopach</td></tr>
+<tr><td>SSR</td><td>64 kroki, fade in 0,1, fade out 2,0, tolerancja głębi 0,15</td><td>odbicia w marmurze i lakierze</td></tr>
+<tr><td>SSAO</td><td>promień 0,8, intensywność 1,6, moc 1,4</td><td>styki mebli z podłogą</td></tr>
+<tr><td>SSIL</td><td>promień 4,0, intensywność 0,8</td><td>ciepły odblask lamp na bliskich powierzchniach</td></tr>
+<tr><td>SDFGI</td><td>4 kaskady, min. komórka 0,1 m, okluzja wł., energia 1,0</td><td>odbite światło bez wypiekania (poziomy budowane w kodzie)</td></tr>
+<tr><td>Glow</td><td>intensywność 0,7, bloom 0,04, próg HDR 1,0, tryb softlight</td><td>klosze, kryształ, lampa awaryjna</td></tr>
+<tr><td>Mgła wolumetryczna</td><td>globalna gęstość 0 (!), albedo <code>(0.75, 0.8, 0.95)</code>, anizotropia 0,6, długość 24 m, detail spread 1,5, GI inject 0,25, ambient inject 0; siatka 128×96 (<code>environment_set_volumetric_fog_volume_size</code>)</td><td>mgła tylko tam, gdzie są światła; anizotropia rozprasza światło do przodu, więc snopy świecą pod światło</td></tr>
+<tr><td>FogVolume</td><td>prostopadłościan sali 12×6×10, gęstość 0,022, albedo <code>(0.78, 0.83, 0.95)</code>, edge fade 0,05</td><td>kurz w środku, czyste niebo za oknami</td></tr>
+<tr><td>ReflectionProbe</td><td>cała sala, box projection, interior, update once, offset −1,4 m</td><td>szkło i marmur tam, gdzie SSR nie sięga</td></tr>
+<tr><td>Cienie</td><td>kierunkowe: soft high (<code>directional_soft_shadow_filter_set_quality</code>)</td><td>ostre cienie szprosów</td></tr>
+</table></div>
+<h3>Światła</h3>
+<div class="table-wrap"><table>
+<tr><th>Światło</th><th>Kolor</th><th class="num">Energia</th><th>Zasięg / kąt</th><th class="num">Mgła</th><th>Uwagi</th></tr>
+<tr><td>Księżyc (Directional)</td><td><code>(0.55, 0.67, 1.0)</code></td><td class="num">2,2</td><td>kierunek <code>(0.25, −0.55, 0.8)</code></td><td class="num">9,0</td><td>cienie, rozmiar kątowy 0,3°; to on robi snopy</td></tr>
+<tr><td>Kinkiety ×4 (Omni)</td><td><code>(1.0, 0.7, 0.42)</code></td><td class="num">1,6</td><td>6,5 m, tłumienie 1,3</td><td class="num">0,15</td><td>cienie; oprawa bez cienia, bo inaczej zasłania własną żarówkę</td></tr>
+<tr><td>Lampka obrazu (Spot)</td><td><code>(1.0, 0.78, 0.5)</code></td><td class="num">5,0</td><td>3,2 m, 58°</td><td class="num">0,3</td><td>pod daszkiem, nie w nim</td></tr>
+<tr><td>Gabloty ×2 (Spot)</td><td><code>(1.0, 0.8, 0.55)</code></td><td class="num">1,6</td><td>1,4 m, 55°</td><td class="num">0</td><td>świeci na eksponat</td></tr>
+<tr><td>Awaryjna (Omni)</td><td><code>(1.0, 0.12, 0.08)</code></td><td class="num">2,0</td><td>5 m</td><td class="num">0,6</td><td>zostaje przy awarii prądu</td></tr>
+<tr><td>Latarka gracza (Spot)</td><td>biała</td><td class="num">3,0</td><td>24 m, 24°</td><td class="num">1,0</td><td>jak w <code>player.gd</code>; w ciemności sama wystarcza</td></tr>
+</table></div>
+<div class="note"><strong>Zasada kontrastu mgły:</strong> lampy mają mgłę 0,15–0,6, księżyc 9. Gdy lampy też mocno oświetlają mgłę, cała sala mętnieje i snopy znikają. Ten stosunek to najważniejsza liczba w całym przepisie.</div>
+<div class="note"><strong>Awaria prądu:</strong> <code>set_main_lights(false)</code> gasi kinkiety, lampkę obrazu i gabloty oraz zeruje emisję ich tekstur. Zostają księżyc, lampa awaryjna i latarka.</div>
+
+<h2 id="gi">Wybór GI: pomiary</h2>
+<p>Ta sama klatka (widok <b>wide</b>, 1920×1080, MSAA 4×, RTX 2080 Ti, bez V-Sync):</p>
+<div class="table-wrap"><table>
+<tr><th>Wariant</th><th class="num">FPS szeroki</th><th class="num">ms / klatkę</th><th class="num">FPS latarka</th><th>Koszt dodatkowy</th><th>Wrażenie</th></tr>
+<tr><td><strong>SDFGI (wybrane)</strong></td><td class="num">158–160</td><td class="num">6,3</td><td class="num">170–174</td><td>brak wypiekania</td><td>ciepły odblask lamp na suficie i podłodze, sala spójna</td></tr>
+<tr><td>VoxelGI (128, wypiekane w czasie gry)</td><td class="num">141</td><td class="num">7,1</td><td class="num">151</td><td>1,2 s wypiekania na salę, osobna objętość na każde pomieszczenie</td><td>chłodniej, prawie jak bez GI</td></tr>
+<tr><td>Bez GI (SSIL + ambient)</td><td class="num">186</td><td class="num">5,4</td><td class="num">214</td><td>—</td><td>poprawnie, ale traci ciepły odblask</td></tr>
+</table></div>
+<div class="grid2">
+  <figure><img src="img/wide_voxel_high.jpg" alt=""><figcaption>VoxelGI</figcaption></figure>
+  <figure><img src="img/wide_none_high.jpg" alt=""><figcaption>Bez GI</figcaption></figure>
+</div>
+<p><strong>Decyzja: SDFGI.</strong> Nie wymaga wypiekania, więc pasuje do poziomów budowanych w kodzie. Obejmuje hol 36 × 44 m bez dzielenia na objętości. Daje ciepły odblask lamp, na którym opiera się nastrój. VoxelGI kosztuje więcej, wymaga wypiekania przy każdym wczytaniu sali, a widocznego zysku tu nie daje. Na słabszych kartach SDFGI wyłączamy (preset „low”).</p>
+
+<h2 id="narzedzia">Narzędzia i polecenia</h2>
+<p>Każde polecenie działa bez okna, z wyjątkiem dwóch wyraźnie oznaczonych na końcu listy. Blender uruchamia się w trybie tła (<code>-b</code>). Podglądy renderuje Cycles (GPU przez OptiX/CUDA, 32 próbki, odszumianie OIDN), bo EEVEE może potrzebować kontekstu okna. Godot działa z <code>--headless</code>.</p>
+<p><strong>Powtarzalność.</strong> Ten sam kod daje te same pliki, bit w bit (sprawdzone podwójną przebudową modułów ścian i figury woskowej). Pułapki, które zostały usunięte: <code>hash()</code> w Pythonie jest losowany przy każdym uruchomieniu (ziarna liczymy przez <code>zlib.crc32</code>), zbiory obiektów Blendera iterują się w kolejności adresów w pamięci (krawędzie do fazowania są sortowane), a indeksy elementów bmesh po operacjach bywają przypadkowe (<code>index_update()</code> przed szukaniem wysp UV). Jedyny znany wyjątek: kilkadziesiąt tekseli AO na czubkach frędzli figury, gdzie promień trafia dokładnie w krawędź, a kolejność przechodzenia drzewa BVH w Blenderze bywa różna.</p>
+<div class="note"><strong>Poprawka powtarzalności (etap 2).</strong> Przy etapie 2 wyszło, że część modeli nie była powtarzalna
+(<code>sconce</code>, <code>display_case</code>, <code>knight</code>, <code>medkit</code>): niektóre operatory bmesh
+(<code>solidify</code>, <code>bisect_plane</code>, wypełnianie dziur) tworzą ściany w kolejności zależnej od adresów w pamięci, co
+zmieniało kolejność równych wysp w atlasie, a eksporter glTF sam triangulował wielokąty za każdym razem trochę inaczej. Teraz
+<code>Part.finalize()</code> sortuje ściany, wierzchołki i krawędzie po geometrii (<code>geo.canonical_order</code>), a przed
+eksportem <code>scene.triangulate</code> dzieli czworokąty po stałej przekątnej, a wielokąty metodą „ear clip”. Sprawdzone:
+dwie przebudowy w różnej kolejności dają identyczne pliki. Wszystkie modele etapu 1b zostały raz przebudowane tym kodem
+(inna kolejność wysp i indeksów, wygląd bez zmian).</div>
+<pre><code># wszystko od zera: tekstury, modele + atlasy + podglądy, presety importu, import Godota
+bash tools/art/build_art.sh
+
+# tylko wybrane modele (szybko): nazwy plików z tools/art/models/
+bash tools/art/build_art.sh wax_figure bust
+FAST=1 bash tools/art/build_art.sh wall        # bez promieni AO (sprawdzanie bryły)
+PREVIEW=0 bash tools/art/build_art.sh bench    # bez renderów podglądu
+TEXTURES=1 bash tools/art/build_art.sh crystal # także tekstury kafelkowe
+
+# same tekstury kafelkowe (zwykły Python z numpy wystarczy)
+"D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe" tools/art/build_textures.py [nazwy]
+
+# podgląd jednej tekstury kafelkowej 2×2 w powiększeniu (szwy!) -> tests/_out/art/view_&lt;nazwa&gt;.png
+"D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe" tools/art/view_texture.py marble_floor 3
+
+# testy bez okna (w tym tests/integration/test_style_art.gd)
+bash tools/run_tests.sh --filter=style_art
+
+# zrzuty próbki 1920×1080 + FPS (OTWIERA OKNO: tylko gdy nikt nie pracuje przy komputerze)
+bash tools/run_style.sh
+bash tools/run_style.sh --preset=low
+bash tools/run_style.sh --gi=voxel --shots=wide,case
+# modele etapu 2 i 3 w oświetlonej sali próbki -> tests/_out/art_lineup/ (OTWIERA OKNO)
+bash tools/run_art_lineup.sh
+bash tools/run_art_lineup.sh --shots=enemies,trex,props,vm_shotgun
+bash tools/run_art_lineup.sh --shots=raptors,raptors_flare,portraits,armoury,vm_gatling,vm_flare
+# etap 3 (płótna portretu maluje build modelu portrait; arkusz: tests/_out/art/portrait_canvases.png)
+bash tools/art/build_art.sh vm_gatling gatling_display vm_flare flare_round emergency_cabinet raptor portrait ammo_rifle ammo_flares
+
+# próbki materiałów na płaskiej płycie (kolory i skala przed pieczeniem) -> tests/_out/art/material_sheet.png
+"D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe" tools/art/material_sheet.py [nazwy]
+# modele etapu 2 (podglądy: &lt;nazwa&gt;.png, _closeup, _fp dla broni, dodatkowe ujęcia)
+bash tools/art/build_art.sh wolf knight bust_enemy trex vm_pistol
+# obrazki do tego przewodnika (z tests/_out/style i tests/_out/art); z nazwami po "--" tylko wybrane
+"D:/Program Files/Blender Foundation/Blender 5.1/blender.exe" -b --factory-startup --python tools/art/guide_images.py
+
+# zestaw modułowy holu: tekstury pomieszczeń, modele (kilka modułów równolegle przyspiesza AO)
+"D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe" tools/art/build_textures.py limestone_rustic marble_hall backdrop
+bash tools/art/build_art.sh kit_hall_bands kit_hall_orders kit_hall_arch kit_balcony kit_stairs kit_hall_ceiling_floor \
+    kit_hall_props kit_signs_lamps kit_room_bands kit_doors kit_armory kit_diorama kit_gallery kit_lockers kit_grate
+# spis zestawu z plików (trójkąty, atlasy, zestawy tekstur)
+python tools/art/kit_table.py
+# testy zestawu bez okna (ładowanie, budżety, osie, ArtKit, przepis na światło, cały lobby-podgląd)
+bash tools/run_tests.sh --filter=art_kit
+# lobby ubrane zestawem: zrzuty 1920×1080 do tests/_out/kit/ + FPS (OTWIERA OKNO)
+bash tools/run_kit_preview.sh
+bash tools/run_kit_preview.sh --shots=wide,stair,doorway --gi=none --preset=low
+# obrazki zestawu do przewodnika
+"D:/Program Files/Blender Foundation/Blender 5.1/blender.exe" -b --factory-startup --python tools/art/guide_images.py -- kit
+# spacer po lobby ubranym zestawem (OTWIERA OKNO)
+tools/godot/Godot_v4.7.2-stable_win64_console.exe --audio-driver Dummy --path . res://src/style/lobby_kit_preview.tscn
+
+# spacer po próbce z latarką (OTWIERA OKNO)
+tools/godot/Godot_v4.7.2-stable_win64_console.exe --audio-driver Dummy --path . res://src/style/style_sample.tscn</code></pre>
+
+<h2 id="nowe">Nowy model lub tekstura krok po kroku</h2>
+<h3>Nowy model</h3>
+<ol>
+  <li>Utwórz <code>tools/art/models/&lt;nazwa&gt;.py</code> z funkcją <code>build()</code>, która zwraca <code>Model</code> albo listę modeli (warianty, np. <code>wall_4m</code> i <code>wall_2m</code>).</li>
+  <li>Bryłę buduj metodami klasy <code>Part</code>: <code>box</code> (z fazką), <code>lathe</code> (obrotowe, także owalne i z kanelurami), <code>extrude</code> (listwy wzdłuż X), <code>sweep</code> (listwy po łuku lub obwodzie), <code>tube</code> (liny, frędzle), <code>ngon_prism</code>, <code>poly</code>. Kształty organiczne buduj metaballami (<code>artlib/sculpt.py</code>: <code>blob</code>, <code>metaball_mesh</code>, <code>cut</code>, <code>decimate</code>, <code>into_part</code>) i dopisz nazwę części do <code>organic=(...)</code>.</li>
+  <li>Każda ściana dostaje nazwę materiału (slot). W <code>Model(fns={...})</code> przypisz slotom funkcje z <code>artlib/materials.py</code>. Szkło daj do <code>kinds={"glass": "glass"}</code>, wtedy nie trafia do atlasu i dostaje shader szkła.</li>
+  <li>Ustaw gęstość (<code>ppm</code>), <code>ground=0.0</code> dla rzeczy stojących na podłodze (AO od podłogi) oraz <code>front=+1</code>, jeśli model patrzy na +Y.</li>
+  <li>Części ruchome: <code>Part("head", origin=oś_stawu, parent="body")</code>; puste węzły (lufa, gniazdo, światło):
+    <code>markers=[...]</code>; podgląd z oczu gracza dla broni: <code>preview_fp=(kamera, kierunek)</code>; dodatkowe ujęcia:
+    <code>preview_extra</code>.</li>
+  <li>Dopisz nazwę do listy <code>ALL</code> w <code>tools/art/build_models.py</code> i do <code>MODELS</code> w teście <code>test_style_art.gd</code>
+    (etap 2: do <code>ArtLibrary.REGISTRY</code> z nazwami części; test <code>test_art_stage2.gd</code> sprawdzi je sam).</li>
+  <li>Uruchom <code>bash tools/art/build_art.sh &lt;nazwa&gt;</code> i obejrzyj <code>tests/_out/art/&lt;nazwa&gt;.png</code>. Model w grze wstawia jedna linijka: <code>ArtLibrary.model("&lt;nazwa&gt;")</code>.</li>
+  <li>Ekstra dla materiału w Godocie (emisja, SSS) dopisz do <code>EXTRAS</code> w <code>src/style/art_library.gd</code>.</li>
+</ol>
+<h3>Nowy materiał lub tekstura kafelkowa</h3>
+<ol>
+  <li>Dodaj rampę do <code>P</code> w <code>materials.py</code>: 5–10 kolorów sRGB od ciemnego do jasnego, nasycenie umiarkowane, bo nocne światło i tak je przygasi.</li>
+  <li>Napisz funkcję <code>def moj_material(ctx): ... return s</code>. Wzorce: <code>stone</code> (prosty), <code>wood_dark</code> (słoje wzdłuż wyspy), <code>brass</code> (metal, patyna we wnękach), <code>wallpaper</code> (wzór w metrowym UV). Wspólne wykończenie daje <code>_age(ctx, s)</code> (jasne krawędzie, brud, AO).</li>
+  <li>Kafelkowa: dopisz wiersz do <code>TILES</code> w <code>build_textures.py</code> (nazwa, funkcja, szerokość i wysokość w metrach, px/m). Rozmiar w metrach × częstotliwość szumu powinien dawać liczbę całkowitą, wtedy tekstura jest bezszwowa (<code>Ctx.fbm</code> sam to zaokrągla).</li>
+  <li>W Godocie: <code>ArtLibrary.tiled("nazwa", Vector2(szer_m, wys_m))</code> daje materiał z mapowaniem trójplanarnym w przestrzeni świata. Gęstość tekseli zgadza się na każdym boksie.</li>
+</ol>
+
+<h2 id="wydajnosc">Wydajność</h2>
+<ul>
+  <li><strong>Pełna jakość:</strong> około 160 FPS (6,3 ms) w 1080p na RTX 2080 Ti w najcięższym widoku. Karta średniej klasy (np. GTX 1660 Super, około 45% mocy 2080 Ti) powinna trzymać około 70 FPS. To szacunek, nie pomiar.</li>
+  <li><strong>Preset „low”</strong> (<code>StyleSample.apply_low_preset</code>): bez SDFGI i SSIL, mgła 64×64, SSR 32 kroki, miękkie cienie „low”. Na podstawie pomiaru bez GI spodziewane jest ponad 190 FPS na 2080 Ti. Dokładną liczbę da <code>bash tools/run_style.sh --preset=low</code>, jeszcze nie zmierzone.</li>
+  <li><strong>Najdroższe elementy:</strong> SDFGI (zmierzone: około 0,9 ms), mgła wolumetryczna w siatce 128×96 zamiast domyślnej 64×64 (nie mierzona osobno; razem z dodaniem kasetonowego stropu FPS spadł z około 178 do 160), cienie świateł punktowych (4 kinkiety, lampa awaryjna i 3 reflektory, wszystkie z cieniem). W dużym holu warto wyłączać cienie dalekich lamp.</li>
+  <li><strong>Geometria jest tania:</strong> cała sala to około 80 tys. trójkątów w kilkudziesięciu obiektach. Tekstury bezstratne z mipmapami zajmują około 60 MB pamięci VRAM (szacunek: około 12 mln tekseli po 4 bajty, plus mipmapy). Jeśli zrobi się ciasno, mapy normalnych i ORM można przejść na kompresję BC, a albedo zostawić bezstratne.</li>
+  <li><strong>Czas potoku:</strong> pełna przebudowa około 5–6 min (głównie promienie AO i render Cycles). Pojedynczy model 5–60 s.</li>
+</ul>
+<div class="note warn"><strong>Znane ostrzeżenie silnika:</strong> Godot 4.7.2 przy zamykaniu wypisuje <code>7 RIDs of type "Texture" were leaked</code> dla każdej sceny z <code>ReflectionProbe</code>. Sprawdzone na minimalnej scenie: to błąd silnika, nieszkodliwy. To ostrzeżenie, nie błąd, więc testy i skrypty go nie liczą.</div>
+
+<h2 id="slabosci">Uczciwie: słabe punkty</h2>
+<ul>
+  <li><strong>Twarze z metaballi są „gliniane”.</strong> Popiersie i figura czytają się dobrze z 2–5 m, ale z bliska nos, brwi i usta są grube i uproszczone. Do poziomu Amid Evil brakuje ręcznej rzeźby. Kolejny krok: głowa z bazowej siatki i przesunięcia wierzchołków zamiast samych kul albo ręczne poprawki w Blenderze przez skrypt z punktami kontrolnymi.</li>
+  <li><strong>Figura woskowa jest sztywna jak ołowiany żołnierzyk.</strong> Proporcje i kostium są dobre, ale tułów to walec, a dłonie to proste pazury. Pomoże animacja (części mają już osie) i drugi przebieg nad bryłą tułowia (klapy, wcięcie w talii).</li>
+  <li><strong>Obraz olejny</strong> jest czytelny, ale prosty. Przy bliskim oglądaniu przydałoby się więcej wariantów (portret, martwa natura) z tego samego generatora.</li>
+  <li><strong>Jedna sala, jedna paleta ścian</strong> (etap 1b). Rozwiązane w etapie 2b: zestaw holu daje style wszystkich pomieszczeń, drzwi, pilastry i schody (patrz <a href="#zestaw">Zestaw modułowy holu</a>).</li>
+  <li><strong>Brak efektów rozpadu</strong> (krople wosku, odłamki marmuru, trociny) w próbce. Model jest przygotowany (osobne części ze stawami), same efekty to zadanie dla <code>Fx</code>.</li>
+  <li><strong>Zrzuty w tym dokumencie</strong> są sprzed ostatnich poprawek popiersia i figury (zob. uwagę przy galerii).</li>
+  <li><strong>Etap 2 oglądany w Godocie tylko w sali próbki</strong> (12 × 10 m, <code>run_art_lineup.sh</code>). T-Rex
+    ledwo się w niej mieści; jego prawdziwe miejsce to hol 36 × 44 m, którego jeszcze nie ma. Emisje (<code>EXTRAS</code>) są
+    dobrane na oko pod ten przepis na światło.</li>
+  <li><strong>Wilk ma nogi jak z kijów.</strong> Sylwetka czyta się dobrze (także od tyłu), ale przednie nogi są proste i
+    cienkie, a futro z bliska to piksele, nie pasma. Pozę skoku zrobi animacja (osie są w stawach).</li>
+  <li><strong>Rycerz jest bryłowaty.</strong> Naramienniki to kopuły, ręce to rury; z 3–10 m działa, z bliska brakuje
+    ostrzejszych gotyckich grzebieni i ażurów. Kolczuga pod strąconymi płytami jest tylko teksturą na walcach.</li>
+  <li><strong>Czaszka T-Reksa jest bardziej „allozaurowa”</strong> niż tyranozaurowa (za smukła z tyłu); zęby to proste stożki.
+    Kręgi są sześcienne i powtarzalne, co z daleka nie przeszkadza.</li>
+  <li><strong>Broń jest mała w kadrze.</strong> Obecne <code>REST</code> (0,55 m przed okiem) pokazuje pistolet i paralizator
+    w prawym dolnym rogu, dłoń prawie poza kadrem. Większa broń to zmiana w <code>weapon_holder.gd</code> (rozgrywka), nie w modelu.</li>
+  <li><strong>Napisy etapów 1b–2 są pseudo-tekstem</strong> (glify 3×5 tekseli): etykiety, szablon na szafce na pistolet i klawiatura nie mają prawdziwych słów. Od etapu 3 jest font pikselowy z polskimi znakami (<code>artlib/pixelfont.py</code>); starsze napisy można nim przerobić.</li>
+  <li><strong>Obrazy są „naiwnymi dawnymi mistrzami”.</strong> Z 1–4 m czytają się jak portrety w złoconych ramach, z bliska twarze
+    są uproszczone (ta sama rzeźba twarzy dla wszystkich sześciu, różnią je fryzury, stroje, cera i miny), a pejzaż jest najsłabszy z
+    dziesięciu. Kolejny krok: rzeźba twarzy z parametrami na postać (szerokość nosa, kształt oczu) i więcej warstw w pejzażu.</li>
+  <li><strong>Oczy portretów przesuwają się po całych tekselach</strong> (tęczówka ma ok. 5 tekseli): z bliska wyraźnie, z 4 m to
+    subtelny sygnał, co zgadza się z projektem („dla uważnych”), ale nie da się tym zrobić płynnego ruchu.</li>
+  <li><strong>Kartaczownica w pierwszej osobie</strong> ma dłoń na korbie tuż pod kadrem w spoczynku (widać ją przy obrocie korby),
+    a mosiężna komora zajmuje prawy dolny róg. Rozmiar w kadrze zależy od <code>WeaponHolder.REST</code> (rozgrywka); model jest
+    przesunięty tak, by przy obecnym <code>REST</code> było widać wiązkę luf.</li>
+  <li><strong>Raptor jest z pojedynczych kości bez skóry i ścięgien</strong>, więc z daleka jest „ażurowy”; w ciemności najlepiej czyta
+    się w świetle racy albo latarki. Kręgi są sześcienne, jak u T-Reksa.</li>
+</ul>
+
+<h2 id="pliki">Mapa plików</h2>
+<div class="table-wrap"><table>
+<tr><th>Ścieżka</th><th>Zawartość</th></tr>
+<tr><td><code>tools/art/build_art.sh</code></td><td>całość jednym poleceniem (bez okien)</td></tr>
+<tr><td><code>tools/art/build_textures.py</code></td><td>14 tekstur kafelkowych + arkusz podglądu; sprite pyłu i domyślne obrazy ekranów</td></tr>
+<tr><td><code>tools/art/build_models.py</code></td><td>modele: bryła → atlas → malowanie → .glb → podgląd Cycles</td></tr>
+<tr><td><code>tools/art/models/*.py</code></td><td>po jednym pliku na model</td></tr>
+<tr><td><code>tools/art/artlib/</code></td><td><code>noise</code> (szumy), <code>painter</code> (kontekst, powierzchnia, mapy), <code>materials</code> (palety i funkcje), <code>geo</code> (bryły i UV w metrach), <code>bake</code> (pakowanie, rasteryzacja, krawędzie, AO), <code>sculpt</code> (metaballe), <code>scene</code> (Blender, eksport, podglądy), <code>imageio</code> (PNG)</td></tr>
+<tr><td><code>tools/art/import_settings.py</code></td><td>presety importu Godota (bezstratnie, mipmapy, normalne, bez LOD)</td></tr>
+<tr><td><code>tools/art/view_texture.py</code>, <code>guide_images.py</code></td><td>podgląd szwów, obrazki do przewodnika</td></tr>
+<tr><td><code>tools/art/material_sheet.py</code></td><td>próbki materiałów etapu 2 na płaskiej płycie</td></tr>
+<tr><td><code>tools/art/artlib/kit.py</code>, <code>hands.py</code>, <code>sprites.py</code></td><td>twarde części wspólne (kości, lufy, płyty, gięcie, ekrany), dłonie i rękawy strażnika, sprite pyłu i obrazy ekranów</td></tr>
+<tr><td><code>tools/art/models/wolf.py</code>, <code>knight.py</code>, <code>bust_enemy.py</code>, <code>trex.py</code></td><td>wrogowie i boss</td></tr>
+<tr><td><code>tools/art/models/vm_*.py</code></td><td>broń w pierwszej osobie z dłońmi</td></tr>
+<tr><td><code>tools/art/models/ammo_*.py</code>, <code>medkit.py</code>, <code>fuse.py</code>, <code>lantern.py</code>, <code>pistol_locker.py</code>, <code>cctv_bank.py</code>, <code>terminal.py</code>, <code>crystal_loose.py</code></td><td>znajdźki i rekwizyty pętli nocy</td></tr>
+<tr><td><code>tools/art/models/vm_gatling.py</code>, <code>gatling_display.py</code>, <code>vm_flare.py</code>, <code>flare_round.py</code>, <code>emergency_cabinet.py</code>, <code>raptor.py</code>, <code>portrait.py</code>, <code>ammo_rifle.py</code>, <code>ammo_flares.py</code></td><td>etap 3: broń 4 i 5 z wystawą i szafką, raptor, portret, amunicja</td></tr>
+<tr><td><code>tools/art/artlib/pixelfont.py</code>, <code>canvas.py</code></td><td>font pikselowy 5×7 z polskimi znakami; malarz obrazów olejnych (10 płócien portretu)</td></tr>
+<tr><td><code>assets/textures/</code>, <code>assets/models/</code></td><td>wygenerowane PNG i GLB (z plikami .import)</td></tr>
+<tr><td><code>src/style/art_library.gd</code></td><td><code>ArtLibrary</code>: wczytuje modele, nadaje materiały, filtr pikseli, szkło, emisja, SSS; etap 2: <code>REGISTRY</code>, <code>instance</code>, <code>parts</code>, <code>own_materials</code>, <code>billboard</code>, materiały broni (FOV) i ekranów</td></tr>
+<tr><td><code>src/style/glass.gdshader</code>, <code>night_sky.gdshader</code></td><td>szkło (Fresnel, premultiplied alpha), nocne niebo</td></tr>
+<tr><td><code>src/style/style_sample.gd</code> + <code>.tscn</code></td><td>sala próbki (budowana w kodzie), przepis na światło, preset „low”, poza figury</td></tr>
+<tr><td><code>tests/scenarios/style_runner.gd</code> + <code>.tscn</code>, <code>tools/run_style.sh</code></td><td>zrzuty 1920×1080 i pomiar FPS</td></tr>
+<tr><td><code>tests/scenarios/art_lineup_runner.gd</code> + <code>.tscn</code>, <code>tools/run_art_lineup.sh</code></td><td>modele etapu 2 w oświetlonej sali próbki: wrogowie, T-Rex, rekwizyty, broń z oczu gracza (otwiera okno)</td></tr>
+<tr><td><code>tests/integration/test_style_art.gd</code></td><td>5 testów bez okna: import tekstur, materiały modeli, szkło bez cienia, stawy figury, budowa sali</td></tr>
+<tr><td><code>tools/art/models/kit_*.py</code></td><td>zestaw modułowy holu: pasy holu, porządki (kolumna, pilastry), portal, balkon, schody, strop i posadzka, rekwizyty holu, znaki i oprawy, pasy innych pomieszczeń, drzwi, zbrojownia, diorama, ramy, szafki, krata</td></tr>
+<tr><td><code>tools/art/artlib/arch_materials.py</code>, <code>archkit.py</code>, <code>font.py</code></td><td>tekstury pomieszczeń i materiały zestawu; konwencja zestawu (obrót, moduły, <code>plan_sweep</code>, płaszczyzny AO); czcionka 5 × 7 z polskimi znakami</td></tr>
+<tr><td><code>tools/art/kit_table.py</code></td><td>spis zestawu z plików (trójkąty, atlasy, zestawy tekstur)</td></tr>
+<tr><td><code>src/style/art_kit.gd</code></td><td><code>ArtKit</code>: style pomieszczeń, pola, pasy ścian, sufity, posadzki, mapowanie id greyboxa na modele, schody, przejścia, liście drzwi, oprawy</td></tr>
+<tr><td><code>src/style/arch_tiled.gdshader</code></td><td>pola architektury: tekstura 64 px/m mapowana po położeniu, jedna oś na ścianę, poprawne normalne</td></tr>
+<tr><td><code>src/style/lobby_light_recipe.gd</code></td><td><code>LobbyLightRecipe</code>: środowisko, księżyc, mgła i sondy na pokój, budżety cieni, dodatkowe światła</td></tr>
+<tr><td><code>src/style/lobby_kit_preview.gd</code> + <code>.tscn</code></td><td>prawdziwe <code>LobbyLevel</code> (ubrane przez <code>LevelArt</code>, oświetlone przepisem) bez nocy, do zrzutów i spaceru</td></tr>
+<tr><td><code>src/level/level_art.gd</code>, <code>src/level/fuse_box_art.gd</code></td><td>zestaw na poziomie: wygląd skorupy i elementów, dekoracja ścian, sufitów, podłóg i fryzu balkonu; szafka bezpieczników sterowana stanem gry</td></tr>
+<tr><td><code>src/core/graphics_quality.gd</code></td><td>presety jakości grafiki (niska, średnia, wysoka, bardzo wysoka) stosowane na żywo</td></tr>
+<tr><td><code>tools/run_dressed.sh</code> (<code>tests/scenarios/dressed_scenario.gd</code>)</td><td>gra w ubranym lobby: zrzuty do <code>tests/_out/dressed/</code> i pomiar FPS na presecie</td></tr>
+<tr><td><code>tests/scenarios/kit_preview_runner.gd</code> + <code>.tscn</code>, <code>tools/run_kit_preview.sh</code></td><td>zrzuty lobby 1920×1080 i pomiar FPS (otwiera okno)</td></tr>
+<tr><td><code>tests/integration/test_art_kit.gd</code></td><td>11 testów bez okna: modele zestawu (materiały, części, budżety), zestawy tekstur, pola 64 px/m, osie pasów i elementów, schody, <code>fill_run</code>, <code>dress_wall</code>, mapowanie id, przepis na światło, cały podgląd</td></tr>
+<tr><td><code>tests/integration/test_art_stage2.gd</code></td><td>8 testów bez okna: rejestr i części, stawy i słaby punkt wilka, rycerz (hełm, tarcza, płyty), popiersie (emisja, własne materiały), T-Rex (wymiary, budżet, gniazdo), lufy i FOV broni, znaczniki i ekrany, sprite pyłu</td></tr>
+<tr><td><code>tests/integration/test_art_stage3.gd</code></td><td>6 testów bez okna: kartaczownica (lufa, oś luf i korby, gałka, budżet), wystawa (łańcuch, działo), rakietnica, raca i szafka (szyba bez cienia), raptor (wymiary, stawy, słaby punkt, budżet), portret (10 płócien, oczy, montaż), znajdźki</td></tr>
+</table></div>
+
+</main>
+</body>
+</html>

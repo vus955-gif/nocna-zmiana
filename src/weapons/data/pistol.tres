@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/weapon_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"pistol"
+display_name = "WEAPON_PISTOL"
+damage = 20.0
+damage_kind = 2
+max_range = 120.0
+cooldown = 0.26
+knockback = 1.5
+weak_point_multiplier = 2.0
+ammo_mode = 2
+ammo_type = &"bullets"
+magazine_size = 12
+reload_time = 1.1
+start_reserve = 36
+max_reserve = 150
+shake = 0.12
+kick = 0.06
+sound = &"pistol"

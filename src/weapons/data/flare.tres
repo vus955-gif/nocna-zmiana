@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/weapon_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"flare"
+display_name = "WEAPON_FLARE"
+damage = 20.0
+damage_kind = 3
+max_range = 100.0
+cooldown = 0.45
+knockback = 6.0
+ammo_mode = 2
+ammo_type = &"flares"
+magazine_size = 1
+reload_time = 1.4
+start_reserve = 4
+max_reserve = 8
+shake = 0.22
+kick = 0.14
+sound = &"flare_fire"
+projectile_speed = 28.0
+projectile_gravity = 6.0
+blast_radius = 2.5
+burn_dps = 6.0
+burn_time = 5.0
+light_time = 12.0

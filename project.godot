@@ -1,0 +1,75 @@
+; Engine configuration file.
+; Hand-maintained: autoloads and the main scene are listed here.
+
+config_version=5
+
+[application]
+
+config/name="Nocna Zmiana"
+run/main_scene="res://src/ui/main_menu.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Nocna Zmiana"
+
+[autoload]
+
+Storage="*res://src/core/storage.gd"
+Events="*res://src/core/events.gd"
+GameInput="*res://src/core/game_input.gd"
+Settings="*res://src/core/settings.gd"
+Fx="*res://src/fx/fx.gd"
+Sfx="*res://src/fx/sfx.gd"
+GameState="*res://src/state/game_state.gd"
+RunState="*res://src/state/run_state.gd"
+SceneFlow="*res://src/core/scene_flow.gd"
+Music="*res://src/audio/music.gd"
+Ambience="*res://src/audio/ambience.gd"
+Foley="*res://src/audio/foley.gd"
+VoiceDirector="*res://src/audio/voice/voice_director.gd"
+
+[debug]
+
+; nothing is written to the Windows user folder on C: (see src/core/save_paths.gd)
+file_logging/enable_file_logging.pc=false
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://locale/strings.pl.translation", "res://locale/strings.en.translation")
+locale/fallback="pl"
+
+[layer_names]
+
+3d_physics/layer_1="world"
+3d_physics/layer_2="player"
+3d_physics/layer_3="enemy"
+3d_physics/layer_4="hurtbox"
+3d_physics/layer_5="debris"
+3d_physics/layer_6="pickup"
+3d_physics/layer_7="interact"
+3d_physics/layer_8="enemy_block"
+3d_physics/layer_20="reverb_zone"
+
+[navigation]
+
+3d/default_cell_height=0.1
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+common/physics_interpolation=true
+common/physics_jitter_fix=0.0
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2
+occlusion_culling/use_occlusion_culling=true
+shader_compiler/shader_cache/enabled.template=false
+rendering_device/pipeline_cache/enable.template=false

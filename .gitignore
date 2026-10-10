@@ -1,0 +1,12 @@
+.godot/
+/tools/godot/
+build/
+tests/_out/
+.claude/
+/locale/*.translation
+/tools/tts/.venv/
+/tools/tts/.uv-cache/
+/tools/tts/models/
+__pycache__/
+.env
+.env.*

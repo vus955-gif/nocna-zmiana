@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nocna Zmiana — koszt i czas</title>
+<style>
+:root{--bg:#14110f;--panel:#1d1916;--ink:#ece4d8;--muted:#a99c8b;--line:#3a322b;--accent:#e0a447;
+  --agents:#3987e5;--main:#d95926}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:44px 26px 70px}
+h1,h2{font-family:Georgia,serif}
+h1{font-size:38px;margin:0 0 4px;letter-spacing:.04em}
+h2{font-size:24px;color:var(--accent);margin:44px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.kicker{color:var(--muted);font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+.sub{color:var(--muted);font-family:Georgia,serif;font-style:italic;font-size:18px;margin-bottom:22px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat .n{font-family:Georgia,serif;font-size:30px;color:var(--accent);display:block}
+.stat .l{font-size:13px;color:var(--muted)}
+.note{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:15.5px}
+table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:15px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+th{color:var(--accent);background:var(--panel);font-weight:600}
+.legend{display:flex;gap:22px;font-size:14px;color:var(--muted);margin:6px 0 4px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{font-family:"Segoe UI",system-ui,sans-serif}
+.tip{position:absolute;pointer-events:none;background:#0d0b0a;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13.5px;color:var(--ink);opacity:0;transition:opacity .08s;white-space:nowrap}
+ul{padding-left:22px;margin:0 0 12px}li{margin:4px 0}
+.foot{margin-top:50px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:12px}
+@media (max-width:720px){.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker">Nocna Zmiana · zużycie i czas pracy · stan na 1 października 2026</div>
+<h1>Koszt i czas projektu</h1>
+<div class="sub">Policzone z logów wszystkich sesji projektu i 51 transkrypcji agentów pomocniczych.</div>
+
+<div class="stats">
+  <div class="stat"><span class="n">≈ $614</span><span class="l">równowartość według cennika API</span></div>
+  <div class="stat"><span class="n">12 h 18 min</span><span class="l">czasu zegarowego pracy Claude</span></div>
+  <div class="stat"><span class="n">48 h 22 min</span><span class="l">łącznej pracy (ja + agenci równolegle)</span></div>
+  <div class="stat"><span class="n">≈ 6 000</span><span class="l">wywołań modelu</span></div>
+</div>
+
+<div class="note"><b>Ważne:</b> to <b>równowartość według cen API</b> Anthropic (Opus 5.5: $4 wejście / $20 wyjście / $0,20 odczyt cache za 1 mln tokenów; Sonnet 5 i 5.5: $2 / $10 / $0,20). Jeśli korzystasz z abonamentu Claude, faktycznie płacisz abonament, a ta kwota pokazuje, ile pracy się w nim zmieściło. Nie liczyłem sesji z 1.10 wieczorem (wycinanie głowy ze zdjęcia), bo nie dotyczy gry — kosztowała ok. $3.</div>
+
+<h2>Gdzie poszły pieniądze — według etapów</h2>
+<div class="legend"><span><span class="sw" style="background:var(--agents)"></span>Agenci pomocniczy</span><span><span class="sw" style="background:var(--main)"></span>Główny wątek (koordynacja, czyli ja)</span></div>
+<div class="chart" id="chart">
+<svg viewBox="0 0 900 300" role="img" aria-label="Koszt według etapów: noc autonomiczna 406 dolarów, 30 września po południu 170, projekt i plan 22, początek etapu 1a 8, podsumowanie 7,5">
+  <g font-size="14" fill="#c3c2b7">
+    <text x="250" y="42" text-anchor="end">Projekt i plan (25.09, 29.09)</text>
+    <text x="250" y="96" text-anchor="end">Etap 1a — początek (25.09)</text>
+    <text x="250" y="150" text-anchor="end">Etap 1a + start etapu 2 (30.09)</text>
+    <text x="250" y="204" text-anchor="end">Noc autonomiczna (30.09 → 1.10)</text>
+    <text x="250" y="258" text-anchor="end">To podsumowanie (1.10)</text>
+  </g>
+  <line x1="262" y1="14" x2="262" y2="280" stroke="#3a322b" stroke-width="1"/>
+  <!-- scale: $1 = 1.4 px (406 $ -> ~568 px) -->
+  <g id="bars"></g>
+</svg>
+<div class="tip" id="tip"></div>
+</div>
+
+<h2>Na co dokładnie — rodzaje tokenów</h2>
+<table>
+<tr><th>Rodzaj</th><th class="num">Tokeny</th><th class="num">Koszt</th><th>Co to znaczy</th></tr>
+<tr><td>Odczyt z cache</td><td class="num">2 259,7 mln</td><td class="num">$451,93</td><td>przy każdym kroku model ponownie „czyta” swój dotychczasowy kontekst — tanio za token, ale kroków było tysiące</td></tr>
+<tr><td>Zapis do cache</td><td class="num">27,6 mln</td><td class="num">$142,96</td><td>pierwsze wczytanie kontekstu (25,2 mln z ważnością 5 min — agenci; 2,5 mln z ważnością 1 h — główny wątek)</td></tr>
+<tr><td>Wyjście (tekst i kod)</td><td class="num">0,96 mln</td><td class="num">$19,01</td><td>wszystko, co modele napisały: kod, testy, dokumenty, raporty</td></tr>
+<tr><td>Wejście bez cache</td><td class="num">0,01 mln</td><td class="num">$0,05</td><td>prawie wszystko szło przez cache</td></tr>
+<tr><td><b>Razem</b></td><td class="num"></td><td class="num"><b>$613,95</b></td><td>Opus 5.5: $607,45 · Sonnet 5: $2,93 · Sonnet 5.5: $3,57</td></tr>
+</table>
+
+<h2>Czas</h2>
+<table>
+<tr><th>Kiedy</th><th class="num">Czas zegarowy</th><th>Co się działo</th></tr>
+<tr><td>25.09, 17:11–20:05</td><td class="num">2 h 30 min</td><td>pomysł i projekt gry, plan etapu 1a (193 KB kodu), pierwsze 4 zadania</td></tr>
+<tr><td>29.09, wieczór</td><td class="num">3 min</td><td>specyfikacja w Markdown</td></tr>
+<tr><td>30.09 17:48 → 1.10 03:29</td><td class="num">9 h 41 min</td><td>koniec etapu 1a, etap 2 (pętla nocy, lobby, boss), grafika, dźwięk, rozbudowa, recenzje, eksport</td></tr>
+<tr><td>1.10, wieczór</td><td class="num">4 min</td><td>to podsumowanie</td></tr>
+<tr><td><b>Razem</b></td><td class="num"><b>12 h 18 min</b></td><td>w tym czasie agenci przepracowali łącznie 39 h 7 min, a główny wątek 9 h 15 min — razem 48 h 22 min pracy; równoległość (do 7 agentów naraz) ścisnęła to mniej więcej czterokrotnie</td></tr>
+</table>
+
+<h2>Wnioski w skrócie</h2>
+<ul>
+<li><b>Prawie 90% kosztu to agenci</b> ($547 z $614) — to oni pisali kod, modele, muzykę i robili recenzje. Koordynacja (ja) kosztowała ok. $66.</li>
+<li><b>Najdroższa była noc</b> ($406): do siedmiu agentów naraz budowało świat, bronie, grafikę i dźwięk.</li>
+<li><b>Trzy czwarte kosztu to „czytanie kontekstu”</b>: długo pracujący agent przy każdym kroku przegląda całą swoją dotychczasową pracę. Pisanie samego kodu było tanie ($19).</li>
+<li><b>Powrót do bardzo długiej sesji po przerwie kosztuje</b>: po godzinie bezczynności cache wygasa i trzeba wczytać kontekst od nowa — dlatego samo to podsumowanie to ok. $7,50. Na kolejne etapy taniej będzie zacząć <b>nową sesję</b> (stan projektu jest zapisany w pamięci i dokumentach).</li>
+</ul>
+
+<div class="foot">Źródło: transkrypcje sesji w <code>~/.claude/projects/D--ClaudeCode-Doomer-Shooter/</code> (pola <code>usage</code> każdej odpowiedzi modelu, bez duplikatów). Czas zegarowy = suma okresów, w których którakolwiek sesja lub agent był aktywny (przerwy powyżej 10 min nie liczą się jako praca).</div>
+</div>
+<script>
+(function(){
+  var data=[
+    {k:"Projekt i plan (25.09, 29.09)",a:0,m:21.79},
+    {k:"Etap 1a — początek (25.09)",a:5.63,m:2.80},
+    {k:"Etap 1a + start etapu 2 (30.09)",a:157.05,m:12.70},
+    {k:"Noc autonomiczna (30.09 → 1.10)",a:384.49,m:21.57},
+    {k:"To podsumowanie (1.10)",a:0,m:7.50}];
+  var NS="http://www.w3.org/2000/svg", g=document.getElementById("bars"), tip=document.getElementById("tip"),
+      box=document.getElementById("chart"), S=1.4, x0=264, H=26;
+  function fmt(v){return "$"+v.toFixed(2).replace(".",",");}
+  function rect(x,y,w,c,label){
+    var r=document.createElementNS(NS,"rect");
+    r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",Math.max(w,0));r.setAttribute("height",H);
+    r.setAttribute("rx",4);r.setAttribute("fill",c);r.style.cursor="default";
+    r.addEventListener("mousemove",function(ev){var b=box.getBoundingClientRect();tip.textContent=label;
+      tip.style.left=(ev.clientX-b.left+12)+"px";tip.style.top=(ev.clientY-b.top-34)+"px";tip.style.opacity=1;});
+    r.addEventListener("mouseleave",function(){tip.style.opacity=0;});
+    g.appendChild(r);
+  }
+  data.forEach(function(d,i){
+    var y=24+i*54, wa=d.a*S, wm=d.m*S, x=x0;
+    if(d.a>0){rect(x,y,wa,"#3987e5",d.k+" · agenci: "+fmt(d.a));x+=wa+2;}
+    if(d.m>0){rect(x,y,wm,"#d95926",d.k+" · główny wątek: "+fmt(d.m));x+=wm;}
+    var t=document.createElementNS(NS,"text");t.setAttribute("x",x+8);t.setAttribute("y",y+18);
+    t.setAttribute("fill","#ece4d8");t.setAttribute("font-size","14");t.textContent=fmt(d.a+d.m);g.appendChild(t);
+  });
+})();
+</script>
+</body>
+</html>

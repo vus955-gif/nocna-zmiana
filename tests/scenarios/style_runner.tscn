@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/scenarios/style_runner.gd" id="1_style_runner"]
+
+[node name="StyleRunner" type="Node"]
+script = ExtResource("1_style_runner")

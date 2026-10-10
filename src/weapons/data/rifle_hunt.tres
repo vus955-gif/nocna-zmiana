@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/weapon_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"rifle_hunt"
+display_name = "WEAPON_RIFLE_HUNT"
+damage = 85.0
+damage_kind = 2
+max_range = 150.0
+cooldown = 1.0
+knockback = 4.0
+weak_point_multiplier = 3.0
+ammo_mode = 2
+ammo_type = &"hunt_rounds"
+magazine_size = 5
+reload_time = 2.2
+start_reserve = 25
+max_reserve = 40
+shake = 0.35
+kick = 0.2
+sound = &"rifle_hunt"
+pierce_targets = 3

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/scenarios/art_lineup_runner.gd" id="1_art_lineup"]
+
+[node name="ArtLineupRunner" type="Node"]
+script = ExtResource("1_art_lineup")

@@ -1,0 +1,7 @@
+{
+  "fx_version": 2,
+  "speakers": {
+    "heniek": {"voice": "am_michael", "speed": 1.0},
+    "system": {"voice": "af_nicole", "speed": 0.95}
+  }
+}

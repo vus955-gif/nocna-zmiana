@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nocna Zmiana — projekt MVP</title>
+<style>
+  :root {
+    --bg: #f6f3ee;
+    --paper: #fffdf9;
+    --ink: #22201c;
+    --muted: #6b655c;
+    --line: #ddd5c8;
+    --accent: #a8322a;
+    --accent-soft: #f3e1dd;
+    --gold: #9a7a2e;
+    --code-bg: #efe9df;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141312;
+      --paper: #1c1a18;
+      --ink: #ebe6de;
+      --muted: #a39b8f;
+      --line: #36322d;
+      --accent: #e0675c;
+      --accent-soft: #3a2320;
+      --gold: #d2b064;
+      --code-bg: #25221f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.65 Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  }
+  main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 48px 20px 96px;
+  }
+  header.doc {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 36px;
+  }
+  .kicker {
+    font: 600 12px/1 system-ui, "Segoe UI", sans-serif;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    font-size: 2.5rem;
+    line-height: 1.1;
+    margin: 10px 0 8px;
+  }
+  .subtitle { color: var(--muted); font-style: italic; margin: 0; }
+  .meta {
+    font: 13px/1.5 system-ui, "Segoe UI", sans-serif;
+    color: var(--muted);
+    margin-top: 14px;
+  }
+  h2 {
+    font-size: 1.55rem;
+    margin: 56px 0 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  h2 .num {
+    font: 600 13px/1 system-ui, "Segoe UI", sans-serif;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: .08em;
+  }
+  h3 { font-size: 1.15rem; margin: 30px 0 8px; }
+  p, ul, ol { margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  strong { color: var(--ink); }
+  nav.toc {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 22px;
+    font: 15px/1.7 system-ui, "Segoe UI", sans-serif;
+  }
+  nav.toc ol { margin: 0; padding-left: 20px; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+  .pitch {
+    background: var(--paper);
+    border-left: 4px solid var(--accent);
+    padding: 18px 22px;
+    font-size: 1.1rem;
+    margin: 24px 0;
+  }
+  .note {
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: .95rem;
+    margin: 16px 0;
+  }
+  .table-wrap { overflow-x: auto; margin: 12px 0 20px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font: 15px/1.5 system-ui, "Segoe UI", sans-serif;
+    background: var(--paper);
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-size: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--line);
+  }
+  pre, code { font-family: Consolas, "Cascadia Mono", monospace; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 6px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: .88em; }
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 14px 0 20px;
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 18px;
+  }
+  .card h4 {
+    margin: 0 0 6px;
+    font: 700 14px/1.3 system-ui, "Segoe UI", sans-serif;
+    color: var(--gold);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .card p, .card ul { font-size: .95rem; margin-bottom: 0; }
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps li {
+    counter-increment: s;
+    position: relative;
+    padding-left: 44px;
+    margin-bottom: 14px;
+  }
+  .steps li::before {
+    content: counter(s);
+    position: absolute;
+    left: 0; top: 2px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--paper);
+    font: 700 14px/28px system-ui, sans-serif;
+    text-align: center;
+  }
+  .tag {
+    display: inline-block;
+    font: 600 11px/1 system-ui, sans-serif;
+    padding: 4px 7px;
+    border-radius: 3px;
+    background: var(--code-bg);
+    color: var(--muted);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    h1 { font-size: 1.9rem; }
+    .grid2 { grid-template-columns: 1fr; }
+    main { padding: 32px 16px 72px; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="doc">
+  <div class="kicker">Dokument projektowy · MVP</div>
+  <h1>Nocna Zmiana</h1>
+  <p class="subtitle">Roguelite boomer shooter o nocnym stróżu w muzeum, którego eksponaty budzą się do życia</p>
+  <div class="meta">Tytuł roboczy · wersja 1.1 · 25 września 2026 · Godot 4.7 · widok FPP</div>
+</header>
+
+<nav class="toc">
+  <ol>
+    <li><a href="#wizja">Wizja</a></li>
+    <li><a href="#zakres">Zakres MVP</a></li>
+    <li><a href="#walka">Walka: bronie, wrogowie, boss</a></li>
+    <li><a href="#mapa">Mapa: lobby i kanciapa</a></li>
+    <li><a href="#petla">Pętla roguelite i progresja</a></li>
+    <li><a href="#oprawa">Oprawa i klimat</a></li>
+    <li><a href="#architektura">Architektura</a></li>
+    <li><a href="#testy">Testowanie</a></li>
+    <li><a href="#etapy">Etapy realizacji</a></li>
+    <li><a href="#poza">Poza zakresem MVP</a></li>
+  </ol>
+</nav>
+
+<h2 id="wizja"><span class="num">01</span>Wizja</h2>
+
+<div class="pitch">
+  Jesteś nocnym stróżem w wielkim muzeum. Co noc eksponaty budzą się do życia i atakują. Żeby to zakończyć, musisz schodzić coraz niżej, do najgłębszych poziomów muzeum, gdzie ukrywa się źródło przebudzeń.
+</div>
+
+<ul>
+  <li><strong>Inspiracje:</strong> klimat filmu <em>Noc w muzeum</em>, walka i estetyka Doom 2 i Quake'a, pętla progresji z roguelite'ów oraz odzyskiwanie waluty z Dark Souls.</li>
+  <li><strong>Ton:</strong> mroczny z przymrużeniem oka. Nocne, puste muzeum, latarka, humor w notatkach i opisach. Im głębiej, tym mroczniej.</li>
+  <li><strong>Walka:</strong> mięsista i satysfakcjonująca, ale <strong>bez bullet hella</strong> i <strong>nie try-hard</strong>, zwłaszcza na początku.</li>
+  <li><strong>Ruch:</strong> umiarkowany, „strażnik, nie komandos”. Chód jest spokojniejszy niż w Doomie, a sprint i unik (dash) kosztują wytrzymałość.</li>
+</ul>
+
+<h2 id="zakres"><span class="num">02</span>Zakres MVP</h2>
+
+<p>MVP ma odpowiedzieć na jedno pytanie: <strong>czy ta pętla jest fajna?</strong> Obejmuje jeden dopracowany poziom (lobby muzeum i kanciapę ochrony) oraz wszystkie mechaniki w minimalnej liczbie wariantów.</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Element</th><th>W MVP</th></tr>
+  <tr><td>Poziomy</td><td>1: lobby z holem głównym, 3 skrzydłami bocznymi i antresolą</td></tr>
+  <tr><td>Bronie</td><td>4: pięści, paralizator, pistolet, strzelba</td></tr>
+  <tr><td>Wrogowie</td><td>4 typy i boss (szkielet T-Rexa)</td></tr>
+  <tr><td>Przystanie</td><td>2: kanciapa ochrony, składzik na miotły</td></tr>
+  <tr><td>Ulepszenia trwałe</td><td>ok. 15</td></tr>
+  <tr><td>Artefakty nocy</td><td>6</td></tr>
+  <tr><td>Sekrety</td><td>5–6</td></tr>
+  <tr><td>Modyfikatory nocy</td><td>3: awaria prądu, pełnia, spokojna noc</td></tr>
+</table>
+</div>
+
+<p>Koniec MVP to pokonanie T-Rexa i otwarcie zejścia do podziemi. Po testach rozbudowujemy liczbę ulepszeń, mechanik i poziomów.</p>
+
+<h2 id="walka"><span class="num">03</span>Walka: bronie, wrogowie, boss</h2>
+
+<h3>Bronie</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Broń</th><th>Rola</th><th>Amunicja</th><th>Charakter</th><th>Zdobycie</th></tr>
+  <tr><td><strong>Pięści</strong></td><td>szybki cios, osobny klawisz</td><td>—</td><td>Słabe, odrzucają. <strong>Dobijają ogłuszonych</strong>: dobicie daje zdrowie i dodatkowy Pył</td><td>od startu</td></tr>
+  <tr><td><strong>Paralizator</strong></td><td>kontrola tłumu</td><td>bateria, ładuje się sama</td><td>Krótki zasięg, <strong>ogłusza</strong> na kilka sekund, minimalne obrażenia</td><td>od startu</td></tr>
+  <tr><td><strong>Pistolet</strong></td><td>broń podstawowa</td><td>średnio dostępna</td><td>Celny i niezawodny, bonus za trafienie w <strong>słaby punkt</strong></td><td>szafka w kanciapie, klucz leży w lobby</td></tr>
+  <tr><td><strong>Strzelba</strong></td><td>ciężka artyleria</td><td>rzadka</td><td>Z bliska rozrywa eksponaty na kawałki</td><td>ukryta gablota w zbrojowni</td></tr>
+</table>
+</div>
+
+<p><strong>Synergia:</strong> paralizator ogłusza, pięść dobija, strażnik się leczy. Gra nagradza zbliżenie się do wroga, ale niczego nie wymusza. Zdrowie dają też apteczki. <strong>Znaleziona broń zostaje na zawsze.</strong></p>
+
+<h3>Wrogowie w lobby</h3>
+<div class="grid2">
+  <div class="card"><h4>Figura woskowa</h4><p>Podstawowy przeciwnik. Wolna, chodzi grupkami, bije wręcz. Pod ostrzałem topnieje.</p></div>
+  <div class="card"><h4>Wypchany wilk</h4><p>Szybki i kruchy. Doskakuje z dystansu, sypie trocinami.</p></div>
+  <div class="card"><h4>Rycerz w zbroi</h4><p>Twardziel. Tarcza <strong>blokuje ataki od przodu</strong>, więc trzeba go obejść albo ogłuszyć. Iskrzy i gubi blachy.</p></div>
+  <div class="card"><h4>Lewitujące popiersie</h4><p>Przeciwnik dystansowy. Pluje <strong>pojedynczymi, wolnymi</strong> odłamkami marmuru, łatwymi do uniknięcia. Po zniszczeniu pęka.</p></div>
+</div>
+
+<h3>Rozpad zależny od materiału</h3>
+<p>„Mięsistość” walki bierze się z tego, jak rozpadają się eksponaty, bez prawdziwej krwi. Wosk topnieje i pryska, wypchane zwierzęta sypią trocinami i gubią szklane oczy, marmur pęka na odłamki, a zbroje się wgniatają i iskrzą. Ciężka broń rozrywa wrogów na części.</p>
+
+<h3>Boss MVP: szkielet T-Rexa</h3>
+<p>Szkielet stoi w holu głównym, na straży zejścia do podziemi. Ma trzy ataki:</p>
+<ul>
+  <li><strong>szarżę,</strong></li>
+  <li><strong>zamach ogonem,</strong></li>
+  <li><strong>ryk,</strong> który budzi pobliskie drobne eksponaty.</li>
+</ul>
+<p>Słabym punktem jest <strong>czerwony kryształ</strong> między żebrami.</p>
+
+<h2 id="mapa"><span class="num">04</span>Mapa: lobby i kanciapa</h2>
+
+<pre>
+                 [Balkon / antresola – piętro]
+          ┌── Składzik na miotły (przystań #2, ukryty) ──┐
+          │                                              │
+ [Galeria rzeźby]──── HOL GŁÓWNY (2 kondygnacje) ────[Zbrojownia]
+   popiersia          • szkielet T-Rexa na postumencie    rycerze
+   BEZPIECZNIK A      • kasa biletowa, informacja        BEZPIECZNIK B
+                      • krata do podziemi (zamknięta)    strzelba (ukryta)
+                               │
+                  [Diorama przyrody] ── wilki, sekrety
+                               │
+                  KANCIAPA OCHRONY (start, przystań #1)
+</pre>
+
+<ul>
+  <li><strong>Hol główny to węzeł</strong> z dwiema kondygnacjami. Walka toczy się też w pionie: balkon, schody, antresola.</li>
+  <li><strong>Kanciapa</strong> to start i przystań. Ma szafkę na sprzęt, ulepszenia i monitory CCTV, które zapowiadają nocną zmianę.</li>
+  <li><strong>Składzik na miotły</strong> na antresoli to ukryta przystań. Po odkryciu staje się punktem startu bliżej celu.</li>
+  <li><strong>Sekrety (5–6):</strong> przejście za obrazem, szyb wentylacyjny, fałszywa ściana za tabliczką, zamknięta gablota z artefaktem, notatki poprzednich strażników.</li>
+</ul>
+
+<h3>Cel nocy: sekwencja przebudzenia</h3>
+<ol class="steps">
+  <li><strong>Dwa bezpieczniki.</strong> Leżą w galerii rzeźby i w zbrojowni. Po włożeniu obu do skrzynki przy kracie gaśnie światło, a krata rusza.</li>
+  <li><strong>Kryształ zaczyna pulsować.</strong> Leży w jednej z 3–4 gablot (miejsce losowe co noc), z tabliczką „Minerał nieznanego pochodzenia – dar anonimowy”. Przed włożeniem bezpieczników jest martwy. Jego poświatę widać na monitorach CCTV.</li>
+  <li><strong>Gracz podchodzi do kryształu.</strong> Kryształ rozbłyska i odlatuje korytarzami do holu, zostawiając świetlistą smugę, którą gracz podąża.</li>
+  <li><strong>Kryształ wbija się między żebra T-Rexa</strong> i staje się jego słabym punktem. Szkielet się budzi i zaczyna się walka z bossem.</li>
+</ol>
+
+<h3>Nocna zmiana (losowanie co noc)</h3>
+<p>Układ lobby jest stały. Co noc losowane są:</p>
+<ul>
+  <li><strong>wrogowie:</strong> które zestawy się budzą i gdzie,</li>
+  <li><strong>drzwi:</strong> które są zamknięte, co wymusza inne trasy,</li>
+  <li><strong>łupy:</strong> gdzie leżą artefakty i amunicja,</li>
+  <li><strong>kryształ:</strong> w której gablocie leży,</li>
+  <li><strong>modyfikator nocy:</strong> jeden na noc.</li>
+</ul>
+<p>Na głębszych piętrach (poza MVP) losowości będzie coraz więcej.</p>
+<p><strong>Skala:</strong> pierwsze przejście trwa ok. 20–30 minut, a przy znajomości mapy 8–12 minut.</p>
+
+<h2 id="petla"><span class="num">05</span>Pętla roguelite i progresja</h2>
+
+<div class="grid2">
+  <div class="card">
+    <h4>Odradza się co noc</h4>
+    <ul>
+      <li>wrogowie</li>
+      <li>bezpieczniki i kryształ</li>
+      <li>amunicja i apteczki</li>
+      <li>artefakty nocy (tracone)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Zostaje na zawsze</h4>
+    <ul>
+      <li>kupione ulepszenia</li>
+      <li>znalezione bronie</li>
+      <li>odkryte sekrety i notatki</li>
+      <li>odkryte przystanie i skróty</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Pył: waluta i ryzyko</h3>
+<ul>
+  <li>Pokonany eksponat rozsypuje się i zostawia <strong>Pył</strong>, czyli resztkę ożywiającej go magii.</li>
+  <li>Niesiony Pył widać na HUD. W przystani wydajesz go na trwałe ulepszenia. <strong>Wydany Pył jest bezpieczny.</strong></li>
+  <li><strong>Śmierć:</strong> strażnik budzi się z krzykiem na krześle w kanciapie, a zegar wskazuje 23:00. W miejscu śmierci zostaje świecąca <strong>latarka strażnika</strong> z całym niesionym Pyłem.</li>
+  <li>Kto podniesie latarkę, odzyskuje Pył. <strong>Kto zginie po drodze, traci go na zawsze</strong>, jak dusze w Dark Souls.</li>
+</ul>
+
+<h3>Ulepszenia (MVP)</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>Postać</th><th>Poziomy</th><th>Broń</th><th>Ulepszenia</th></tr>
+  <tr><td>Zdrowie</td><td>3</td><td>Paralizator</td><td>szybsze ładowanie · przeskok na 2. wroga</td></tr>
+  <tr><td>Wytrzymałość</td><td>3</td><td>Pistolet</td><td>obrażenia · większy magazynek</td></tr>
+  <tr><td>Bateria latarki</td><td>2</td><td>Strzelba</td><td>ciaśniejszy rozrzut · pocisk „slug”</td></tr>
+  <tr><td>Siła pięści</td><td>2</td><td colspan="2"><em>Ceny rosną z każdym poziomem</em></td></tr>
+</table>
+</div>
+
+<h3>Artefakty nocy</h3>
+<p>Znajdowane w gablotach, sarkofagach i sekretach. Działają do świtu albo do śmierci.</p>
+<div class="table-wrap">
+<table>
+  <tr><th>Artefakt</th><th>Efekt</th></tr>
+  <tr><td>Skarabeusz</td><td>dobicia leczą mocniej</td></tr>
+  <tr><td>Monokl kustosza</td><td>słabe punkty wrogów świecą</td></tr>
+  <tr><td>Moneta z fontanny</td><td>+50% Pyłu</td></tr>
+  <tr><td>Ogarek świecy</td><td>dłuższe ogłuszenie</td></tr>
+  <tr><td>Ząb wilka</td><td>szybszy sprint</td></tr>
+  <tr><td>Klucz woźnego</td><td>otwiera jedną losowo zamkniętą drogę</td></tr>
+</table>
+</div>
+
+<p><strong>Zapis</strong> jest automatyczny przy wejściu do przystani i przy śmierci. Nie ma ręcznego zapisywania.</p>
+
+<h2 id="oprawa"><span class="num">06</span>Oprawa i klimat</h2>
+<div class="pitch"><strong>Styl retro, nie jakość retro.</strong> Z lat 90. bierzemy tylko język wizualny: czytelne sylwetki, ostre pikselowe tekstury, przemyślaną paletę. Wszystko inne jest nowoczesne. Punkty odniesienia to Amid Evil, Cultic, Prodeus i Selaco.</div>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Element</th><th>Kierunek</th></tr>
+  <tr><td><strong>Rozdzielczość</strong></td><td>pełna, natywna, ostry obraz (bez sztucznego renderu w 480p)</td></tr>
+  <tr><td><strong>Geometria</strong></td><td>stylizowane, masywne formy z wyraźną sylwetką: uproszczone, ale nie prymitywne</td></tr>
+  <tr><td><strong>Tekstury</strong></td><td>pikselowy styl z ostrymi pikselami i ograniczoną paletą, ale z większą gęstością szczegółu niż w latach 90.</td></tr>
+  <tr><td><strong>Światło</strong></td><td>nowoczesne: dynamiczne cienie latarki, <strong>wolumetryczna mgła</strong> (snopy księżyca przez świetliki w dachu), globalne oświetlenie, bloom, okluzja otoczenia</td></tr>
+  <tr><td><strong>Odbicia</strong></td><td>marmurowe podłogi i szklane gabloty z odbiciami</td></tr>
+  <tr><td><strong>Efekty</strong></td><td>cząsteczki z fizyką (krople wosku, trociny, odłamki marmuru), ślady trafień na ścianach, rozbłyski, wstrząsy kamery</td></tr>
+  <tr><td><strong>Filtry retro</strong></td><td>pikselizacja lub paleta ewentualnie tylko jako opcja w ustawieniach</td></tr>
+</table>
+</div>
+
+<ul>
+  <li><strong>Klimat światła:</strong> nocny półmrok, światła awaryjne, księżyc i latarka strażnika.</li>
+  <li><strong>Modele i tekstury:</strong> tworzone w Blenderze. Geometria powstaje skryptami, dzięki czemu jest powtarzalna i łatwa do poprawiania, a oglądanie i dopracowanie odbywa się bezpośrednio w programie (computer use). Eksport do <code>.glb</code>.</li>
+  <li><strong>Dźwięk:</strong> synteza efektów plus darmowe biblioteki CC0. Muzyka CC0 lub generowana.</li>
+  <li><strong>Próbka stylu</strong> na końcu etapu 1: jedna w pełni wykończona sala. To sprawdzian największego ryzyka projektu, czyli jakości assetów, zanim powstanie reszta.</li>
+</ul>
+
+<h2 id="architektura"><span class="num">07</span>Architektura</h2>
+
+<p><strong>Narzędzia:</strong> Godot 4.7.2 (kopia w <code>tools/godot/</code> projektu), GDScript i Blender 5.1. Wszystko jest darmowe i leży na dysku D:. Projekt wersjonuje lokalne repozytorium git.</p>
+
+<div class="note"><strong>Decyzja (25 września 2026): Godot 4.7.2.</strong> Sceny zapisuje w czytelnych plikach tekstowych, więc Claude może budować i testować grę bez klikania w edytorze. Jest lekki, darmowy, open source i już zainstalowany na D:, a oferuje wszystko, czego wymaga kierunek graficzny (wolumetryczna mgła, globalne oświetlenie, odbicia). Unity odrzucone: ciężka instalacja, zamknięty kod i wymagane konto.</div>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Moduł</th><th>Odpowiada za</th></tr>
+  <tr><td><strong>Player</strong></td><td>ruch (<code>CharacterBody3D</code>), wytrzymałość, zdrowie, latarka, interakcje</td></tr>
+  <tr><td><strong>Weapons</strong></td><td>bronie opisane danymi (zasób z parametrami na każdą broń); ulepszenia to modyfikatory danych</td></tr>
+  <tr><td><strong>Enemies</strong></td><td>wspólna maszyna stanów (<em>uśpiony → czujny → pościg → atak → ogłuszony → zniszczony</em>), nawigacja (<code>NavigationAgent3D</code>), rozpad zależny od materiału</td></tr>
+  <tr><td><strong>Boss</strong></td><td>osobny skrypt T-Rexa z fazami i sekwencją przebudzenia</td></tr>
+  <tr><td><strong>NightDirector</strong></td><td>losuje noc z <strong>ziarna losowości</strong>, więc tę samą noc da się odtworzyć</td></tr>
+  <tr><td><strong>GameState</strong></td><td>stan trwały: Pył wydany, ulepszenia, bronie, sekrety, przystanie. Zapis w pliku JSON</td></tr>
+  <tr><td><strong>RunState</strong></td><td>stan nocy: niesiony Pył, artefakty, modyfikator, bezpieczniki</td></tr>
+  <tr><td><strong>UI</strong></td><td>HUD, menu ulepszeń w przystani, ekran śmierci</td></tr>
+  <tr><td><strong>Rendering</strong></td><td>ustawienia światła, mgły, odbić i post-processingu. Opcjonalne filtry retro w ustawieniach</td></tr>
+</table>
+</div>
+
+<p>Moduły komunikują się sygnałami (np. „wróg zniszczony”, „gracz zginął”, „bezpiecznik włożony”), a nie bezpośrednimi odwołaniami. Dzięki temu każdy da się testować osobno.</p>
+
+<h2 id="testy"><span class="num">08</span>Testowanie</h2>
+<ul>
+  <li><strong>Testy jednostkowe bez okna</strong> (własny, mały runner testów w repozytorium, uruchamiany przez Godota w trybie bez okna; bez zewnętrznych bibliotek) sprawdzają obrażenia, ekonomię Pyłu, śmierć i odzyskiwanie, zapis i odczyt oraz powtarzalność losowania nocy.</li>
+  <li><strong>Automatyczne sesje gry:</strong> skryptowany „bot” steruje strażnikiem przez wstrzykiwane zdarzenia wejścia, a gra zapisuje zrzuty ekranu i zrzut stanu do pliku do weryfikacji.</li>
+  <li><strong>Testy gracza</strong> na koniec każdego etapu to najważniejszy sprawdzian odczuć z gry.</li>
+</ul>
+
+<h2 id="etapy"><span class="num">09</span>Etapy realizacji</h2>
+
+<ol class="steps">
+  <li><strong>Piaskownica walki</strong> <span class="tag">etap 1</span><br>
+  Szara arena: ruch z wytrzymałością i dashem, 4 bronie, figura woskowa, wilk i rycerz, rozpad eksponatów i HUD. Szlif aż do soczystego strzelania. <em>Po tym etapie pierwszy raz grasz.</em><br>
+  Etap dzieli się na dwa plany: <strong>1a</strong> to grywalna piaskownica, po której są testy gracza. <strong>1b</strong> to <strong>próbka stylu</strong>, czyli fragment galerii rzeźby w pełnej oprawie (marmur, gablota, księżyc przez okno, wykończona figura woskowa) do akceptacji kierunku graficznego.</li>
+  <li><strong>Lobby jako greybox z pełną pętlą</strong> <span class="tag">etap 2</span><br>
+  Mapa z brył, popiersia, bezpieczniki, kryształ, T-Rex, Pył i latarka strażnika, przystanie, ulepszenia, artefakty, sekrety, nocna zmiana i zapis.</li>
+  <li><strong>Oprawa</strong> <span class="tag">etap 3</span><br>
+  Modele z Blendera, tekstury, oświetlenie, dźwięki, muzyka i szlif.</li>
+</ol>
+
+<h2 id="poza"><span class="num">10</span>Poza zakresem MVP</h2>
+<ul>
+  <li>Kolejne piętra (m.in. skrzydło egipskie z mumiami, podziemia, magazyny) i rosnąca losowość układu.</li>
+  <li>Więcej broni, ulepszeń, artefaktów i modyfikatorów nocy.</li>
+  <li>Fabuła źródła przebudzeń i finałowy boss.</li>
+  <li>Rozbudowane menu opcji i ustawienia grafiki. W MVP są tylko czułość myszy i głośność.</li>
+  <li>Eksport i przygotowanie do wydania.</li>
+</ul>
+
+</main>
+</body>
+</html>

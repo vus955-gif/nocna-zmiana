@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piętro I — czas przejścia</title>
+<style>
+:root{--bg:#14110f;--panel:#1d1916;--ink:#ece4d8;--muted:#a99c8b;--line:#3a322b;--accent:#e0a447;--bad:#e06a47;--good:#8fbf6a;
+  --c-walk:#5b8fd6;--c-look:#8a7ad6;--c-fight:#d6765b;--c-guard:#e0a447;--c-note:#6bb39a;--c-other:#7b7066}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:44px 26px 70px}
+h1,h2,h3{font-family:Georgia,serif}
+h1{font-size:38px;margin:0 0 4px;letter-spacing:.03em}
+h2{font-size:24px;color:var(--accent);margin:46px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:19px;margin:26px 0 8px}
+.kicker{color:var(--muted);font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+.sub{color:var(--muted);font-family:Georgia,serif;font-style:italic;font-size:18px;margin-bottom:22px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 8px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat .n{font-family:Georgia,serif;font-size:28px;color:var(--accent);display:block;line-height:1.2}
+.stat .l{font-size:13px;color:var(--muted)}
+.stat.bad .n{color:var(--bad)}
+.note{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:15.5px}
+.note.bad{border-left-color:var(--bad)}
+.note.good{border-left-color:var(--good)}
+table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:15px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+th{color:var(--accent);background:var(--panel);font-weight:600}
+tr.sum td{font-weight:600;border-top:2px solid var(--line)}
+.bar{display:flex;height:22px;border-radius:5px;overflow:hidden;margin:6px 0 2px;background:var(--panel)}
+.bar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13.5px;color:var(--muted);margin:6px 0 14px}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:14px}
+ul,ol{padding-left:22px;margin:0 0 12px}li{margin:5px 0}
+.foot{margin-top:50px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:12px}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:9px;border:1px solid var(--line);color:var(--muted);margin-left:6px}
+.tag.bad{color:var(--bad);border-color:var(--bad)}
+@media (max-width:760px){.stats{grid-template-columns:1fr 1fr}th,td{padding:6px 6px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker">Nocna Zmiana · Piętro I · weryfikacja W7 · 3 października 2026</div>
+<h1>Czas przejścia i blokady</h1>
+<div class="sub">Bot-zwiedzający przeszedł zbudowane piętro po siatce nawigacji: drogę krytyczną, typowe pierwsze przejście i 100%. Test osiągalności sprawdził każdy stan postępu.</div>
+
+<div class="stats">
+<div class="stat bad"><span class="n">2 h 39 min</span><span class="l">100% piętra (cel 45–60 min, realnie 60–80)</span></div>
+<div class="stat bad"><span class="n">4,6 nocy</span><span class="l">typowy pierwszy gracz, 1 h 43 min (cel 3–4 noce)</span></div>
+<div class="stat bad"><span class="n">57 min</span><span class="l">droga krytyczna (plan: 25–40 min)</span></div>
+<div class="stat bad"><span class="n">1 blokada</span><span class="l">Grecja nie do otwarcia → piętra nie da się dziś skończyć (W7-1)</span></div>
+</div>
+<div class="note bad"><b>Najważniejsze.</b> (1) W obecnym buildzie <b>nie da się ukończyć Piętra I</b>: oba wejścia do Grecji, które gracz może otworzyć, są zasłonięte niewidzialnym skrzydłem drzwi (znalezisko W7-1), więc Kentaur, Pieczęć Sowy, kartaczownica i odłamek 3 są nieosiągalne. To jedna poprawka w kodzie bram, nie w strefach. (2) Piętro jest <b>ok. 2,6 raza za długie</b> względem celu na 100%: 2 h 39 min wobec 45–60 min (realnie 60–80). Typowy pierwszy gracz potrzebuje <b>4,6 nocy</b> (cel 3–4), a ze śmierciami, których bot nie liczy, raczej 5–6. Długość nie wynika z pustych sal — raczej z <b>gęstości</b>: reżyser wystawia średnio <b>176 eksponatów na noc</b> (projekt §4.6: 90–120), a 33 notatek ma średnio 113 słów.</div>
+<h2>Wynik na tle celu</h2>
+<table><tr><th>Profil</th><th class="num">Czas (model)</th><th class="num">Przedział</th><th class="num">Noce po 23 min 20 s</th><th class="num">Droga</th><th class="num">Sale</th><th>Cel</th></tr>
+<tr><td>Droga krytyczna</td><td class="num">57 min</td><td class="num">40 min – 1 h 11 min</td><td class="num">2,4</td><td class="num">2,1 km</td><td class="num">52</td><td>25–40 min (plan W7)</td></tr>
+<tr><td>Typowy pierwszy gracz</td><td class="num">1 h 43 min</td><td class="num">1 h 8 min – 2 h 5 min</td><td class="num">4,6</td><td class="num">4,2 km</td><td class="num">71</td><td>3–4 noce</td></tr>
+<tr><td>100%</td><td class="num">2 h 39 min</td><td class="num">1 h 46 min – 3 h 12 min</td><td class="num">6,8</td><td class="num">8,3 km</td><td class="num">113</td><td>45–60 min (60–80 realnie)</td></tr>
+</table>
+<p><b>Przedział:</b> od gracza sprawnego (rozgląda się o połowę krócej, walczy o 40% szybciej, strażnik w 2 min, notatki przelatuje wzrokiem) do powolnego (rozgląda się o 30% dłużej, walczy o 40% dłużej, strażnik 3,5 min). Nawet dolna granica 100% (<b>1 h 46 min</b>) jest ponad celem; droga krytyczna w najlepszym razie to 40 min.</p>
+<p><b>Ile ponad cel:</b> 100% — o 1 h 39 min ponad górną granicę 60 min (o 1 h 19 min ponad realne 80 min); droga krytyczna — o 17 min ponad 40 min (sami strażnicy z T-Reksem to 19 min, czyli połowa celu); typowy gracz — o 0,6 nocy ponad 4.</p>
+<h3>Na co idzie czas</h3>
+<div class="legend"><span><span class="sw" style="background:var(--c-walk)"></span>chód</span><span><span class="sw" style="background:var(--c-look)"></span>rozglądanie się</span><span><span class="sw" style="background:var(--c-fight)"></span>walki z eksponatami</span><span><span class="sw" style="background:var(--c-guard)"></span>strażnicy i T-Rex</span><span><span class="sw" style="background:var(--c-note)"></span>czytanie notatek</span><span><span class="sw" style="background:var(--c-other)"></span>reszta (bramy, znajdźki, starty nocy, przystanie, szachy, sekrety)</span></div>
+<div style="font-size:14px;color:var(--muted)">Droga krytyczna · 57 min</div><div class="bar"><span style="width:11.18%;background:var(--c-walk)" title="chód: 6 min"></span><span style="width:15.06%;background:var(--c-look)" title="rozglądanie się: 9 min"></span><span style="width:32.93%;background:var(--c-fight)" title="walki z eksponatami: 19 min"></span><span style="width:33.55%;background:var(--c-guard)" title="strażnicy i T-Rex: 19 min"></span><span style="width:0.00%;background:var(--c-note)" title="czytanie notatek: &lt; 1 min"></span><span style="width:7.29%;background:var(--c-other)" title="reszta: 4 min"></span></div>
+<div style="font-size:14px;color:var(--muted)">Typowy pierwszy gracz · 1 h 43 min</div><div class="bar"><span style="width:12.34%;background:var(--c-walk)" title="chód: 13 min"></span><span style="width:21.20%;background:var(--c-look)" title="rozglądanie się: 22 min"></span><span style="width:28.81%;background:var(--c-fight)" title="walki z eksponatami: 30 min"></span><span style="width:18.51%;background:var(--c-guard)" title="strażnicy i T-Rex: 19 min"></span><span style="width:13.81%;background:var(--c-note)" title="czytanie notatek: 14 min"></span><span style="width:5.33%;background:var(--c-other)" title="reszta: 5 min"></span></div>
+<div style="font-size:14px;color:var(--muted)">100% · 2 h 39 min</div><div class="bar"><span style="width:15.85%;background:var(--c-walk)" title="chód: 25 min"></span><span style="width:24.78%;background:var(--c-look)" title="rozglądanie się: 39 min"></span><span style="width:27.07%;background:var(--c-fight)" title="walki z eksponatami: 43 min"></span><span style="width:11.98%;background:var(--c-guard)" title="strażnicy i T-Rex: 19 min"></span><span style="width:14.53%;background:var(--c-note)" title="czytanie notatek: 23 min"></span><span style="width:5.80%;background:var(--c-other)" title="reszta: 9 min"></span></div>
+<table><tr><th>Składnik</th><th class="num">Droga krytyczna</th><th class="num">Typowy pierwszy gracz</th><th class="num">100%</th></tr>
+<tr><td>chód</td><td class="num">6 min</td><td class="num">13 min</td><td class="num">25 min</td></tr>
+<tr><td>rozglądanie się</td><td class="num">9 min</td><td class="num">22 min</td><td class="num">39 min</td></tr>
+<tr><td>walki z eksponatami</td><td class="num">19 min</td><td class="num">30 min</td><td class="num">43 min</td></tr>
+<tr><td>strażnicy i T-Rex</td><td class="num">19 min</td><td class="num">19 min</td><td class="num">19 min</td></tr>
+<tr><td>czytanie notatek</td><td class="num">—</td><td class="num">14 min</td><td class="num">23 min</td></tr>
+<tr><td>otwieranie bram</td><td class="num">2 min</td><td class="num">2 min</td><td class="num">3 min</td></tr>
+<tr><td>znajdźki, rozdzielnia, astrolabium</td><td class="num">1 min</td><td class="num">1 min</td><td class="num">1 min</td></tr>
+<tr><td>starty nocy</td><td class="num">1 min</td><td class="num">2 min</td><td class="num">3 min</td></tr>
+<tr><td>nowe przystanie</td><td class="num">&lt; 1 min</td><td class="num">1 min</td><td class="num">1 min</td></tr>
+<tr><td>szachy</td><td class="num">—</td><td class="num">—</td><td class="num">1 min</td></tr>
+<tr><td>sekrety w salach otwartych</td><td class="num">—</td><td class="num">—</td><td class="num">&lt; 1 min</td></tr>
+<tr class="sum"><td>razem</td><td class="num">57 min</td><td class="num">1 h 43 min</td><td class="num">2 h 39 min</td></tr></table>
+<h2>Skrzydło po skrzydle</h2>
+<p>Czas przypisany części piętra, w której upływa (chód dzielony po salach na trasie). Kolumna „budżet” to udział części przy 100% przeskalowany do 60 min — o tyle trzeba by ją skrócić, zachowując proporcje.</p>
+<table><tr><th>Część</th><th class="num">Sale</th><th class="num">Podłoga</th><th class="num">Eksp./noc</th><th class="num">Notatki · sekrety · szachy</th><th class="num">Droga kr.</th><th class="num">Typowy</th><th class="num">100%</th><th class="num">Budżet (60 min)</th></tr>
+<tr><td>Centrum (dziedziniec, hol, kanciapa, korytarz płn., krypta)</td><td class="num">16</td><td class="num">6017&nbsp;m²</td><td class="num">38</td><td class="num">5 · 4 · 1</td><td class="num">13 min</td><td class="num">23 min</td><td class="num">29 min</td><td class="num">11 min</td></tr>
+<tr><td>Egipt</td><td class="num">12</td><td class="num">1817&nbsp;m²</td><td class="num">15</td><td class="num">4 · 3 · 1</td><td class="num">6 min</td><td class="num">14 min</td><td class="num">19 min</td><td class="num">7 min</td></tr>
+<tr><td>Asyria</td><td class="num">11</td><td class="num">3433&nbsp;m²</td><td class="num">25</td><td class="num">4 · 3 · 1</td><td class="num">7 min</td><td class="num">13 min</td><td class="num">17 min</td><td class="num">6 min</td></tr>
+<tr><td>Grecja</td><td class="num">13</td><td class="num">3190&nbsp;m²</td><td class="num">20</td><td class="num">4 · 3 · 1</td><td class="num">6 min</td><td class="num">12 min</td><td class="num">19 min</td><td class="num">7 min</td></tr>
+<tr><td>Oświecenie</td><td class="num">15</td><td class="num">3203&nbsp;m²</td><td class="num">22</td><td class="num">4 · 3 · 1</td><td class="num">5 min</td><td class="num">12 min</td><td class="num">21 min</td><td class="num">8 min</td></tr>
+<tr><td>Azja</td><td class="num">10</td><td class="num">2445&nbsp;m²</td><td class="num">18</td><td class="num">4 · 3 · 1</td><td class="num">6 min</td><td class="num">11 min</td><td class="num">15 min</td><td class="num">6 min</td></tr>
+<tr><td>Ameryki i Oceania</td><td class="num">11</td><td class="num">1922&nbsp;m²</td><td class="num">16</td><td class="num">4 · 3 · 1</td><td class="num">7 min</td><td class="num">10 min</td><td class="num">15 min</td><td class="num">6 min</td></tr>
+<tr><td>Podziemia</td><td class="num">21</td><td class="num">4188&nbsp;m²</td><td class="num">22</td><td class="num">3 · 3 · 0</td><td class="num">7 min</td><td class="num">8 min</td><td class="num">18 min</td><td class="num">7 min</td></tr>
+<tr><td>Dach</td><td class="num">5</td><td class="num">3971&nbsp;m²</td><td class="num">1</td><td class="num">1 · 2 · 1</td><td class="num">&lt; 1 min</td><td class="num">&lt; 1 min</td><td class="num">5 min</td><td class="num">2 min</td></tr>
+<tr class="sum"><td>razem</td><td class="num">114</td><td class="num">30186&nbsp;m²</td><td class="num">176</td><td class="num">33 · 27 · 8</td><td class="num">57 min</td><td class="num">1 h 43 min</td><td class="num">2 h 39 min</td><td class="num">60 min</td></tr></table>
+<p><b>Równowaga skrzydeł jest dobra, długość nie.</b> Sześć skrzydeł mieści się przy 100% między 15 min (Ameryki i Oceania) a 21 min (Oświecenie) — rozrzut zdrowy. Przy celu 60 min każde skrzydło powinno trwać ok. 6–7 min. Najdłużej trwa <b>centrum</b> (29 min przy 100%, 13 min na drodze krytycznej): dziedziniec przecina się wiele razy, a reżyser stawia w nim średnio 22 eksponatów na noc.</p>
+<h2>Podział na noce (typowy pierwszy gracz)</h2>
+<p>Noc trwa 23 min 20 s. Gdy wybija świt, następna noc zaczyna się w ostatniej przystani, którą minął; eksponaty wracają (bot omija połowę z tych, które już zna; skrzydło z pokonanym strażnikiem ma 55% eksponatów), a strażnik idzie z powrotem na front.</p>
+<table><tr><th>Noc</th><th>Koniec nocy po</th><th>Start następnej nocy</th></tr>
+<tr><td>1</td><td>23 min</td><td>pokój konserwatora</td></tr>
+<tr><td>2</td><td>46 min</td><td>kanciapa ochrony</td></tr>
+<tr><td>3</td><td>1 h 7 min</td><td>pokój konserwatora</td></tr>
+<tr><td>4</td><td>1 h 29 min</td><td>herbaciarnia</td></tr>
+<tr class="sum"><td colspan="3">razem: 4,6 nocy (5 rozpoczęte) — droga krytyczna 2,4, 100% 6,8</td></tr></table>
+<p>Bot nie ginie. Pierwszy gracz zwykle przegrywa część walk ze strażnikami (strażnik wraca do pełni następnej nocy) — realnie <b>5–6 nocy</b>.</p>
+<h2>Blokady i znaleziska</h2>
+<div class="note good"><b>Sprawdzone i w porządku.</b> Dla każdego stanu kolejności z HUD (20 kroków), 2 losowych kolejności w szybkim teście i 24 w głębokim (<code>--filter=deep</code>): z kanciapy i z każdej znanej przystani każdy dostępny krok (cel HUD też) jest osiągalny pieszo; zbiór bram otwieralnych na siatce = <code>ProgressRules.openable_gates</code>, a obszary osiągalne = <code>ProgressRules.reachable_areas</code> (graf obszarów zgadza się z piętrem); nic potrzebnego nie leży za przystanią ani za bramą-sekretem; świątynia Węża jest nieosiągalna przed <code>hook_canoe</code> (most z czółna); lina Planetarium wisi <b>18,0 m</b> od najbliższej podłogi poza rotundą (pistolet sięga 15 m); w stanie 100% osiągalne są wszystkie 108 sal poza przystaniami, 27 znaczników sekretów, 33 notatek i 8 figur szachów (przy założeniu poprawki W7-1). Reżyser nie ma na Piętrze I drzwi nocy (<code>LOCKABLE</code>) — wymiar „drzwi nocy” jest dziś pusty; test sprawdzi je sam, gdy się pojawią.</div>
+<h3>W7-1 · Skrzydło drzwi zasłania zamek <span class="tag bad">blokada piętra</span></h3>
+<p>Brama na przejściu ma dwie części: zamek (<code>GateController</code>, np. deski, zasuwa, łańcuch) i drzwi przejścia (<code>Door</code>), które zostają „częścią stałą” — mają kolizję i blokują siatkę, choć są niewidoczne, gdy zamek ma własny wygląd. Skrzydła drzwi stoją przy licu muru od strony pokoju A. Gdy zamek otwiera się właśnie od strony A, niewidzialne skrzydło stoi między graczem a strefą trafień i napisem zamka: pięść, strzał, wybuch ani E do niego nie docierają (sprawdzone dokładnie tymi promieniami, których używa gra: <code>Hitscan.ray</code>, <code>Interactor.probe</code>).</p>
+<table><tr><th>Brama</th><th>Skąd się ją otwiera</th><th>Skutek</th></tr>
+<tr><td><code>boards_tomb</code> (deski, Egipt → Grecja)</td><td>grobowce Egiptu</td><td rowspan="2"><b>Grecja nieosiągalna</b> (pozostałe dwie zasuwy są od strony Grecji) → Kentaur, Pieczęć Sowy, kartaczownica, odłamek 3, astrolabium, T-Rex: <b>piętra nie da się ukończyć</b></td></tr>
+<tr><td><code>bolt_lions_bassae</code> (zasuwa, Asyria → Grecja)</td><td>galeria Sali Lwów</td></tr>
+<tr><td><code>boards_staff_stairs</code> (deski, kanciapa → podziemia)</td><td>schody służbowe kanciapy</td><td>zaplanowane pierwsze zejście do podziemi nie działa od kanciapy; podziemia otwierają się dopiero od Egiptu (zasuwa klatki egipskiej), a deski rozbija się od dołu</td></tr>
+<tr><td><code>bolt_asia_planetarium</code> (zasuwa, Azja → Planetarium)</td><td>Sala Koreańska</td><td>skrót nie do otwarcia (Planetarium i tak dostępne przez linę)</td></tr>
+<tr><td><code>booth_chain_watch</code>, <code>egypt_chain_cache</code>, <code>asia_chain_vault</code>, <code>basement_chain_cage</code> (łańcuchy sekretów)</td><td>pokój przed sekretem</td><td>4 sekrety (i notatki w nich) niedostępne → 100% niemożliwe</td></tr>
+</table>
+<p>Tabela „z której strony działa każdy zamek” (wszystkie 46 zamków na przejściach, zasuwy tylko od strony zasuwy) jest w wyniku testu <code>test_every_lock_works_from_its_sides</code>: wszystkie pozostałe zamki działają od strony, z której gracz przychodzi; liny, haki i łańcuchy sekretów — zgodnie z zamysłem — tylko z zewnątrz.</p>
+<p><b>Poprawka (W1, <code>gate_controller.gd</code> / <code>museum_floor_level.gd</code>, bez zmian w strefach):</b> stawiać zamek na licu muru po stronie, z której się go otwiera (przed skrzydłem), albo przenosić skrzydło drzwi bramy na drugie lico; prościej — gdy zamek ma własną bryłę blokującą, wyłączyć kolizję skrzydeł drzwi dla promieni gry, a siatkę blokować samą bryłą zamku (dziś leży poza regionem nawigacji, więc trzeba ją tam dołożyć). Test podaje te bramy w <code>FINDINGS</code>/<code>ASSUMED_OPEN</code>; po poprawce sam napisze, że można je stamtąd usunąć.</p>
+<h3>W7-2 · Siatka nie przechodzi przez drzwi magazynu książek <span class="tag">nawigacja</span></h3>
+<p><code>enlightenment_stairs_stacks</code> (1,5 m, SWING): otwarte skrzydło leży wzdłuż ościeża i zwęża przejście poniżej 1 m szerokości agenta nawigacji, więc siatka gry nie łączy klatki schodowej Oświecenia z magazynem zamkniętym (ścieżka okrężna: 243 m przez podziemia). Gracz (promień 0,4 m) przechodzi; eksponaty nie pójdą za nim i nie wrócą tą drogą. Poprawka w strefie (W5a): drzwi 2 m albo DOUBLE_SWING.</p>
+<h3>Uwagi projektowe</h3>
+<ul>
+<li><b>Eksponaty na noc: średnio 176</b> (losowanie reżysera z pułapami gęstości, każda sala) wobec 90–120 z projektu §4.6. To główne źródło czasu walk (43 min przy 100%).</li>
+<li><b>Ognista skrzynia nie jest potrzebna do końca piętra:</b> spękany mur ogrodu pęka też od trzech rac z bliska, więc część losowych kolejności kończy piętro bez niej. Zgodne z §4.2, ale warto wiedzieć, że to nagroda, nie klucz.</li>
+<li><b>Notatki:</b> 33 z tekstem, średnio 113 słów — czytanie to 23 min przy 100% (przy 180 słowach na minutę).</li>
+</ul>
+<h2>Co skrócić, żeby trafić w cel</h2>
+<ol>
+<li><b>Najpierw W7-1</b> — bez niej żaden czas nie ma znaczenia.</li>
+<li><b>Eksponaty do 90–120 na noc</b> (dziś 176): obniżyć <code>ZONE_DENSITY</code> centrum (dziedziniec ma pułap 22 — to jeden pokój 60 × 60 m przecinany kilka razy na noc) i skrzydeł do ok. 0,6. Oszczędność przy 100%: ok. 15 min, na drodze krytycznej ok. 7 min.</li>
+<li><b>Krótsze powroty przez centrum:</b> centrum to 29 min przy 100% — gracz przecina dziedziniec przy każdej zmianie skrzydła. Skrót Grecja → hol i podziemia już są; brakuje szybkiej drogi Oświecenie ↔ Egipt poza dziedzińcem (np. otwarcie kładek dachu do włazu nad Egiptem, opcja z §4.4 p. 6, dziś niebudowana).</li>
+<li><b>Notatki krótsze</b> (40–60 słów zamiast 113) — oszczędność ok. 12 min przy 100%.</li>
+<li><b>Sale duże i puste</b> (≥ 150 m², ≤ 2 eksponaty, bez notatki, sekretu, figury i znajdźki; poza arenami strażników): kładki dachu (3 570 m², 1 eksponat — spacer bez treści), cztery korytarze pierścienia podziemi (po 210 m², 1 eksponat), skrzyżowanie i magazyn cokołów w podziemiach, Sala z Bassae (351 m²), balkon dziedzińca, galeria Sali Lwów, Galeria Porcelany, Sala Zegarów. Tu rozglądanie się nic nie daje — albo dodać treść (notatka, łup, mała zasadzka), albo skrócić sale, przez które się tylko przechodzi.</li>
+<li><b>Za krótkie skrzydła — brak.</b> Najkrótsze (Ameryki, Azja) mają ok. 15 min; nie trzeba ich wydłużać.</li>
+</ol>
+<p>Jeśli właściciel woli zostawić długość („dłużej w porządku, jeśli zyskuje gra”), to piętro jest dziś raczej na <b>5–7 nocy</b> pierwszego przejścia niż 3–4 — wtedy warto przesunąć łagodność (mniej eksponatów w osłabionych skrzydłach, częstsze przystanie), żeby powroty nie męczyły.</p>
+<h2>Jak to policzono</h2>
+<ul>
+<li><b>Osiągalność</b> (<code>tests/integration/test_floor1_reachability.gd</code>, <code>…_deep.gd</code>, logika w <code>tests/support/floor1_reach_case.gd</code>, <code>floor1_survey.gd</code>, <code>floor1_nav_graph.gd</code>): piętro zbudowane raz; dla każdego zestawu otwartych bram jedno wypiekanie siatki (pamięć podręczna po zestawie); graf trójkątów siatki łączony tak jak mapa serwera nawigacji (bez zapytań, które drukują błąd silnika); każda odpowiedź grafu potwierdzona ścieżką <code>NavProbe.path</code> bez limitu wielokątów. Bramę uznaje się za otwartą, gdy gracz ma wymaganie i sięga zamka z właściwej strony: zasuwa — E ze strony zasuwy, pieczęć — E, łańcuch/deski — pięść (1,7 m) lub strzelba, spękany mur — raca z ≤ 5 m lub salwa z ≤ 25 m, lina — pistolet ≤ 15 m lub sztucer, hak — harpunnik ≤ 45 m; za każdym razem z linią strzału do strefy trafień zamka. Start nocy: tuż za drzwiami przystani (przystanie to osobny region siatki).</li>
+<li><b>Bot</b> (<code>tests/integration/test_floor1_timing.gd</code>, model w <code>tests/support/floor1_route.gd</code>, wynik <code>tests/_out/floor1_timing.json</code>): kolejność celu z HUD; w każdym stanie nowe cele po kolei od najbliższego (odległość mierzona ścieżką), potem krok drogi krytycznej. Drogi są pomiarem, reszta szacunkiem: chód 5,5 m/s; rozglądanie 8 s + 1 s na 25 m² (najwyżej 45 s; na drodze krytycznej połowa); walka = HP / 25 obr./s + 3 s na eksponat + 5 s na salę, liczba eksponatów z losowania reżysera; strażnik 2 min 45 s, T-Rex 2 min 30 s; notatka 4 s + 3 słowa/s; sekret 20 s; znajdźka i szachy 5 s; brama 4 s; start nocy 30 s.</li>
+<li>Profile: <b>droga krytyczna</b> — tylko kroki, sale mijane po drodze; <b>typowy pierwszy gracz</b> — wszystkie sale publiczne w miarę otwierania się muzeum, przystanie, notatki w nich, bez polowania na sekrety; <b>100%</b> — każda sala (sekretne też), przystań, notatka, sekret i figura szachów.</li>
+</ul>
+<div class="foot">Wygenerowano z <code>tests/_out/floor1_timing.json</code> (2026-10-03T13:05:16). Uruchomienie: <code>bash tools/run_tests.sh --filter=floor1_timing</code> (ok. 40 s), osiągalność <code>--filter=floor1_reachability</code> (ok. 55 s), wariant głęboki <code>--filter=deep</code> (ok. 2 min 40 s).</div>
+</div>
+</body>
+</html>

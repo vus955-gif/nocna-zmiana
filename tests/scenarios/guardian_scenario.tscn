@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/scenarios/guardian_scenario.gd" id="1_guardian_scenario"]
+
+[node name="GuardianScenario" type="Node"]
+script = ExtResource("1_guardian_scenario")

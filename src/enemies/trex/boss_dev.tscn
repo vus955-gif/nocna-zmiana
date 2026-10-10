@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/enemies/trex/boss_dev.gd" id="1_boss_dev"]
+
+[node name="BossDev" type="Node3D"]
+script = ExtResource("1_boss_dev")

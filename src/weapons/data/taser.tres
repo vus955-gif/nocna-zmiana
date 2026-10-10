@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/weapon_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"taser"
+display_name = "WEAPON_TASER"
+damage = 4.0
+damage_kind = 1
+max_range = 7.0
+cooldown = 0.5
+stun_time = 3.0
+ammo_mode = 1
+battery_max = 100.0
+battery_cost = 33.0
+battery_recharge_per_sec = 22.0
+battery_recharge_delay = 0.8
+shake = 0.1
+kick = 0.03
+sound = &"taser"

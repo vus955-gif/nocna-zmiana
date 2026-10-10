@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/weapon_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"gatling"
+display_name = "WEAPON_GATLING"
+damage = 7.0
+damage_kind = 2
+spread_deg = 3.0
+max_range = 80.0
+cooldown = 0.0714286
+knockback = 0.5
+weak_point_multiplier = 1.5
+ammo_mode = 2
+ammo_type = &"rifle"
+magazine_size = 120
+start_reserve = 60
+max_reserve = 360
+shake = 0.15
+kick = 0.018
+sound = &""
+tracer_every = 3
+effects_every = 2
+spin_up_time = 0.45
+spin_down_time = 0.6
+spread_max_deg = 5.0
+spread_growth_time = 1.5
+belt_feed = true
+belt_change_time = 0.35
+firing_move_factor = 0.65
+shake_cap = 0.4

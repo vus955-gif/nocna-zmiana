@@ -1,0 +1,476 @@
+class_name Player
+extends CharacterBody3D
+## The night guard: calm walk, stamina-limited sprint and dash, jump with
+## coyote time, mouse look, flashlight, health and the weapon holder.
+## The head is a top-level node that follows the interpolated body, so
+## mouse look stays instant while movement is smoothed by physics
+## interpolation. Movement direction comes from the head's yaw. While a menu
+## holds the input (GameInput.gameplay_input() is false) the guard neither
+## moves, looks, uses things nor switches the flashlight.
+
+const FLASHLIGHT_ENERGY := 3.0
+## RunState.used id of tonight's second wind.
+const SECOND_WIND := &"second_wind"
+## The level-floor check under the feet (m above and below them).
+const FLOOR_PROBE_UP := 0.2
+const FLOOR_PROBE_DOWN := 0.35
+## Slowing effects together (a gatling firing in hand, paint underfoot)
+## never take the guard below this share of his speed. (A dash is never
+## slowed: dashing while cranking is allowed.)
+const MIN_SPEED_FACTOR := 0.5
+## Staggered (a Fu dog's roar): his legs carry him at this share of his
+## speed, past MIN_SPEED_FACTOR.
+const STAGGER_SPEED := 0.2
+## Exhibits hear a sprint (a step every SPRINT_NOISE_INTERVAL seconds) and a
+## landing from LANDING_NOISE_SPEED m/s PerceptionRules.STEP_NOISE metres
+## away (Events.noise_made).
+const SPRINT_NOISE_INTERVAL := 0.4
+const LANDING_NOISE_SPEED := 3.5
+
+@export var walk_speed: float = 5.5
+@export var sprint_speed: float = 8.5
+@export var ground_accel: float = 60.0
+@export var air_accel: float = 14.0
+@export var jump_velocity: float = 5.0
+@export var gravity: float = 15.0
+@export var dash_speed: float = 15.0
+@export var dash_time: float = 0.16
+@export var dash_cooldown: float = 0.45
+## Turn per mouse pixel (radians); follows the sensitivity option.
+@export var mouse_sensitivity: float = 0.0022
+@export var eye_height: float = 1.6
+@export var finisher_heal: float = 15.0
+
+var health: Health
+var stamina := Stamina.new()
+var head: Node3D
+var camera: ShakeCamera
+var weapons: WeaponHolder
+var flashlight: SpotLight3D
+var battery := FlashlightBattery.new()
+## What the guard is looking at and could use (E).
+var interactor := Interactor.new()
+var alive: bool = true
+var sprinting: bool = false
+## Dust flies to the guard from this far (dust magnet upgrade).
+var dust_magnet_radius: float = DustMote.MAGNET_RADIUS
+## Second wind is bought (once a night a killing blow leaves 1 health).
+var second_wind: bool = false
+## The keen ear's direction marker (made once the upgrade is bought).
+var threat_indicator: ThreatIndicator = null
+## Where the guard last stood on solid floor (the dropped lantern goes here).
+var last_floor_position := Vector3.ZERO
+## Seconds the guard still reels from a stagger (a Fu dog's roar).
+var _stagger_left: float = 0.0
+## Mouse up looks down (option).
+var invert_y: bool = false
+
+var _eye: float = 1.6
+var _dash_left: float = 0.0
+var _dash_cd: float = 0.0
+var _dash_dir := Vector3.ZERO
+var _coyote: float = 0.0
+var _jump_buffer: float = 0.0
+var _death_tween: Tween = null
+var _flicker_noise := FastNoiseLite.new()
+var _flicker_time: float = 0.0
+var _floor_ray: PhysicsRayQueryParameters3D = null
+## Walking-speed factor of a slowing effect (paint underfoot) and how long
+## it still holds.
+var _slow_factor: float = 1.0
+var _slow_left: float = 0.0
+## Seconds of invulnerability left (second wind).
+var _grace: float = 0.0
+## A forced move (a mummy's bandage whip pulling him in): horizontal
+## velocity and how long it still holds.
+var _yank := Vector3.ZERO
+var _yank_left: float = 0.0
+## The yank just ended: he stops where it left him.
+var _yank_halt := false
+## Seconds to the next sprint step heard by the exhibits.
+var _noise_timer: float = 0.0
+
+
+func _ready() -> void:
+	add_to_group(&"player")
+	last_floor_position = global_position
+	collision_layer = Layers.PLAYER
+	collision_mask = Layers.WORLD | Layers.ENEMY
+	floor_snap_length = 0.3
+	floor_constant_speed = true
+	var shape := CapsuleShape3D.new()
+	shape.radius = 0.4
+	shape.height = 1.8
+	var collider := CollisionShape3D.new()
+	collider.shape = shape
+	collider.position.y = 0.9
+	add_child(collider)
+	health = Health.new()
+	add_child(health)
+	health.depleted.connect(_on_depleted)
+	_eye = eye_height
+	head = Node3D.new()
+	head.top_level = true
+	head.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	add_child(head)
+	head.global_position = global_position + Vector3.UP * _eye
+	camera = ShakeCamera.new()
+	head.add_child(camera)
+	camera.current = true
+	flashlight = SpotLight3D.new()
+	flashlight.position = Vector3(0.15, -0.1, 0.0)
+	flashlight.spot_range = 24.0
+	flashlight.spot_angle = 24.0
+	flashlight.light_energy = FLASHLIGHT_ENERGY
+	flashlight.shadow_enabled = true
+	flashlight.visible = false
+	camera.add_child(flashlight)
+	weapons = WeaponHolder.new()
+	weapons.user = self
+	camera.add_child(weapons)
+	Events.enemy_destroyed.connect(_on_enemy_destroyed)
+	Settings.settings_changed.connect(_on_settings_changed)
+	_on_settings_changed(&"")
+
+
+## Turns the view by a mouse movement in screen pixels.
+func look(pixels: Vector2) -> void:
+	var pitch := pixels.y * mouse_sensitivity * (-1.0 if invert_y else 1.0)
+	head.rotation.y = wrapf(head.rotation.y - pixels.x * mouse_sensitivity, -PI, PI)
+	head.rotation.x = clampf(head.rotation.x - pitch, deg_to_rad(-88.0), deg_to_rad(88.0))
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	var motion := event as InputEventMouseMotion
+	if motion != null and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and GameInput.gameplay_input():
+		# screen_relative: the same turn per mouse move at any window size
+		# (relative is scaled by the canvas_items stretch).
+		look(motion.screen_relative)
+
+
+func _process(_delta: float) -> void:
+	head.global_position = get_global_transform_interpolated().origin + Vector3.UP * _eye
+	_update_flashlight_light()
+
+
+## Switches the flashlight (through the battery). False when it stays dark.
+func set_flashlight(lit: bool) -> bool:
+	var switched := battery.set_on(lit)
+	if not switched:
+		Sfx.play(&"empty", -10.0)
+	_update_flashlight_light()
+	return switched
+
+
+func _physics_process(delta: float) -> void:
+	var controls := GameInput.gameplay_input()
+	_update_interaction(controls)
+	battery.tick(delta)
+	if alive and GameInput.fresh_press(&"flashlight"):
+		set_flashlight(not battery.on)
+	var on_floor := is_on_floor()
+	if not on_floor:
+		velocity.y -= gravity * delta
+	if not alive:
+		var still := Vector3(velocity.x, 0.0, velocity.z).move_toward(Vector3.ZERO, ground_accel * delta)
+		velocity.x = still.x
+		velocity.z = still.z
+		move_and_slide()
+		_remember_floor()
+		return
+	var input := Vector2.ZERO
+	if controls:
+		input = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
+	var wish := Basis(Vector3.UP, head.rotation.y) * Vector3(input.x, 0.0, input.y)
+	sprinting = controls and Input.is_action_pressed(&"sprint") and input.length() > 0.1 \
+			and weapons.allows_sprint() and stamina.spend_sprint(delta)
+	_dash_cd = maxf(_dash_cd - delta, 0.0)
+	_dash_left = maxf(_dash_left - delta, 0.0)
+	if GameInput.fresh_press(&"dash"):
+		dash(wish)
+	_update_jump(delta, on_floor, controls)
+	if _yank_left > 0.0:
+		# the last step only covers what is left of it, then he stops dead
+		var share := minf(_yank_left, delta) / delta
+		_yank_left = maxf(_yank_left - delta, 0.0)
+		velocity.x = _yank.x * share
+		velocity.z = _yank.z * share
+		_yank_halt = _yank_left <= 0.0
+	elif _yank_halt:
+		_yank_halt = false
+		velocity.x = 0.0
+		velocity.z = 0.0
+	elif _dash_left > 0.0:
+		velocity.x = _dash_dir.x * dash_speed
+		velocity.z = _dash_dir.z * dash_speed
+	else:
+		var target := wish * (sprint_speed if sprinting else walk_speed) * speed_factor()
+		var accel := ground_accel if on_floor else air_accel
+		var horizontal := Vector3(velocity.x, 0.0, velocity.z).move_toward(target, accel * delta)
+		velocity.x = horizontal.x
+		velocity.z = horizontal.z
+	stamina.tick(delta)
+	_slow_left = maxf(_slow_left - delta, 0.0)
+	_stagger_left = maxf(_stagger_left - delta, 0.0)
+	_grace = maxf(_grace - delta, 0.0)
+	var falling := -velocity.y
+	move_and_slide()
+	_remember_floor()
+	_make_noise(delta, on_floor, falling)
+
+
+## Sprint steps and hard landings are noises the exhibits hear.
+func _make_noise(delta: float, was_on_floor: bool, fall_speed: float) -> void:
+	_noise_timer = maxf(_noise_timer - delta, 0.0)
+	var landed := not was_on_floor and is_on_floor() and fall_speed >= LANDING_NOISE_SPEED
+	if landed:
+		Events.noise_made.emit(global_position, PerceptionRules.STEP_NOISE, &"landing")
+	elif sprinting and is_on_floor() and _noise_timer <= 0.0:
+		_noise_timer = SPRINT_NOISE_INTERVAL
+		Events.noise_made.emit(global_position, PerceptionRules.STEP_NOISE, &"sprint")
+
+
+## Walking speed multiplier: a gatling firing in hand (WeaponHolder.move_factor())
+## times a slowing effect (paint underfoot), never below MIN_SPEED_FACTOR.
+func speed_factor() -> float:
+	if _stagger_left > 0.0:
+		return STAGGER_SPEED
+	return maxf(weapons.move_factor() * (_slow_factor if _slow_left > 0.0 else 1.0), MIN_SPEED_FACTOR)
+
+
+## Staggers the guard for [param seconds] (a Fu dog's roar): he barely
+## moves (STAGGER_SPEED), cannot dash, fire nor punch (his weapon dips),
+## and his view reels. A longer stagger outlasts a shorter one.
+func stagger(seconds: float) -> void:
+	if not alive or seconds <= 0.0 or _grace > 0.0:
+		return
+	_stagger_left = maxf(_stagger_left, seconds)
+	_dash_left = 0.0
+	weapons.daze(seconds)
+	camera.add_trauma(0.55)
+	camera.kick_fov(7.0)
+
+
+## True while a stagger holds him.
+func staggered() -> bool:
+	return _stagger_left > 0.0
+
+
+## Slows the guard to [param factor] of his speed for [param seconds]
+## (the strongest slow wins while several hold).
+func slow(factor: float, seconds: float) -> void:
+	_slow_factor = factor if _slow_left <= 0.0 else minf(_slow_factor, factor)
+	_slow_left = maxf(_slow_left, seconds)
+
+
+## Drags the guard along [param velocity_] (horizontal, m/s) for
+## [param seconds], whatever he presses (a mummy's bandage whip pulling him
+## in); walls still stop him. A newer yank replaces an older one.
+func yank(velocity_: Vector3, seconds: float) -> void:
+	if not alive or seconds <= 0.0:
+		return
+	_yank = Vector3(velocity_.x, 0.0, velocity_.z)
+	_yank_left = seconds
+	_dash_left = 0.0
+
+
+## True while a yank drags him.
+func yanked() -> bool:
+	return _yank_left > 0.0
+
+
+## Dashes along [param direction] (or where the guard looks). Returns false
+## while on cooldown, out of stamina or dead.
+func dash(direction: Vector3 = Vector3.ZERO) -> bool:
+	if not alive or _dash_cd > 0.0 or _stagger_left > 0.0 or not stamina.try_dash():
+		return false
+	var flat := Vector3(direction.x, 0.0, direction.z)
+	if flat.length() < 0.1:
+		flat = Basis(Vector3.UP, head.rotation.y) * Vector3.FORWARD
+	_dash_dir = flat.normalized()
+	_dash_left = dash_time
+	_dash_cd = dash_cooldown
+	camera.kick_fov(8.0)
+	Sfx.play(&"dash", -4.0)
+	return true
+
+
+func take_damage(info: DamageInfo) -> void:
+	if not alive or _grace > 0.0:
+		return
+	if info.amount >= health.current and second_wind_ready():
+		_second_wind(info)
+		return
+	Events.player_damaged.emit(info.amount, info.position)
+	camera.add_trauma(0.25 + info.amount / 60.0)
+	var push := Vector3(info.direction.x, 0.0, info.direction.z)
+	if info.knockback > 0.0 and push.length() > 0.01:
+		velocity += push.normalized() * info.knockback
+	Sfx.play(&"hurt")
+	health.apply_damage(info.amount)
+
+
+func heal(amount: float) -> float:
+	return health.heal(amount)
+
+
+## Second wind is bought and not used yet tonight (RunState.used, so a
+## resumed night remembers it).
+func second_wind_ready() -> bool:
+	return second_wind and not RunState.is_used(SECOND_WIND)
+
+
+## True during the second of grace after a second wind.
+func invulnerable() -> bool:
+	return _grace > 0.0
+
+
+## A killing blow with second wind: 1 health left, a second of grace, the
+## world greys out to a heartbeat.
+func _second_wind(info: DamageInfo) -> void:
+	RunState.mark_used(SECOND_WIND)
+	Events.player_damaged.emit(info.amount, info.position)
+	camera.add_trauma(0.7)
+	var push := Vector3(info.direction.x, 0.0, info.direction.z)
+	if info.knockback > 0.0 and push.length() > 0.01:
+		velocity += push.normalized() * info.knockback
+	if health.current > 1.0:
+		health.apply_damage(health.current - 1.0)
+	_grace = UpgradeEffects.SECOND_WIND_GRACE
+	Sfx.play(&"hurt")
+	Sfx.play(&"heartbeat")
+	SecondWindFx.play(self)
+
+
+## Applies permanent upgrades (id -> level): health, stamina, flashlight
+## battery, finisher healing and every weapon. Extra maximum health is
+## granted at once.
+func apply_upgrades(levels: Dictionary) -> void:
+	var new_max := UpgradeEffects.max_health(levels)
+	var gained := new_max - health.max_health
+	health.max_health = new_max
+	if gained > 0.0:
+		health.heal(gained)
+	elif health.current > new_max:
+		health.current = new_max
+	stamina.maximum = UpgradeEffects.stamina_max(levels)
+	stamina.regen_per_sec = UpgradeEffects.stamina_regen(levels)
+	stamina.current = minf(stamina.current, stamina.maximum)
+	battery.set_capacity(UpgradeEffects.battery_capacity(levels))
+	finisher_heal = UpgradeEffects.finisher_heal(levels)
+	dust_magnet_radius = UpgradeEffects.dust_magnet_radius(levels)
+	second_wind = UpgradeEffects.has_second_wind(levels)
+	if UpgradeEffects.has_keen_ear(levels) and threat_indicator == null:
+		threat_indicator = ThreatIndicator.new()
+		threat_indicator.player = self
+		add_child(threat_indicator)
+	if threat_indicator != null:
+		threat_indicator.enabled = UpgradeEffects.has_keen_ear(levels)
+	weapons.apply_upgrades(levels)
+
+
+## Full health, stamina and flashlight (start of a night, a haven).
+func refill() -> void:
+	health.heal(health.max_health)
+	stamina.current = stamina.maximum
+	stamina.exhausted = false
+	battery.charge = battery.capacity
+
+
+## Brings the guard back at [param at] with nothing left over from before
+## death (dash, jump timers, sprint, the death drop of the eyes).
+func respawn(at: Vector3, yaw: float = 0.0) -> void:
+	if _death_tween != null:
+		_death_tween.kill()
+		_death_tween = null
+	global_position = at
+	last_floor_position = at
+	velocity = Vector3.ZERO
+	head.rotation = Vector3(0.0, yaw, 0.0)
+	_eye = eye_height
+	_dash_left = 0.0
+	_dash_cd = 0.0
+	_stagger_left = 0.0
+	weapons.daze(0.0)
+	_grace = 0.0
+	_slow_left = 0.0
+	_yank_left = 0.0
+	_yank_halt = false
+	_jump_buffer = 0.0
+	_coyote = 0.0
+	sprinting = false
+	health.reset()
+	stamina.current = stamina.maximum
+	stamina.exhausted = false
+	alive = true
+	weapons.enabled = true
+	reset_physics_interpolation()
+	head.global_position = at + Vector3.UP * _eye
+
+
+## Light follows the battery; a weak battery makes it stutter.
+func _update_flashlight_light() -> void:
+	flashlight.visible = battery.on
+	if not battery.on:
+		return
+	var energy := FLASHLIGHT_ENERGY
+	if battery.is_flickering():
+		_flicker_time += get_process_delta_time()
+		var wobble := _flicker_noise.get_noise_1d(_flicker_time * 30.0) * 0.5 + 0.5
+		energy *= 0.15 + 0.85 * clampf(wobble * 1.6 - 0.3, 0.0, 1.0)
+	flashlight.light_energy = energy
+
+
+## Refreshes the use-probe from the eyes and uses the focus on the key.
+func _update_interaction(controls: bool) -> void:
+	if not alive:
+		interactor.clear()
+		return
+	var eye := camera.global_transform
+	interactor.update(get_world_3d().direct_space_state, eye.origin, -eye.basis.z, self)
+	if controls and GameInput.fresh_press(&"interact"):
+		interactor.try_interact(self)
+
+
+## Keeps the spot the dropped lantern would go to: level floor only (not an
+## exhibit's head or back) and never inside a haven (the next night starts
+## there and would hand the Dust back at once).
+func _remember_floor() -> void:
+	if not is_on_floor() or Haven.shelters(global_position):
+		return
+	if _floor_ray == null:
+		_floor_ray = PhysicsRayQueryParameters3D.new()
+		_floor_ray.collision_mask = Layers.WORLD
+	_floor_ray.from = global_position + Vector3.UP * FLOOR_PROBE_UP
+	_floor_ray.to = global_position - Vector3.UP * FLOOR_PROBE_DOWN
+	if not get_world_3d().direct_space_state.intersect_ray(_floor_ray).is_empty():
+		last_floor_position = global_position
+
+
+func _update_jump(delta: float, on_floor: bool, controls: bool) -> void:
+	_coyote = 0.12 if on_floor else maxf(_coyote - delta, 0.0)
+	var pressed := controls and GameInput.fresh_press(&"jump")
+	_jump_buffer = 0.12 if pressed else maxf(_jump_buffer - delta, 0.0)
+	if _jump_buffer > 0.0 and _coyote > 0.0:
+		velocity.y = jump_velocity
+		_jump_buffer = 0.0
+		_coyote = 0.0
+
+
+func _on_depleted() -> void:
+	alive = false
+	weapons.enabled = false
+	_death_tween = create_tween()
+	_death_tween.tween_property(self, "_eye", 0.4, 0.5)
+	Events.player_died.emit()
+
+
+func _on_settings_changed(_key: StringName) -> void:
+	mouse_sensitivity = Settings.mouse_turn_per_pixel()
+	invert_y = Settings.data.invert_y
+	camera.base_fov = Settings.data.fov
+
+
+func _on_enemy_destroyed(_enemy: Node, info: DamageInfo, finisher: bool) -> void:
+	if finisher and info != null and info.source == self:
+		heal(finisher_heal)

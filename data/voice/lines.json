@@ -1,0 +1,8 @@
+{
+  "lines": {
+    "VO_HENIEK_NIGHT_1":   {"speaker": "heniek", "event": "night_started", "night": 1, "priority": 2},
+    "VO_SYSTEM_CLOSING_1": {"speaker": "system", "level": 2, "event": "night_started", "night_min": 1, "delay": 20, "priority": 1},
+    "VO_GUIDE_ROSETTA_A":  {"speaker": "system", "level": 2, "station": "rosetta", "variant": "a", "once": false},
+    "VO_GUIDE_ROSETTA_B":  {"speaker": "system", "level": 2, "station": "rosetta", "variant": "b", "after_guardian": "colossus", "once": false}
+  }
+}

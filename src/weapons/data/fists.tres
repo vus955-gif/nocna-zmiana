@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/weapon_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"fists"
+display_name = "WEAPON_FISTS"
+damage = 15.0
+damage_kind = 0
+max_range = 1.7
+cooldown = 0.4
+knockback = 6.0
+can_finish = true
+melee_radius = 0.7
+ammo_mode = 0
+shake = 0.12
+kick = 0.0
+sound = &"punch"

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/weapon_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"harpoon"
+display_name = "WEAPON_HARPOON"
+damage = 60.0
+damage_kind = 2
+max_range = 45.0
+cooldown = 0.3
+knockback = 3.0
+ammo_mode = 2
+ammo_type = &"harpoons"
+magazine_size = 1
+reload_time = 1.2
+start_reserve = 12
+max_reserve = 20
+shake = 0.3
+kick = 0.16
+sound = &"harpoon_fire"
+projectile_speed = 40.0
+projectile_gravity = 3.0
+projectile = &"harpoon"
+pin_max_health = 60.0
+pin_reach = 6.0
+pull_distance = 3.0
+pull_stun = 1.0
+heavy_health = 150.0
