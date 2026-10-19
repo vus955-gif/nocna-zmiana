@@ -123,6 +123,18 @@ const EXTRAS := {
 	"cherry_tree": {"alpha_scissor": 0.5},
 	"cherry_petals_ground": {"alpha_scissor": 0.5},
 	"loudspeaker": {"emission": 3.0},
+	# pickups (backlog #11, #43): the print, the stencil and the slot digit
+	# glow faintly in the kind's colour, so a box is seen in the dark without
+	# shining like a lamp (the shader gives an awake pickup x1.2 of this;
+	# WeaponPalette.MAX_PICKUP_EMISSION)
+	"ammo_pistol": {"emission": 1.0},
+	"ammo_shells": {"emission": 1.0},
+	"ammo_rifle": {"emission": 1.0},
+	"ammo_flares": {"emission": 1.0},
+	"ammo_rifle_hunt": {"emission": 1.0},
+	"ammo_harpoon": {"emission": 1.0},
+	"ammo_hwacha": {"emission": 1.0},
+	"medkit": {"emission": 1.0},
 }
 
 ## Stage 2 models by id, with the node names the game animates, knocks off
@@ -143,7 +155,7 @@ const REGISTRY := {
 	&"vm_taser": ["taser", "led_1", "led_2", "led_3", "hand_r", "Muzzle", "upg_coil", "upg_prongs"],
 	&"vm_pistol": ["pistol", "slide", "hand_r", "Muzzle", "upg_inlay", "upg_mag"],
 	&"vm_shotgun": ["shotgun", "barrels", "hammer_l", "hammer_r", "hand_r", "hand_l", "Muzzle", "upg_choke",
-		"upg_slug_holder"],
+		"upg_slug_holder", "sleeve_r", "sleeve_l", "Wrist_r", "Wrist_l", "Grip_r", "Grip_l", "Elbow_r", "Elbow_l"],
 	&"ammo_pistol": ["ammo_pistol"],
 	&"ammo_shells": ["ammo_shells"],
 	&"medkit": ["medkit"],
@@ -155,7 +167,7 @@ const REGISTRY := {
 	&"crystal_loose": ["crystal_loose"],
 	# stage 3 (expansion): Gatling and flare pistol, raptor, portraits, pickups
 	&"vm_gatling": ["gatling", "barrels", "crank", "belt", "hand_r", "hand_l", "Muzzle", "CrankKnob", "upg_crank",
-		"upg_drum"],
+		"upg_drum", "sleeve_r", "sleeve_l", "Wrist_r", "Wrist_l", "Grip_r", "Grip_l", "Elbow_r", "Elbow_l"],
 	&"gatling_display": ["gatling_display", "gun", "chain"],
 	&"vm_flare": ["flare", "barrel", "hand_r", "Muzzle", "upg_shroud", "upg_barrel2"],
 	&"flare_round": ["flare_round", "Light"],
@@ -168,12 +180,13 @@ const REGISTRY := {
 	&"ammo_flares": ["ammo_flares"],
 	# Floor I: the three new weapons (upgrade parts upg_*: WeaponLook), projectiles, ammo
 	&"vm_rifle_hunt": ["rifle", "bolt", "bolt_knob", "upg_bolt_ball", "upg_fittings", "clip", "hand_r", "hand_l",
-		"Muzzle", "BoltKnob"],
+		"Muzzle", "BoltKnob", "sleeve_r", "sleeve_l", "Wrist_r", "Wrist_l", "Grip_r", "Grip_l", "Elbow_r", "Elbow_l"],
 	&"vm_harpoon": ["harpoon", "head", "upg_barbs", "rope", "upg_reel", "reel_crank", "hand_r", "hand_l", "Muzzle",
-		"LineAnchor"],
+		"LineAnchor", "sleeve_r", "sleeve_l", "Wrist_r", "Wrist_l", "Grip_r", "Grip_l", "Elbow_r", "Elbow_l"],
 	&"vm_hwacha": ["hwacha", "rocket_1", "rocket_2", "rocket_3", "rocket_4", "rocket_5", "rocket_6", "upg_box9",
 		"rocket_7", "rocket_8", "rocket_9", "upg_fuses", "fuse", "hand_r", "hand_l", "Muzzle", "Tube_1", "Tube_2",
-		"Tube_3", "Tube_4", "Tube_5", "Tube_6", "Tube_7", "Tube_8", "Tube_9", "Ember"],
+		"Tube_3", "Tube_4", "Tube_5", "Tube_6", "Tube_7", "Tube_8", "Tube_9", "Ember",
+		"sleeve_r", "sleeve_l", "Wrist_r", "Wrist_l", "Grip_r", "Grip_l", "Elbow_r", "Elbow_l"],
 	&"harpoon_bolt": ["harpoon_bolt", "barbs", "Tail", "Tip"],
 	&"hwacha_rocket": ["hwacha_rocket", "Exhaust"],
 	&"ammo_rifle_hunt": ["ammo_rifle_hunt"],
@@ -762,7 +775,7 @@ const KIT := {
 	# the garden's two pieces with world-mapped fields (blossom clouds, thatch)
 	&"cherry_tree": ["cherry_tree", "cherry_blossom", "Petals_1", "Petals_2", "Petals_3", "Petals_4", "Petals_5",
 		"Petals_6", "Petals_7", "Petals_8", "Petals_9", "Petals_10"],
-	&"teahouse": ["teahouse", "roof_perch", "roof_perch_eave", "basin_water"],
+	&"teahouse": ["teahouse", "basin", "roof_perch", "roof_perch_eave", "basin_water"],
 }
 ## Extra texture sets of kit models (same mesh and UVs): pass
 ## {"<model>": "<set>"} as the swap of [method model] (ArtKit.model does).
@@ -1046,22 +1059,46 @@ const EXHIBIT_RIM := {
 	"samurai_ashigaru": 0.34,
 	"samurai_general": 0.3,
 }
-## Pickups use the exhibit shader too, with a warm rim that starts close
-## by (a box of shells in a dark corner): strength, colour.
+## Pickups use the exhibit shader too, with a rim that starts close by (a
+## box of shells in a dark corner): strength per texture set. Ammo and the
+## medkit wear the rim in their kind's colour (WeaponPalette: the HUD slot's
+## colour, white for health), the fuse and the loose crystal the warm one.
 const PICKUP_RIM := {
-	"ammo_pistol": 0.9,
-	"ammo_shells": 0.9,
-	"medkit": 0.8,
+	"ammo_pistol": 1.0,
+	"ammo_shells": 1.0,
+	"medkit": 0.9,
 	"fuse": 0.9,
 	"crystal_loose": 0.5,
-	"ammo_rifle": 0.9,
-	"ammo_flares": 0.9,
-	"ammo_rifle_hunt": 0.9,
-	"ammo_harpoon": 0.9,
-	"ammo_hwacha": 0.9,
+	"ammo_rifle": 1.0,
+	"ammo_flares": 1.0,
+	"ammo_rifle_hunt": 1.0,
+	"ammo_harpoon": 1.0,
+	"ammo_hwacha": 1.0,
 }
 const PICKUP_RIM_COLOR := Color(1.0, 0.78, 0.45)
 const PICKUP_RIM_FADE := Vector2(0.8, 4.0)
+## Read from afar (the light pass of 19.10; visual QA e1: at 15 m in the
+## shade or a dark room only coloured dots, the medkit lost among them):
+## from PICKUP_FAR_FADE.x on (full at .y) the rim grows by PICKUP_FAR_RIM,
+## the body takes on a faint glow of the kind's colour (PICKUP_FAR_BODY),
+## and the medkit's red cross (its emission map) brightens by
+## PICKUP_FAR_EMIT; nearer nothing changes.
+const PICKUP_FAR_FADE := Vector2(9.0, 15.0)
+const PICKUP_FAR_RIM := 2.2
+const PICKUP_FAR_BODY := 0.16
+const PICKUP_FAR_EMIT := {"medkit": 3.0}
+## Pickup texture set -> the ammo it holds (its rim and accent colour).
+const PICKUP_AMMO := {"ammo_pistol": &"bullets", "ammo_shells": &"shells", "ammo_rifle": &"rifle",
+		"ammo_flares": &"flares", "ammo_rifle_hunt": &"hunt_rounds", "ammo_harpoon": &"harpoons",
+		"ammo_hwacha": &"rockets", "medkit": &"medkit"}
+
+
+## The rim colour of pickup texture set [param tex_name]: its ammo's
+## (WeaponPalette), the medkit's white, else the warm one.
+static func pickup_rim_color(tex_name: String) -> Color:
+	if PICKUP_AMMO.has(tex_name):
+		return WeaponPalette.ammo_color(PICKUP_AMMO[tex_name])
+	return PICKUP_RIM_COLOR
 
 ## False = every caller falls back to its greybox (a missing model does
 ## the same). Used to compare frame rates with the greybox.
@@ -1152,14 +1189,18 @@ static func exhibit_material(tex_name: String, debris: bool = false) -> ShaderMa
 	mat.set_shader_parameter(&"rim_strength", EXHIBIT_RIM.get(tex_name, 0.3))
 	if PICKUP_RIM.has(tex_name):
 		mat.set_shader_parameter(&"rim_strength", PICKUP_RIM[tex_name])
-		mat.set_shader_parameter(&"rim_color", PICKUP_RIM_COLOR)
+		mat.set_shader_parameter(&"rim_color", pickup_rim_color(tex_name))
 		mat.set_shader_parameter(&"rim_fade", PICKUP_RIM_FADE)
+		mat.set_shader_parameter(&"far_fade", PICKUP_FAR_FADE)
+		mat.set_shader_parameter(&"far_rim", PICKUP_FAR_RIM)
+		mat.set_shader_parameter(&"far_body", PICKUP_FAR_BODY)
+		mat.set_shader_parameter(&"far_emit", float(PICKUP_FAR_EMIT.get(tex_name, 0.0)))
 	_materials[key] = mat
 	return mat
 
 
-## A pickup model (ammo_pistol, ammo_shells, medkit, fuse, crystal_loose)
-## with a warm rim light that makes it easy to spot in the dark, or null.
+## A pickup model (ammo_*, medkit, fuse, crystal_loose) with a rim light in
+## its kind's colour that makes it easy to spot in the dark, or null.
 static func pickup(id: StringName) -> Node3D:
 	var root := exhibit(id)
 	if root == null:

@@ -26,8 +26,12 @@ const REACHES := {
 	&"sculpture": "a statue's stride and arms",
 	&"court_map_board": "the board's feet",
 	&"signpost": "the sign's arms",
+	&"totem_pole": "the welcome figure's arms, the eagle's talons",
 }
 const HEAD := 1.9
+## A look's part lower than this (m over the piece's base) lies flat on the
+## floor: nobody walks into it.
+const FLAT := 0.1
 
 var level: MuseumFloorLevel
 
@@ -46,6 +50,7 @@ func after_each() -> void:
 
 func test_looks_stay_within_their_boxes_below_head_height() -> void:
 	var worst := {}
+	var hung := 0
 	for node in get_tree().get_nodes_in_group(&"level_kit"):
 		if not level.is_ancestor_of(node) or not node is StaticBody3D:
 			continue
@@ -56,10 +61,15 @@ func test_looks_stay_within_their_boxes_below_head_height() -> void:
 		if LevelKit.role(kit) in [&"wall", &"floor", &"ceiling", &"trim", &"fixture"] or kit == &"stair_ramp":
 			continue
 		var look := (node as Node).get_node_or_null(^"Visual") as Node3D
-		if look == null:
-			continue
+		if look == null or node.get_meta(&"kit_fitted", false):
+			continue   # (a collision drawn from its look follows it: CollisionFit)
 		var size: Vector3 = node.get_meta(&"kit_size", Vector3.ZERO)
-		var reach := _reach(node as Node3D, look, size)
+		# (a door's leaf hangs off its hinge - the body's origin: its look and
+		# its collider both lie to one side of it, half a leaf out)
+		var centre := look.position if LevelKit.role(kit) == &"door" else Vector3.ZERO
+		if centre.length() > 0.1:
+			hung += 1
+		var reach := _reach(node as Node3D, look, size, centre)
 		if reach > float(worst.get(kit, [0.0])[0]):
 			worst[kit] = [reach, room, (node as Node3D).global_position.snapped(Vector3.ONE * 0.1)]
 	for kit: StringName in worst:
@@ -68,12 +78,14 @@ func test_looks_stay_within_their_boxes_below_head_height() -> void:
 			fail("%s in %s at %s reaches %.2f m past its box below head height" % [kit, entry[1], entry[2], entry[0]])
 		elif float(entry[0]) > 1.2 and kit != &"totem":   # one mesh: its wings are 9 m up
 			fail("%s in %s at %s reaches %.2f m past its box (too far even by design)" % [kit, entry[1], entry[2], entry[0]])
+	assert_gt(hung, 10, "the leaves hung off their hinges were measured too")
 	print("  worst reach per kit: ", worst)
 
 
 ## How far [param look]'s meshes reach past the box of [param size] (base
-## centre at the piece's origin) below HEAD, in the piece's own frame.
-func _reach(piece: Node3D, look: Node3D, size: Vector3) -> float:
+## centre at [param centre] from the piece's origin: a door's leaf is offset
+## from its hinge) below HEAD, in the piece's own frame.
+func _reach(piece: Node3D, look: Node3D, size: Vector3, centre: Vector3 = Vector3.ZERO) -> float:
 	var to_local := piece.global_transform.affine_inverse()
 	var reach := 0.0
 	for child in look.find_children("*", "MeshInstance3D", true, false):
@@ -81,10 +93,10 @@ func _reach(piece: Node3D, look: Node3D, size: Vector3) -> float:
 		if not view.visible or view.mesh == null:
 			continue
 		var box := to_local * view.global_transform * view.get_aabb()
-		if box.position.y > HEAD:
-			continue
-		reach = maxf(reach, maxf(-size.x * 0.5 - box.position.x, box.end.x - size.x * 0.5))
-		reach = maxf(reach, maxf(-size.z * 0.5 - box.position.z, box.end.z - size.z * 0.5))
+		if box.position.y > HEAD or box.end.y < FLAT:
+			continue   # (over his head, or flat on the floor: raked sand, a mat)
+		reach = maxf(reach, maxf(centre.x - size.x * 0.5 - box.position.x, box.end.x - centre.x - size.x * 0.5))
+		reach = maxf(reach, maxf(centre.z - size.z * 0.5 - box.position.z, box.end.z - centre.z - size.z * 0.5))
 	return reach
 
 
@@ -102,7 +114,20 @@ func test_hero_pieces_stand_out_of_the_way() -> void:
 		"nereid_temple", "lib_bookcase_a_2m", "lib_bookcase_b_2m", "lib_bookcase_c_2m", "lib_bookcase_1m",
 		"lib_bookcase_up_a_2m", "lib_bookcase_up_b_2m", "lib_bookcase_up_1m", "lib_bookcase_pilaster_low",
 		"lib_bookcase_pilaster_up", "lib_ladder", "lib_clock_wall", "frame_1_2x0_9", "frame_0_6x0_8", "frame_3x2",
-		"lib_walkway_bracket"]   # (under the gallery's slab: 2.8 m over the library's floor)
+		"lib_walkway_bracket",   # (under the gallery's slab: 2.8 m over the library's floor)
+		# stage P4: the Khorsabad Gate on the greybox's lamassu boxes, awakening
+		# slabs and relief panels flat on walls, thresholds flat on the floor,
+		# the Balawat portal; the tea house's facades in the garden's wall faces
+		# (its veranda and basin sunk to the gravel), its interior in its room,
+		# the cherry tree in the greybox trunk's box, shoji and lattice windows
+		# flat on walls
+		"khorsabad_gate", "asy_relief_wake", "asy_relief_wake_lion", "asy_relief_1m", "asy_relief_2m", "asy_threshold_4m",
+		"asy_portal_4m", "teahouse", "teahouse_interior", "cherry_tree", "cherry_petals_ground", "asia_shoji_2m",
+		"asia_lattice_window", "plaque_brass",   # (the exhibit mats' plaques lie flat on the floor)
+		# stage P5: the Moai room's portal round the Wing Seal, bark cloth flat on
+		# the Pacific gallery's walls, its ancestor posts as reliefs on the walls
+		# (0.3 m deep), the stolen mask on its crate in the hideout
+		"americas_portal_4m", "tapa_hanging", "pacific_post", "turquoise_mask"]
 	var heroes := level.structure.get_node(^"Dressing/Floor1Heroes")
 	for node in heroes.find_children("*", "Node3D", true, false):
 		var path := String(node.scene_file_path)

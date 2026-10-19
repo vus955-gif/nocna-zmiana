@@ -329,6 +329,21 @@ func counts_as_hunter() -> bool:
 	return flock == null or flock.is_lead(self)
 
 
+## A fright spooks the whole flock (its ring widens, nobody dives for a
+## moment) instead of sending one book flying off: a blast it would flee
+## (EnemyRoles: skittish), or a bang - a shot - heard while the flock
+## circles calm on the wing. Asleep on the shelf, or hunting, it answers as
+## any exhibit (a fright then only turns its head).
+func react(point: Vector3, point_room: StringName, reaction: ReactionRules.Reaction, source: StringName = &"") -> bool:
+	var fright := reaction == ReactionRules.Reaction.FLEE or (ReactionRules.is_bang(source) and brain.is_calm())
+	if fright and flock != null and brain.is_awake():
+		flock.spook()
+		return true
+	if reaction == ReactionRules.Reaction.FLEE:
+		reaction = ReactionRules.Reaction.LOOK
+	return super(point, point_room, reaction, source)
+
+
 ## The flock hunts with its lead: a member waits when the lead may not.
 func _brief_brain(has_target: bool, sheltered: bool) -> void:
 	super(has_target, sheltered)

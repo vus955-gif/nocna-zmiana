@@ -282,3 +282,54 @@ func test_dormant_bust_rests_on_its_plinth() -> void:
 	await physics_frames(60)
 	assert_eq(bust.brain.state, EnemyBrain.State.DORMANT)
 	assert_almost_eq(bust.global_position.y, 1.0, 0.08)
+
+
+# --- the call (support, ecology) --------------------------------------------------------
+
+func _seconds(time: float) -> void:
+	await physics_frames(roundi(time * Engine.physics_ticks_per_second))
+
+
+## A sleeping wax figure at [param at] facing away from the target.
+func _sleeper(at: Vector3) -> WaxFigure:
+	var figure := WaxFigure.new()
+	figure.position = at
+	figure.target = target
+	add_child(figure)
+	figure.face(at + Vector3(0, 0, 10))
+	return figure
+
+
+func test_a_hunting_bust_calls_the_sleepers_behind_it_to_look() -> void:
+	target.position = Vector3(0, 0, -10)
+	_spawn(Vector3.ZERO, true)
+	var left := _sleeper(Vector3(-3, 0, 5))
+	var right := _sleeper(Vector3(3, 0, 5))
+	await physics_frames(2)
+	await _seconds(1.5)
+	assert_true(bust.brain.is_hunting())
+	assert_eq(bust.calls, 0, "no call yet: the first comes %.0f s into the hunt" % Bust.FIRST_CALL)
+	assert_eq(left.brain.state, EnemyBrain.State.DORMANT)
+	for i in 4 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		if bust.calls > 0:
+			break
+	assert_eq(bust.calls, 1, "the call")
+	assert_ne(left.brain.state, EnemyBrain.State.DORMANT, "roused by the call")
+	assert_ne(right.brain.state, EnemyBrain.State.DORMANT)
+	assert_true(left.brain.quiet and right.brain.quiet, "called ones call nobody further")
+
+
+func test_a_bust_keeps_quiet_when_the_room_hunts_already() -> void:
+	target.position = Vector3(0, 0, -10)
+	_spawn(Vector3.ZERO, true)
+	for i in 4:
+		var hunter := _sleeper(Vector3(-6 + 4 * i, 0, -4))
+		hunter.summoned = true
+		hunter.brain.wake()
+	var sleeper := _sleeper(Vector3(0, 0, 5))
+	await physics_frames(2)
+	await _seconds(6.0)
+	assert_true(PerceptionWorld.hunters_near(target.global_position) >= 4, "four hunt already")
+	assert_eq(bust.calls, 0, "no need to call")
+	assert_eq(sleeper.brain.state, EnemyBrain.State.DORMANT)

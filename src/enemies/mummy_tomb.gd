@@ -16,8 +16,10 @@ extends Node3D
 ##   in physics time; the tomb stays open for the rest of the night.
 
 const GROUP := &"mummy_tombs"
-## Outer sizes (m).
-const COFFIN_SIZE := Vector3(0.78, 2.02, 0.72)
+## Outer sizes (m). The coffin is cut to its sleeper: wide across the
+## elbows of the crossed arms, so the stand under it and its walls are too
+## (MummySpawn sits at its origin: the mummy stands in the middle).
+const COFFIN_SIZE := Vector3(0.86, 2.02, 0.76)
 const SARCOPHAGUS_SIZE := Vector3(2.72, 1.05, 1.37)
 ## Wall thickness of the colliders.
 const WALL := 0.08
@@ -104,7 +106,7 @@ func _ready() -> void:
 	if marker != null:
 		_spawn = _in_tomb(marker)
 	else:
-		_spawn = Transform3D(Basis.IDENTITY, Vector3(0.0, 1.07, 0.05) if style == MummyMoves.Tomb.COFFIN else Vector3(0.0, 0.28, 0.0))
+		_spawn = Transform3D(Basis.IDENTITY, Vector3(0.0, 1.07, 0.0) if style == MummyMoves.Tomb.COFFIN else Vector3(0.0, 0.28, 0.0))
 	if lid != null:
 		_lid_rest = lid.transform
 	_build_walls()
@@ -272,7 +274,7 @@ func _greybox() -> Node3D:
 	var cover := MeshInstance3D.new()
 	if coffin:
 		pivot.position = Vector3(0.0, 0.12, -0.22)
-		cover.mesh = Enemy.box_mesh(Vector3(0.6, 1.9, 0.14))
+		cover.mesh = Enemy.box_mesh(Vector3(0.78, 1.9, 0.14))
 		cover.position = Vector3(0.0, 0.95, -0.07)
 	else:
 		pivot.position = Vector3(0.0, 1.0, 0.0)
@@ -283,6 +285,6 @@ func _greybox() -> Node3D:
 	root.add_child(pivot)
 	var spawn := Node3D.new()
 	spawn.name = SPAWN_MARKER
-	spawn.position = Vector3(0.0, 1.07, 0.05) if coffin else Vector3(0.0, 0.28, 0.0)
+	spawn.position = Vector3(0.0, 1.07, 0.0) if coffin else Vector3(0.0, 0.28, 0.0)
 	root.add_child(spawn)
 	return root

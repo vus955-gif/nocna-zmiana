@@ -11,11 +11,16 @@ static func matches(rule: Dictionary, payload: Dictionary) -> bool:
 		return false
 	if rule.has("night_min") and int(payload.get("night", 0)) < int(rule.night_min):
 		return false
-	for field in ["zone", "guardian", "goal"]:
+	# kind: the coffee drunk in the café (espresso, large, special), the room
+	# entered (haven) or the secret's reward (small, medium, great); room, gate
+	# and modifier: the room entered, the gate opened, the night's modifier
+	for field in ["zone", "guardian", "goal", "kind", "room", "gate", "modifier"]:
 		if rule.has(field) and StringName(rule[field]) != StringName(payload.get(field, "")):
 			return false
-	if rule.has("count") and int(rule.count) != int(payload.get("count", -1)):
-		return false
+	# count: shards, exhibits destroyed, secrets found, the tiredness stage; hour: the clock's
+	for field in ["count", "hour"]:
+		if rule.has(field) and int(rule[field]) != int(payload.get(field, -1)):
+			return false
 	if payload.has("speaker") and StringName(rule.get("speaker", "")) != StringName(payload.speaker):
 		return false
 	return true

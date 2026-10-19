@@ -41,6 +41,7 @@ static func build(layout: LevelLayout) -> void:
 	_cloakroom(layout)
 	_encounters(layout)
 	_lights(layout)
+	_voice(layout)
 
 
 static func _rooms(layout: LevelLayout) -> void:
@@ -154,3 +155,9 @@ static func _lights(layout: LevelLayout) -> void:
 	Hub.lamp(layout, LightSpec.EMERGENCY, Vector3(0, 5.1, 52.75), Hub.RED, 1.0, 6.0, room, &"emergency_lamp")
 	Hub.lamp(layout, main, Vector3(11, 3.1, 34), Hub.WARM, 0.7, 4.5, &"entrance_cloakroom", &"bulb")
 	Hub.spot(layout, main, Vector3(14.75, 3.1, 33.75), Vector3(14.75, 0, 33.0), Hub.WARM, 0.9, 3.2, 25.0, &"entrance_coat_store")
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## The System over the hall: on the wall beside the arch to the court.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_entrance_1", Vector3(-8.0, 3.6, 31.15), &"entrance_hall", PI)

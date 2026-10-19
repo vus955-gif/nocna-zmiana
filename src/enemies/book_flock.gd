@@ -180,6 +180,12 @@ func spooked() -> bool:
 	return clock < _spooked_until
 
 
+## A fright (a shot close by): the flock widens its ring and dives nobody
+## for SPOOK_TIME.
+func spook() -> void:
+	_spooked_until = clock + SPOOK_TIME
+
+
 ## A book was shot down at [param point]: the flock is spooked, and the
 ## books within SCATTER_RADIUS fly off from there. Returns book -> push
 ## (m/s) for the caller to apply.

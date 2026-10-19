@@ -138,3 +138,59 @@ func test_room_styles_and_pieces() -> void:
 	add_child(bench)
 	assert_almost_eq(_bounds(bench).size.x, 4.5, 0.05, "a court piece named by its id fits its size")
 	bench.queue_free()
+
+
+## The café's markers (court.gd CAFE_MACHINE, CAFE_SLATE, CAFE_URN, the
+## note) lie on the model's geometry under Floor1Art._cafe_counter's
+## stretch: the machine marker under the boiler's dome, the slate and the
+## note on free stretches of the counter's top, the urn on the back bar's
+## marble top. (A slab's vertices lie at its corners: the tops are checked
+## as extents.)
+func test_the_cafe_markers_sit_on_the_machine_the_top_and_the_back_bar() -> void:
+	const Court := preload("res://src/level/floor1/zones/court.gd")
+	var node := _spawn("cafe_counter")
+	var size: Vector3 = Court.CAFE_SIZE
+	var box := Floor1Art.bounds("cafe_counter")
+	var stretch := clampf(size.x / box.size.x, 0.85, 1.3)
+	var deep := clampf(size.z / box.size.z, 0.85, 1.15)
+	var turn := Basis(Vector3.UP, PI).scaled(Vector3(stretch, 1.0, deep))
+	var placed := Transform3D(turn, Vector3(0.0, 0.0, size.z * 0.5 + box.position.z * deep))
+	var points: Array[Vector3] = []
+	for child in node.find_children("*", "MeshInstance3D", true, false):
+		var view := child as MeshInstance3D
+		for i in view.mesh.get_surface_count():
+			for v in view.mesh.surface_get_arrays(i)[Mesh.ARRAY_VERTEX] as PackedVector3Array:
+				points.append(placed * (view.global_transform * v))   # the piece's frame
+	var machine: Vector3 = Court.CAFE_MACHINE - Court.CAFE_AT
+	var slate: Vector3 = Court.CAFE_SLATE - Court.CAFE_AT
+	var urn: Vector3 = Court.CAFE_URN - Court.CAFE_AT
+	var note: Vector3 = (Floor1Layout.create().markers[&"note_court_1"] as Transform3D).origin - Court.CAFE_AT
+	# (above the cake case's frame at 1.5: only the boiler and its cups)
+	var dome := _extent(points, func(p: Vector3) -> bool: return p.y > 1.52 and p.y < 1.8 and p.z > 0.4)
+	var top := _extent(points, func(p: Vector3) -> bool: return absf(p.y - 1.005) < 0.004)
+	var bar := _extent(points, func(p: Vector3) -> bool: return absf(p.y - 0.94) < 0.005)
+	assert_true(dome.has_point(Vector2(machine.x, machine.z)), "the boiler's dome rises over the machine marker %s (dome %s)" % [machine, dome])
+	assert_lt(dome.get_center().distance_to(Vector2(machine.x, machine.z)), 0.2, "the marker is under the middle of the dome")
+	for at: Vector3 in [slate, note]:
+		assert_true(top.has_point(Vector2(at.x, at.z)), "the counter's top under %s (top %s)" % [at, top])
+	assert_true(bar.has_point(Vector2(urn.x, urn.z)), "the back bar's marble top under the urn %s (bar %s)" % [urn, bar])
+	var over := 0
+	for p in points:
+		for at: Vector3 in [slate, note]:
+			if p.y > 1.08 and Vector2(p.x - at.x, p.z - at.z).length() < 0.15:
+				over += 1
+	assert_eq(over, 0, "nothing stands where the slate and the note go")
+	node.queue_free()
+
+
+## Floor-plan extent (x, z) of the points [param keep] accepts.
+func _extent(points: Array[Vector3], keep: Callable) -> Rect2:
+	var out := Rect2()
+	var first := true
+	for p in points:
+		if not keep.call(p):
+			continue
+		var flat := Vector2(p.x, p.z)
+		out = Rect2(flat, Vector2.ZERO) if first else out.expand(flat)
+		first = false
+	return out

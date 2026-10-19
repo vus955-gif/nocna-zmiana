@@ -337,12 +337,20 @@ static func _multi(parent: Node3D, mesh: Mesh, material: Material, transforms: A
 		multi.set_instance_transform(k, transforms[k])
 	var holder := MultiMeshInstance3D.new()
 	holder.multimesh = multi
+	# (a run without a renderer - the headless tests - keeps no instance
+	# data in the RenderingServer: the places stay readable here)
+	holder.set_meta(INSTANCES_META, transforms.duplicate())
 	if material != null:
 		holder.material_override = material
 	if not shadow:
 		holder.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(holder)
 	return holder
+
+
+## Meta of a batch (MultiMeshInstance3D) of _multi(): its instances'
+## transforms (Array[Transform3D]).
+const INSTANCES_META := &"instance_transforms"
 
 
 ## Kit model [param id] at every transform of [param transforms] (in

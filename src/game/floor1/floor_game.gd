@@ -24,6 +24,8 @@ var pickups: FloorPickups
 var encounters: FloorEncounters
 ## Notes, secrets, chess pieces, artifacts, the CCTV, the maps.
 var world: WorldFeatures
+## The court café behind the counter (plan 2026-10-10-kawiarnia-zmeczenie).
+var cafe: CafeCorner = null
 var finale: FloorFinale
 ## The switchboard in the basement (null when its marker is missing).
 var switchboard: Switchboard = null
@@ -60,6 +62,9 @@ func setup(for_museum: Museum) -> void:
 	add_child(encounters)
 	encounters.setup(museum, pickups)
 	world = WorldFeatures.install(level, museum)
+	cafe = CafeCorner.new()
+	add_child(cafe)
+	cafe.setup(level, func() -> Player: return museum.player, museum.hud, func() -> float: return museum.watch.clock.elapsed if museum.watch != null else 0.0)
 	if world.cctv != null and museum.watch != null:
 		world.cctv.clock_seconds = func() -> float: return museum.watch.clock.elapsed
 	# the notes read so far, again from the pause menu; the camera view shut

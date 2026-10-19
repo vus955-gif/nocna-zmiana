@@ -36,6 +36,9 @@ const HARPOON_REEL_RELOAD := 0.7
 const HARPOON_BARBS_PIN := 90.0
 const HWACHA_FUSE_RELOAD := 1.5
 const HWACHA_VOLLEY := 9
+## The secrets' mods (SecretRewards, WeaponLook.MODS): the carver's choke
+## lets a shotgun ray go on through this many targets.
+const CHOKE_PIERCE := 2
 
 
 ## Bought level of [param id], kept within the catalog's range.
@@ -43,21 +46,34 @@ static func level(levels: Dictionary, id: StringName) -> int:
 	return clampi(int(levels.get(id, 0)), 0, UpgradeCatalog.max_level(id))
 
 
+## Steps of the secrets' bonus [param bonus] (SecretRewards.BONUSES) among
+## [param levels] (the "bonus_<id>" keys of SecretRewards.effective_levels).
+static func bonus(levels: Dictionary, bonus_id: StringName) -> int:
+	return maxi(int(levels.get(SecretRewards.bonus_key(bonus_id), 0)), 0)
+
+
+## True when [param levels] carry the secrets' mod [param mod_id]
+## (WeaponLook.MODS; the "mod_<id>" keys).
+static func has_mod(levels: Dictionary, mod_id: StringName) -> bool:
+	return int(levels.get(WeaponLook.mod_key(mod_id), 0)) > 0
+
+
 static func max_health(levels: Dictionary) -> float:
-	return BASE_HEALTH + 20.0 * level(levels, &"health")
+	return BASE_HEALTH + 20.0 * level(levels, &"health") + SecretRewards.HEALTH_STEP * bonus(levels, &"health")
 
 
 static func stamina_max(levels: Dictionary) -> float:
-	return BASE_STAMINA + 20.0 * level(levels, &"stamina")
+	return BASE_STAMINA + 20.0 * level(levels, &"stamina") + SecretRewards.STAMINA_STEP * bonus(levels, &"stamina")
 
 
 static func stamina_regen(levels: Dictionary) -> float:
 	return BASE_STAMINA_REGEN * (1.0 + 0.15 * level(levels, &"stamina"))
 
 
-## Seconds of flashlight on a full battery.
+## Seconds of flashlight on a full battery (the secrets' spare cells add
+## their seconds after the upgrade's factor).
 static func battery_capacity(levels: Dictionary) -> float:
-	return FlashlightBattery.BASE_CAPACITY * (1.0 + 0.5 * level(levels, &"battery"))
+	return FlashlightBattery.BASE_CAPACITY * (1.0 + 0.5 * level(levels, &"battery")) + SecretRewards.BATTERY_STEP * bonus(levels, &"battery")
 
 
 static func fist_damage_multiplier(levels: Dictionary) -> float:
@@ -71,7 +87,7 @@ static func finisher_heal(levels: Dictionary) -> float:
 ## Reserve multiplier of every weapon (deep pockets): its cap, the spare
 ## ammo it starts a night with and every ammo box picked up.
 static func reserve_factor(levels: Dictionary) -> float:
-	return 1.0 + POCKETS_STEP * level(levels, &"pockets")
+	return 1.0 + POCKETS_STEP * level(levels, &"pockets") + SecretRewards.POCKETS_STEP * bonus(levels, &"pockets")
 
 
 ## [param amount] rounds of spare ammo (a night's start, a box picked up)
@@ -82,7 +98,7 @@ static func spare_ammo(amount: int, levels: Dictionary) -> int:
 
 ## How far Dust flies to the guard (6 -> 9 -> 12 m).
 static func dust_magnet_radius(levels: Dictionary) -> float:
-	return DustMote.MAGNET_RADIUS + DUST_MAGNET_STEP * level(levels, &"dust_magnet")
+	return DustMote.MAGNET_RADIUS + DUST_MAGNET_STEP * level(levels, &"dust_magnet") + SecretRewards.MAGNET_STEP * bonus(levels, &"magnet")
 
 
 static func has_second_wind(levels: Dictionary) -> bool:
@@ -93,10 +109,24 @@ static func has_keen_ear(levels: Dictionary) -> bool:
 	return level(levels, &"keen_ear") > 0
 
 
-## Applies every upgrade of this weapon to [param data] (a copy).
+## Applies every upgrade of this weapon to [param data] (a copy), and the
+## secrets' mods (WeaponLook.MODS): the carver's choke (shot and slugs go on
+## through the first target), the peep sight (a rifle round snaps a chain
+## link or a board: DamageInfo.lock_breaker, LockRules), the return line (a
+## harpoon stuck in a wall comes back to the reserve: Harpoon).
 static func apply_to_weapon(data: WeaponData, levels: Dictionary) -> void:
 	if data.max_reserve > 0:
 		data.max_reserve = roundi(data.max_reserve * reserve_factor(levels))
+	match data.id:
+		&"shotgun":
+			if has_mod(levels, &"shotgun_choke"):
+				data.pierce_targets = maxi(data.pierce_targets, CHOKE_PIERCE)
+		&"rifle_hunt":
+			if has_mod(levels, &"rifle_peep"):
+				data.lock_breaker = true
+		&"harpoon":
+			if has_mod(levels, &"harpoon_line"):
+				data.line_return = true
 	match data.id:
 		&"fists":
 			data.damage *= fist_damage_multiplier(levels)

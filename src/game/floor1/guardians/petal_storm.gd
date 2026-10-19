@@ -183,8 +183,38 @@ static func _petal_mesh() -> Mesh:
 		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		material.vertex_color_use_as_albedo = true
 		material.albedo_color = PETAL
+		material.albedo_texture = petal_texture()
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		material.alpha_scissor_threshold = 0.5
 		material.cull_mode = BaseMaterial3D.CULL_DISABLED
 		material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 		quad.material = material
 		_mesh = quad
 	return _mesh
+
+
+static var _shape: ImageTexture = null
+
+
+## A cherry petal's outline (white, its alpha the shape): an oval with a
+## notch at its tip, clear round it - the petals of the storm and of the
+## garden's fall are cut from it (a bare quad read as a pink square).
+static func petal_texture() -> ImageTexture:
+	if _shape == null:
+		var size := 32
+		var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
+		for y in size:
+			for x in size:
+				# across: -1..1; along: -1 (stem) .. 1 (tip)
+				var u := (x + 0.5) / size * 2.0 - 1.0
+				var v := (y + 0.5) / size * 2.0 - 1.0
+				# wider toward the tip, narrow at the stem
+				var width := 0.55 + 0.35 * (v * 0.5 + 0.5)
+				var inside := (u / width) * (u / width) + v * v <= 1.0
+				# the notch: a small wedge cut into the tip
+				if v > 0.62 and absf(u) < (v - 0.62) * 0.9:
+					inside = false
+				image.set_pixel(x, y, Color(1.0, 1.0, 1.0, 1.0 if inside else 0.0))
+		image.generate_mipmaps()
+		_shape = ImageTexture.create_from_image(image)
+	return _shape

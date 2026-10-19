@@ -9,13 +9,16 @@ const LINES_PATH := "res://data/voice/lines.json"
 const SPEAKERS_PATH := "res://data/voice/speakers.json"
 const AUDIO_DIR := "res://assets/voice"
 ## Events the rules may name: Events signals plus the director's own.
-const PSEUDO_EVENTS: Array[StringName] = [&"death", &"destroyed", &"stall", &"night_time"]
+const PSEUDO_EVENTS: Array[StringName] = [&"death", &"destroyed", &"stall", &"night_time", &"idle"]
 const EVENTS: Array[StringName] = [&"night_started", &"power_cut", &"witching_hour", &"dawn_broke",
 		&"room_entered", &"guardian_awakened", &"guardian_defeated", &"shard_collected", &"seal_collected",
-		&"gate_opened", &"boss_awakened", &"boss_defeated", &"death", &"destroyed", &"stall", &"night_time"]
+		&"gate_opened", &"boss_awakened", &"boss_defeated", &"cafe_entered", &"coffee_drunk", &"cafe_haywire",
+		&"secret_found", &"fatigue_rose", &"hour_struck",
+		&"death", &"destroyed", &"stall", &"night_time", &"idle"]
 ## Every field a rule may have (test_voice_data rejects the rest).
 const RULE_FIELDS: Array[String] = ["speaker", "event", "night", "night_min", "zone", "guardian", "count", "goal",
-		"at", "delay", "priority", "once", "level", "speed", "station", "variant", "after_guardian", "after_witching"]
+		"at", "delay", "priority", "once", "level", "speed", "station", "variant", "after_guardian", "after_witching",
+		"kind", "room", "gate", "modifier", "hour"]
 
 var lines: Dictionary = {}      ## String key -> Dictionary (the rule)
 var speakers: Dictionary = {}   ## String speaker -> {voice, speed}

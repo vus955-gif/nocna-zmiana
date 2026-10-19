@@ -226,7 +226,7 @@ func test_a_noise_beyond_its_bounds_only_turns_its_head() -> void:
 # --- losing track ---------------------------------------------------------------------
 
 func test_lost_sight_means_a_search_then_the_way_home() -> void:
-	Greybox.box(self, Vector3(4, 1.5, -9), Vector3(10, 3, 0.4), Color.GRAY)   # a wall
+	var wall := Greybox.box(self, Vector3(4, 1.5, -9), Vector3(10, 3, 0.4), Color.GRAY)   # a wall
 	var wax := _exhibit(WaxFigure, Vector3.ZERO)
 	var states := watch(wax.brain.state_changed)
 	target.position = Vector3(-3, 0, -6)
@@ -238,6 +238,11 @@ func test_lost_sight_means_a_search_then_the_way_home() -> void:
 	assert_eq(wax.brain.state, EnemyBrain.State.SEARCH, "lost him: it searches")
 	assert_lt(wax.brain.last_known.distance_to(Vector3(-3, 0, -6)), EnemyBrain.EXTRAPOLATE + 0.01, "near where it last saw him")
 	target.position = Vector3(0, 0, -80)   # gone for good
+	# The wall did its work (it blocked his sight). There is no navmesh here,
+	# so a search that ends behind it would have only the stuck sidestep to
+	# find a way round: a dice roll (the search points and the sidestep's
+	# side are random), lost in a few runs of a hundred. Home is a straight walk.
+	wall.queue_free()
 	_fast_forward()
 	for i in 45 * _ticks:
 		await get_tree().physics_frame

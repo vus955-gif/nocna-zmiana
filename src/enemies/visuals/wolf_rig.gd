@@ -98,6 +98,13 @@ func _pose(delta: float) -> void:
 	if dormant:
 		front = 0.0
 		hind = 0.0
+	var wolf := enemy as Wolf
+	if wolf != null and wolf.sniffing() and w <= 0.0 and not leaping:
+		# nose to the floor, on the scent: the head well down, the mouth shut,
+		# short quick dips of the snout
+		head = -0.75 + sin(time * 14.0) * 0.05
+		pitch = -0.1
+		jaw = -0.02
 	_crouch = ExhibitRig.ease_to(_crouch, crouch, 14.0, delta)
 	_front = ExhibitRig.ease_to(_front, front, rate, delta)
 	_hind = ExhibitRig.ease_to(_hind, hind, rate, delta)

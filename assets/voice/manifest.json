@@ -1,22 +1,702 @@
 {
- "VO_GUIDE_ROSETTA_A": {
-  "hash": "8b96bc5a022e6719da6f24dc35e486994cba3d63ba4683fbda534edc3720c46b",
+ "VO_GUIDE_ARMOUR_A": {
+  "hash": "7e03f6bca3f38ec5de1eb21582fbd9e4d11fdcd6bc2e7df47c2d96c1f90beaf0",
   "speaker": "system",
-  "seconds": 28.314
+  "seconds": 27.324
+ },
+ "VO_GUIDE_ARMOUR_B": {
+  "hash": "89b17977b2e95f3ad85030d34360861982d1cfa70df5d41b633eb91fe32c5d83",
+  "speaker": "system",
+  "seconds": 24.153
+ },
+ "VO_GUIDE_ASTROLABE_A": {
+  "hash": "083b05568d2b689045fc7ae89e12d05aafe345d369e46492dda8765b3ed5f545",
+  "speaker": "system",
+  "seconds": 28.885
+ },
+ "VO_GUIDE_ASTROLABE_B": {
+  "hash": "c4606554c132d397eed628059d99f392991b742c9ac1e31d94c5ff7518211da3",
+  "speaker": "system",
+  "seconds": 21.081
+ },
+ "VO_GUIDE_BUDDHA_A": {
+  "hash": "a54ea337007dd66025a814d55f6d0b8b106ccec32557eadbafe5f9428a3230c0",
+  "speaker": "system",
+  "seconds": 21.232
+ },
+ "VO_GUIDE_BUDDHA_B": {
+  "hash": "8aae7ac87303c6959ec29a6415b3c7cbc394bfe01dda47886ea6d7c873a86096",
+  "speaker": "system",
+  "seconds": 18.713
+ },
+ "VO_GUIDE_CLOCKS_A": {
+  "hash": "57eb41b8538200130d85244a00c907b933f491755db4a1de4d8a9b5d731e3f96",
+  "speaker": "system",
+  "seconds": 27.743
+ },
+ "VO_GUIDE_CLOCKS_B": {
+  "hash": "3bc55587b930ac9de5e12aee85df9d8580ffc1db2fd5bb87a8f071d6bab44081",
+  "speaker": "system",
+  "seconds": 19.08
+ },
+ "VO_GUIDE_FLOOD_A": {
+  "hash": "7748801e8d7d856c2921d0e5867e7f12de4fdf283cb806b14c5f67712d92395c",
+  "speaker": "system",
+  "seconds": 28.518
+ },
+ "VO_GUIDE_FLOOD_B": {
+  "hash": "64504d5b4e3541093a4b2648148bddffc0799dd50130e604bfe2a9f164a5ccb1",
+  "speaker": "system",
+  "seconds": 22.565
+ },
+ "VO_GUIDE_LAMASSU_A": {
+  "hash": "739ed09699180308950b71d8586c969071df6be8b6094e4e55578c672838d664",
+  "speaker": "system",
+  "seconds": 26.393
+ },
+ "VO_GUIDE_LAMASSU_B": {
+  "hash": "59a51deebed9b738a128f84cf1c0747f7ff7fccc9010d28d42a3eea686d3ba89",
+  "speaker": "system",
+  "seconds": 25.571
+ },
+ "VO_GUIDE_METOPES_A": {
+  "hash": "19c006726a3fc27c9062d84f59db9f1da811c0453f9a8ba4ce4693f218b3e61e",
+  "speaker": "system",
+  "seconds": 25.049
+ },
+ "VO_GUIDE_METOPES_B": {
+  "hash": "3ac699d7799f85a1bad632bc028472bb3da8e16cc2c76accf54804ff32041e3c",
+  "speaker": "system",
+  "seconds": 22.497
+ },
+ "VO_GUIDE_MOAI_A": {
+  "hash": "d3d0e8ad957d802975ecc3a2bbafbc77c895114173ed1ee15bda32d236572ee4",
+  "speaker": "system",
+  "seconds": 24.362
+ },
+ "VO_GUIDE_MOAI_B": {
+  "hash": "4b580ce50e791999de069aefb41683b5f6d0fc3565609f2a4fed731437e26169",
+  "speaker": "system",
+  "seconds": 24.177
+ },
+ "VO_GUIDE_RAMESSES_A": {
+  "hash": "5cbedfdfb9d7f06fec847482cc35e2ccb40c9d47fbac195c97eeda23f1cb309e",
+  "speaker": "system",
+  "seconds": 24.043
+ },
+ "VO_GUIDE_RAMESSES_B": {
+  "hash": "e49fae96a1148c643fce9af42819a267c8ce5c76449ff8f7fdf5e2abad4e9dd1",
+  "speaker": "system",
+  "seconds": 25.885
+ },
+ "VO_GUIDE_ROSETTA_A": {
+  "hash": "f2d5498f374e33a0a554c8b478a1c76aea7774b9ca9e59733aab41780b4e33e0",
+  "speaker": "system",
+  "seconds": 27.714
  },
  "VO_GUIDE_ROSETTA_B": {
   "hash": "ef95dd9e24baec030cfa42e8e190706b249da43343ddbd2f797a6872aa9b2d1e",
   "speaker": "system",
   "seconds": 22.6
  },
+ "VO_GUIDE_TOTEMS_A": {
+  "hash": "8113cd8d400d47e76180b1dd69919d58838f04e29f5bfe3e66e0dd2e4da9fa70",
+  "speaker": "system",
+  "seconds": 25.675
+ },
+ "VO_GUIDE_TOTEMS_B": {
+  "hash": "3f561b86d72adbbbdb2ad62f15aba3d862705ab03716721c09da0400c65a9485",
+  "speaker": "system",
+  "seconds": 19.41
+ },
+ "VO_GUIDE_TREX_A": {
+  "hash": "79fc7bd609065ba3388379dd775c5210392c5a7c5790425adf66fb7c25017f0f",
+  "speaker": "system",
+  "seconds": 26.639
+ },
+ "VO_GUIDE_TREX_B": {
+  "hash": "bb555a48d6efba143c08f3cdfc380dcf55caca5fd5fb72c2a7d69d439af46517",
+  "speaker": "system",
+  "seconds": 22.264
+ },
+ "VO_HENIEK_BOSS_DOWN": {
+  "hash": "b91128e55dbd781ce618cc46b746dab88fcd70dd063b6b00fc2a7fec7aea306a",
+  "speaker": "heniek",
+  "seconds": 10.305
+ },
+ "VO_HENIEK_CAFE": {
+  "hash": "42c1419224320181d1f27c0597c8da44854b882ff6dcb668dca8e0b7a929eb67",
+  "speaker": "heniek",
+  "seconds": 10.655
+ },
+ "VO_HENIEK_CALM": {
+  "hash": "c91d76c1832fe21af8f473ffc20d8cf9158e05d340c8e1e87f2326bf56a363a4",
+  "speaker": "heniek",
+  "seconds": 8.08
+ },
+ "VO_HENIEK_DAWN_1": {
+  "hash": "81a741ef653f21176ff50db82acbf9705c5a140aff8ed86b08c72bfe0bb37eeb",
+  "speaker": "heniek",
+  "seconds": 6.23
+ },
+ "VO_HENIEK_DAWN_3": {
+  "hash": "d82d3ded46c9b481dbd79a055c9deae9f20ee020c5e773453cc1f2f81467540d",
+  "speaker": "heniek",
+  "seconds": 6.755
+ },
+ "VO_HENIEK_DEATH_1": {
+  "hash": "4e1937d27b3323135dbac46ace61f743f83424b0a363e120009907e3f149ad33",
+  "speaker": "heniek",
+  "seconds": 8.93
+ },
+ "VO_HENIEK_DEATH_2": {
+  "hash": "7cdc544e9c56d5a673878c85dec67a3712ac63b4cc3ae351c91b1e111cbc65ae",
+  "speaker": "heniek",
+  "seconds": 9.505
+ },
+ "VO_HENIEK_DEATH_3": {
+  "hash": "f0522a01883d0a5795141d2314eb57071e5cd68138acb726a6fbe5f2caf28375",
+  "speaker": "heniek",
+  "seconds": 7.955
+ },
+ "VO_HENIEK_DEATH_4": {
+  "hash": "7b95b176af65f673a8339092970c2d1728ab077795fe90db48d68eec20fd6e1c",
+  "speaker": "heniek",
+  "seconds": 9.905
+ },
+ "VO_HENIEK_DEATH_5": {
+  "hash": "c0215b44e33f80345a411c378f11c633e087cc171fc092acf7de238a54812b4c",
+  "speaker": "heniek",
+  "seconds": 7.905
+ },
+ "VO_HENIEK_DOWN_CENTAUR": {
+  "hash": "e1bf926a750c8a157769184ca01b6c3a6268bbe6a873f7df5f679814c00f88a4",
+  "speaker": "heniek",
+  "seconds": 10.505
+ },
+ "VO_HENIEK_DOWN_COLOSSUS": {
+  "hash": "996a8c00abb811b607934166ad6f54454d5ea5f005bfaf0ba84cce752e55481e",
+  "speaker": "heniek",
+  "seconds": 10.255
+ },
+ "VO_HENIEK_DOWN_GENERAL": {
+  "hash": "d6459f58efe109658acf79fce386741dc96c999943ff938017dbd06ed6361760",
+  "speaker": "heniek",
+  "seconds": 10.08
+ },
+ "VO_HENIEK_DOWN_LAMASSU": {
+  "hash": "e5c0fabb71523730b37addc89cd73c3f85457145f706638358b1a1abcf50e6fe",
+  "speaker": "heniek",
+  "seconds": 9.73
+ },
+ "VO_HENIEK_DOWN_PLANETARIUM": {
+  "hash": "116b1858436bee08e6158b35bd9f1bc92522bd7323fd770fedd9dde459d0457a",
+  "speaker": "heniek",
+  "seconds": 11.63
+ },
+ "VO_HENIEK_DOWN_SERPENT": {
+  "hash": "fb151912a359474f3d6e6967d942a3d80c0d825ccd2000fa4da2a8fae2e04d4e",
+  "speaker": "heniek",
+  "seconds": 8.505
+ },
+ "VO_HENIEK_ESPRESSO": {
+  "hash": "c23f5a1053409e551fc978283e3ceeb3b48affe2c31c6f42bc398b3b2f131956",
+  "speaker": "heniek",
+  "seconds": 6.955
+ },
+ "VO_HENIEK_GATE_CANOE": {
+  "hash": "5514973e2da346eb39db2af9905c0546218647837eef79376f0f56604833ab05",
+  "speaker": "heniek",
+  "seconds": 9.555
+ },
+ "VO_HENIEK_GATE_POWER": {
+  "hash": "36bd393ad95691ab889f12df1babe86f7f249b302de75ce5a11f756c95a79d7e",
+  "speaker": "heniek",
+  "seconds": 9.905
+ },
+ "VO_HENIEK_HAVEN": {
+  "hash": "d5662ce5d10597ebc5f6698c7cf73eaadd847f9ee564ef41b123e69f29745cf8",
+  "speaker": "heniek",
+  "seconds": 10.455
+ },
+ "VO_HENIEK_HAYWIRE": {
+  "hash": "4f297e724022fb68089107d1616384d2686e6ef23841076239322a8544ad9f87",
+  "speaker": "heniek",
+  "seconds": 9.455
+ },
+ "VO_HENIEK_LARGE": {
+  "hash": "bfa48da4a9909f7934af13bd7595c21064c8dbac403f813a48ae220f4d27fcda",
+  "speaker": "heniek",
+  "seconds": 8.055
+ },
+ "VO_HENIEK_MOON": {
+  "hash": "0279a7c2818408a76f830ffaba4d16195df8ec72466504fd2896a72c65959590",
+  "speaker": "heniek",
+  "seconds": 8.955
+ },
  "VO_HENIEK_NIGHT_1": {
   "hash": "82e9ed881127d1b825b5a56e4ebe264840bc7a0661988e7c5783aec0379e22db",
   "speaker": "heniek",
   "seconds": 12.305
  },
+ "VO_HENIEK_NIGHT_2": {
+  "hash": "ce61c2b8f0c4b07072373577845f3973c1ed934b65e1f9005baf4d236b23d736",
+  "speaker": "heniek",
+  "seconds": 11.905
+ },
+ "VO_HENIEK_NIGHT_3": {
+  "hash": "4af91547bff2aa5399ee6530cc78ee2d5451870dde3c129b8fb65205cb34476b",
+  "speaker": "heniek",
+  "seconds": 11.905
+ },
+ "VO_HENIEK_NIGHT_4": {
+  "hash": "a84bf17b3ae2c2e27f89a086761bcc1c1afafd1516bd1d0d7b05139ac699176d",
+  "speaker": "heniek",
+  "seconds": 10.505
+ },
+ "VO_HENIEK_NIGHT_5": {
+  "hash": "d82ba4674733a6e828146ee44b3a621540e4cd8d642b21d20b12d3e7348d4b06",
+  "speaker": "heniek",
+  "seconds": 8.805
+ },
+ "VO_HENIEK_ROOM_CRYPT": {
+  "hash": "c4b76cdfdb87c54f3a1c87b56779bafca63cedebef98bf2c5d419079555850dd",
+  "speaker": "heniek",
+  "seconds": 10.105
+ },
+ "VO_HENIEK_ROOM_READING": {
+  "hash": "713743a20de32e26a99fb88c5b8ca292a88aab0ca927aec2545203f5867acf1f",
+  "speaker": "heniek",
+  "seconds": 12.505
+ },
+ "VO_HENIEK_SECRET_1": {
+  "hash": "cbb9a5e703e790fc27bf71febe62b3d99d9afe9b8e829f3cce3fbd21d9e39f6a",
+  "speaker": "heniek",
+  "seconds": 9.555
+ },
+ "VO_HENIEK_SECRET_10": {
+  "hash": "61e1c2f25120ac2a64a1ec40b549cf2970ebddc8fb36cf316727e3db3634cb9c",
+  "speaker": "heniek",
+  "seconds": 8.23
+ },
+ "VO_HENIEK_SECRET_MEDIUM": {
+  "hash": "be096f5838cec2b90f7e7e49e0d9d01c6c69c04531ea22eb780a9ed0ffe606f9",
+  "speaker": "heniek",
+  "seconds": 7.98
+ },
+ "VO_HENIEK_SHARD_1": {
+  "hash": "b201ff1bc1dd0b58c4b5c107be006c6eeaa0faf1411ad89468c25687ef315f14",
+  "speaker": "heniek",
+  "seconds": 9.28
+ },
+ "VO_HENIEK_SHARD_3": {
+  "hash": "2ef77ed6f409ce67645c9d0ccce5812f1862a7f57167fc2e7957d4d439808087",
+  "speaker": "heniek",
+  "seconds": 9.28
+ },
+ "VO_HENIEK_SHARD_5": {
+  "hash": "ec49b0fccc9828e47c426aa4b4e5aea944a843cf6dd804e79c9693351a5583f4",
+  "speaker": "heniek",
+  "seconds": 9.905
+ },
+ "VO_HENIEK_SHARD_6": {
+  "hash": "ba1f92f43a40b818145c9f99be1fa3737e8ffb816a1b8ad6d60016603d04bcbc",
+  "speaker": "heniek",
+  "seconds": 11.73
+ },
+ "VO_HENIEK_STALL": {
+  "hash": "7e330452268a23eedc2727e9582b4bc5223ca76476ed13b90acfecbb81a0ca3f",
+  "speaker": "heniek",
+  "seconds": 7.255
+ },
+ "VO_HENIEK_STALL_ASTROLABE": {
+  "hash": "f5e6461b61b7acd16442c1b10be8745819eee66de33534e15df559c82b3bbb8e",
+  "speaker": "heniek",
+  "seconds": 7.305
+ },
+ "VO_HENIEK_STALL_EXPLORE": {
+  "hash": "b7968857f96a928a3484ab12f855c696efc87f9df0354ad99717172815402fb6",
+  "speaker": "heniek",
+  "seconds": 10.155
+ },
+ "VO_HENIEK_STALL_FUSE_ASSYRIA": {
+  "hash": "56e37b854c772271cfb154a757c5a43abaed26808031edc5b264023426b0ab7f",
+  "speaker": "heniek",
+  "seconds": 9.855
+ },
+ "VO_HENIEK_STALL_FUSE_BASEMENT": {
+  "hash": "0707330202471c0623c7d88e57403fc27559de928d8001f7e18fa66a2980e8cb",
+  "speaker": "heniek",
+  "seconds": 7.13
+ },
+ "VO_HENIEK_STALL_GATLING": {
+  "hash": "ae4a34dd3689e904f6fcf36e2ea22f9bdf0b1d76559925b47753eaad1cf7f6be",
+  "speaker": "heniek",
+  "seconds": 9.655
+ },
+ "VO_HENIEK_STALL_GUARDIAN_AMERICAS": {
+  "hash": "a4604ec966ad8fd66483f9e9f12e57600fb2b9b975618212358cdbfc1854a329",
+  "speaker": "heniek",
+  "seconds": 6.28
+ },
+ "VO_HENIEK_STALL_GUARDIAN_ASIA": {
+  "hash": "baef96f8caee56d25eda1fa87e28aed83fc7e641dda15b7af1280aa70f9ea7b6",
+  "speaker": "heniek",
+  "seconds": 9.48
+ },
+ "VO_HENIEK_STALL_GUARDIAN_EGYPT": {
+  "hash": "72ed72bd73d485979ca13c2b48135d6f0b88ae9b3fe3c2b4f64b1987b9a1851e",
+  "speaker": "heniek",
+  "seconds": 10.155
+ },
+ "VO_HENIEK_STALL_GUARDIAN_ENLIGHTENMENT": {
+  "hash": "e3205307ef5238860b0c9bd31f74ac62d2d3c57bbb74a7192b938244e9d5ccae",
+  "speaker": "heniek",
+  "seconds": 8.88
+ },
+ "VO_HENIEK_STALL_GUARDIAN_GREECE": {
+  "hash": "4356a5322016f59826964eb3ddd2741db896b2ae86e4b90fbca08a67053ab017",
+  "speaker": "heniek",
+  "seconds": 7.905
+ },
+ "VO_HENIEK_STALL_HARPOON": {
+  "hash": "24da1b81ecfbd1c5978bc8db87774c89c05d1496f3e2df3095e74459241b25a3",
+  "speaker": "heniek",
+  "seconds": 8.055
+ },
+ "VO_HENIEK_STALL_HWACHA": {
+  "hash": "2b5606987a4fd1e2db1c0ff947b7d4406e5266459ef4f07eb6037183eec83eac",
+  "speaker": "heniek",
+  "seconds": 7.73
+ },
+ "VO_HENIEK_STALL_PISTOL": {
+  "hash": "706ca63e63a48bbe2ef85793a8d58cde1b9106a4a555c96f0e9ccf8b3f528fa8",
+  "speaker": "heniek",
+  "seconds": 9.055
+ },
+ "VO_HENIEK_STALL_POWER": {
+  "hash": "9637c6edc4c9d6602fbda44c9b0010f7298e2d64b09caa2c65539f7c634eabaf",
+  "speaker": "heniek",
+  "seconds": 9.53
+ },
+ "VO_HENIEK_STALL_RIFLE": {
+  "hash": "080288656c791e0bb6b2259d582ec97301f9b83bee834cdb0c67d43c58d9b128",
+  "speaker": "heniek",
+  "seconds": 9.255
+ },
+ "VO_HENIEK_STALL_SHOTGUN": {
+  "hash": "f8ceb89c2ff8293f5eab290ead66c3061d58b692f270b6b835f5168f798bbe93",
+  "speaker": "heniek",
+  "seconds": 9.48
+ },
+ "VO_HENIEK_STALL_TICKET_KEY": {
+  "hash": "7543cab6162925fcc9d726090dbd2d10f2ea951b2b952f88d251bba78e264002",
+  "speaker": "heniek",
+  "seconds": 7.755
+ },
+ "VO_HENIEK_TIRED": {
+  "hash": "87e7fdc3a8a1c18dd65f8ca4fd802ddfb954051266fcd50b902c5007c7de02a0",
+  "speaker": "heniek",
+  "seconds": 9.205
+ },
+ "VO_HENIEK_WITCHING_1": {
+  "hash": "690ac3eaff495922bb01fa42bb855550fd40ada54d84d43d951c3745fb11d39a",
+  "speaker": "heniek",
+  "seconds": 10.205
+ },
+ "VO_HENIEK_WITCHING_2": {
+  "hash": "5c6c43b4cbb0fc451a3b6518f1f5cf436d24b5994d015a8fb85dad6c428e4436",
+  "speaker": "heniek",
+  "seconds": 9.28
+ },
+ "VO_HENIEK_ZONE_AMERICAS": {
+  "hash": "3fb6d7d08726d99a61641bdf370beb19b3a0ebb164795dbb9b60f94e0441a458",
+  "speaker": "heniek",
+  "seconds": 13.205
+ },
+ "VO_HENIEK_ZONE_ASIA": {
+  "hash": "94d02b2425261b25f1c6eebbb8b9afcacf78696819f28e6bb500c471d8d58012",
+  "speaker": "heniek",
+  "seconds": 12.63
+ },
+ "VO_HENIEK_ZONE_ASSYRIA": {
+  "hash": "698db9b8cc5abb5c9fff60b573ff24bae2955238abc12b9b4f9940c099fa1ec4",
+  "speaker": "heniek",
+  "seconds": 14.13
+ },
+ "VO_HENIEK_ZONE_BASEMENT": {
+  "hash": "1e5ac25e57f352575dca7bab9e398842c081dab6a16c5877fbb7b989b0022099",
+  "speaker": "heniek",
+  "seconds": 11.38
+ },
+ "VO_HENIEK_ZONE_COURT": {
+  "hash": "9569511ca3f3dcdc245b3dee0e690ff259616d5cec73e5d0750b4bd1b47033eb",
+  "speaker": "heniek",
+  "seconds": 10.255
+ },
+ "VO_HENIEK_ZONE_EGYPT": {
+  "hash": "99e1c08e8a6576330bfdabd58ada75463590cbdd884c8521f2d7f0e02cff485a",
+  "speaker": "heniek",
+  "seconds": 13.955
+ },
+ "VO_HENIEK_ZONE_ENLIGHTENMENT": {
+  "hash": "7cdeb690c245131bb12762e15c309a9db45fba63a9f210f98623d68d3a205638",
+  "speaker": "heniek",
+  "seconds": 12.13
+ },
+ "VO_HENIEK_ZONE_ENTRANCE": {
+  "hash": "b2ac8ebf75f2486c905a4335225c7c4c880e0d26a032a5901e252dc1deb8e75b",
+  "speaker": "heniek",
+  "seconds": 11.68
+ },
+ "VO_HENIEK_ZONE_GREECE": {
+  "hash": "cce8a486001265019ea259666f07ae6f61f9ef6237d59495a05df1a6b21249d5",
+  "speaker": "heniek",
+  "seconds": 12.23
+ },
+ "VO_HENIEK_ZONE_NORTH_HALL": {
+  "hash": "3af02b95bd7cc073879db2ef5ca78ae63ca907601ee1a21a1b21309bbca19229",
+  "speaker": "heniek",
+  "seconds": 10.63
+ },
+ "VO_HENIEK_ZONE_ROOF": {
+  "hash": "6a87cd95a696e2f734c060654b138377b10063e875983f93a3c7f990224221d0",
+  "speaker": "heniek",
+  "seconds": 11.98
+ },
+ "VO_SYSTEM_BLACKOUT": {
+  "hash": "6f9d376e5748fa2b127c90d871f4338971a0110d0295c3495968cb4bfb18b4c5",
+  "speaker": "system",
+  "seconds": 19.794
+ },
+ "VO_SYSTEM_BOSS_AWAKE": {
+  "hash": "8b569cac71adea66d4ef4a2cee3e543da1f992d76ff77a8d6f731d0e477c67e1",
+  "speaker": "system",
+  "seconds": 18.303
+ },
+ "VO_SYSTEM_BOSS_DOWN": {
+  "hash": "eaae94de199fc7c362447f3738f97f2dd5dc54ce25e04880240ed251325f91fe",
+  "speaker": "system",
+  "seconds": 17.996
+ },
  "VO_SYSTEM_CLOSING_1": {
   "hash": "0dbfd3397a7a81fe1aad88ebf7c2de8476aa23d894b7f9876c5ae1477d5a028b",
   "speaker": "system",
   "seconds": 17.565
+ },
+ "VO_SYSTEM_DAWN_2": {
+  "hash": "f0721d361b873f723c5f36e1ee567c9d2d721e927f2568d1003fbee6c231b048",
+  "speaker": "system",
+  "seconds": 5.691
+ },
+ "VO_SYSTEM_DAWN_4": {
+  "hash": "8494a737bbca719681ed94a00479459245c89f2177f06fe9844c4e9204f20a8c",
+  "speaker": "system",
+  "seconds": 5.694
+ },
+ "VO_SYSTEM_DEATH_1": {
+  "hash": "708935b1fa209a971805f0d8a08fa65fa5863eb22cd030932b46246df820f4b8",
+  "speaker": "system",
+  "seconds": 12.675
+ },
+ "VO_SYSTEM_DEATH_2": {
+  "hash": "247ea8a014aa50ee38d4e35407aa3ba8c7cde52f6b0fb3e17c0482fc3f6dab71",
+  "speaker": "system",
+  "seconds": 13.335
+ },
+ "VO_SYSTEM_DEATH_3": {
+  "hash": "760071d31772b67246264b0f836efe4ff6eae9e8b4766e09c91014fa94db1a9a",
+  "speaker": "system",
+  "seconds": 12.995
+ },
+ "VO_SYSTEM_DEATH_4": {
+  "hash": "d2999bde43b4fde64eaf91001936c976ffcd168e04954938c196b1d7396e4cd3",
+  "speaker": "system",
+  "seconds": 12.016
+ },
+ "VO_SYSTEM_DEATH_5": {
+  "hash": "7dcda653fe0354f9668d4f35216a7a26b561ebdf558b81a69143d8cfe0f375e4",
+  "speaker": "system",
+  "seconds": 15.227
+ },
+ "VO_SYSTEM_GATE_GARDEN": {
+  "hash": "7e005c6dfe10a7da9a3b3eb0a76fed14215ceaeb5d8cdeef707ea9a7c7b44fca",
+  "speaker": "system",
+  "seconds": 15.349
+ },
+ "VO_SYSTEM_GATE_KHORSABAD": {
+  "hash": "6b882c1fe2c955dc421bfdced1595021002ad5afc4f6af34c2f2367dfe106b8a",
+  "speaker": "system",
+  "seconds": 15.502
+ },
+ "VO_SYSTEM_GATE_NORTH": {
+  "hash": "3cabc4e952ada83e6ac167e6c009c8eae4cb4e052524fff3349c347a6b120da7",
+  "speaker": "system",
+  "seconds": 14.477
+ },
+ "VO_SYSTEM_GATE_POWER": {
+  "hash": "08e36a274d68c4574264ee96eb34eb62878fcedff589976f87c1d2438982bbe8",
+  "speaker": "system",
+  "seconds": 11.307
+ },
+ "VO_SYSTEM_GATE_READING": {
+  "hash": "942e2c370aaf1434da3bf06a0f6b03f13c93dc1c708124baf0c27d149e674039",
+  "speaker": "system",
+  "seconds": 9.235
+ },
+ "VO_SYSTEM_HAYWIRE": {
+  "hash": "e1a61fe7f37b239fe704300de9f5215d95d278085691f4a8bedc96d23ba6a88c",
+  "speaker": "system",
+  "seconds": 14.866
+ },
+ "VO_SYSTEM_HOUR_0": {
+  "hash": "90806f63af49abbe2ff7a293643b88274c94a1361fe46de46856756854ec1ee5",
+  "speaker": "system",
+  "seconds": 12.224
+ },
+ "VO_SYSTEM_HOUR_1": {
+  "hash": "400a4db5740a024d725229da859939dba24a54d546d4293f07859abb8e2ab9f5",
+  "speaker": "system",
+  "seconds": 12.444
+ },
+ "VO_SYSTEM_HOUR_2": {
+  "hash": "843c92e227e49dc890c0f0fe5d69950150edfb5149feb6341f731d062f45d918",
+  "speaker": "system",
+  "seconds": 14.049
+ },
+ "VO_SYSTEM_HOUR_4": {
+  "hash": "15ea498ff1b056b8d314be5f994c0df45954761964f6134b07e30114f80de15c",
+  "speaker": "system",
+  "seconds": 14.376
+ },
+ "VO_SYSTEM_HOUR_5": {
+  "hash": "abbd80830e79813fc1f67f92d22d1eba5e567b4de9c60782a2eb15645382334e",
+  "speaker": "system",
+  "seconds": 13.084
+ },
+ "VO_SYSTEM_IDLE_1": {
+  "hash": "13e2fa019ad2f7dbfd5b681382c5dd0b3783363e3b57ae23cac48e5c8588a5d7",
+  "speaker": "system",
+  "seconds": 14.628
+ },
+ "VO_SYSTEM_IDLE_2": {
+  "hash": "2c2a2a95407463272cb552cc10e22570fc197ab2da4a4db4c636eecdc3b08567",
+  "speaker": "system",
+  "seconds": 11.602
+ },
+ "VO_SYSTEM_LOSSES_10": {
+  "hash": "39f9d34a4031b2747f177829edd6d67709a2202951d8ff0fbb40b902c5a5ed9c",
+  "speaker": "system",
+  "seconds": 12.245
+ },
+ "VO_SYSTEM_LOSSES_100": {
+  "hash": "111b96aedfe3b8a570376b8ede0219c2b68d602dcb983d6e9291f9528b0a9c76",
+  "speaker": "system",
+  "seconds": 14.914
+ },
+ "VO_SYSTEM_LOSSES_200": {
+  "hash": "aa89e8127f7aa2888e8c3bd20f4c757a2f745a7041558b522a996546d74b0706",
+  "speaker": "system",
+  "seconds": 13.343
+ },
+ "VO_SYSTEM_LOSSES_400": {
+  "hash": "292159a039178f3059366ee09a5a26442df082dd6ef46ef67b5f5332f1e1e6d7",
+  "speaker": "system",
+  "seconds": 11.522
+ },
+ "VO_SYSTEM_LOSSES_50": {
+  "hash": "f3cc0e77c15e6e636d558ae1e8e5d4f638b53f1f53061d3f1c2e07baf243e10c",
+  "speaker": "system",
+  "seconds": 16.477
+ },
+ "VO_SYSTEM_NIGHT_2": {
+  "hash": "d76bec34689c40bf34b1b77c128a13c6113902858c5c1a7ba21d35e63cd575f0",
+  "speaker": "system",
+  "seconds": 14.448
+ },
+ "VO_SYSTEM_NIGHT_3": {
+  "hash": "90a7a152b817f80a73469980f515b96f3e95ac75def407ac966739e818495a9b",
+  "speaker": "system",
+  "seconds": 16.287
+ },
+ "VO_SYSTEM_NIGHT_4": {
+  "hash": "7470055932ad138c3d1e4e9c72307e0172f4bf8faaab2df27eeb57cdc018aa83",
+  "speaker": "system",
+  "seconds": 14.579
+ },
+ "VO_SYSTEM_SEAL": {
+  "hash": "01883db9d852ad1d14475486d4cdb853f320b1684dbe95f4b92ed43c9c8257db",
+  "speaker": "system",
+  "seconds": 17.693
+ },
+ "VO_SYSTEM_SECRET_20": {
+  "hash": "205ce7b10cef292e623c1ed642bb29855bbbbdcc04b56b78633d0c7d566e406e",
+  "speaker": "system",
+  "seconds": 13.83
+ },
+ "VO_SYSTEM_SECRET_GREAT": {
+  "hash": "b935754c1c8c7eb145d6b16faf55ce1c642225e04c51a5e50dc8a73ca9e98b08",
+  "speaker": "system",
+  "seconds": 14.6
+ },
+ "VO_SYSTEM_SECRET_SMALL": {
+  "hash": "e3747e6088f0f0cad4f6bf22a191c1c07c6ff1b428b08ee7e0d92ed3a2440997",
+  "speaker": "system",
+  "seconds": 15.773
+ },
+ "VO_SYSTEM_SPECIAL": {
+  "hash": "98a47daa58eb75bca16ff0b37901148a1f1b3ebdf3611f133c1300f8e1b6141e",
+  "speaker": "system",
+  "seconds": 12.488
+ },
+ "VO_SYSTEM_TIRED": {
+  "hash": "18f3611e036f210516e774bc093e195ff1d70fe72e6a53beeb8f2c6e78f6f321",
+  "speaker": "system",
+  "seconds": 19.043
+ },
+ "VO_SYSTEM_WAKE_CENTAUR": {
+  "hash": "ce256b9e87d7df1403193c965925da36b0f68e699e4149e9b8408a52129a5152",
+  "speaker": "system",
+  "seconds": 15.288
+ },
+ "VO_SYSTEM_WAKE_COLOSSUS": {
+  "hash": "ac92108e988f60151003a822dcd5f337915a5635211532a41107c1f8be643af6",
+  "speaker": "system",
+  "seconds": 16.195
+ },
+ "VO_SYSTEM_WAKE_GENERAL": {
+  "hash": "3c0b116fd375b0cdb172e0f9d9bdc1687da1dcac7930c33e7a0966e98fd8d741",
+  "speaker": "system",
+  "seconds": 14.973
+ },
+ "VO_SYSTEM_WAKE_LAMASSU": {
+  "hash": "677e71cd267379b54cdda1c25dd94c12c035ac8f3059d8d45e86687d5b6275e5",
+  "speaker": "system",
+  "seconds": 13.888
+ },
+ "VO_SYSTEM_WAKE_PLANETARIUM": {
+  "hash": "9081cbc7a679631c53c1ee41cba26e68ae95e8efc926f28db354e61f9a54d57a",
+  "speaker": "system",
+  "seconds": 15.514
+ },
+ "VO_SYSTEM_WAKE_SERPENT": {
+  "hash": "f34c04848156497e7a90c3992bb43bdcc202f8a2110a058ff841069799536ab7",
+  "speaker": "system",
+  "seconds": 14.924
+ },
+ "VO_SYSTEM_WITCHING_1": {
+  "hash": "1139a6f491b57e081aa9bbfaab566f227a5114ecb28bb2e0a8ffaf55e932cc80",
+  "speaker": "system",
+  "seconds": 12.868
+ },
+ "VO_SYSTEM_WITCHING_2": {
+  "hash": "ffcf357a9532cc8caabf0f9bd775bb192b7d210c17670860838e3462f9bb0c60",
+  "speaker": "system",
+  "seconds": 15.338
+ },
+ "VO_SYSTEM_WITCHING_3": {
+  "hash": "84cd9cd5cd16adb4232d4241545757c0461d94316357153af0d4f5491a806667",
+  "speaker": "system",
+  "seconds": 16.096
  }
 }

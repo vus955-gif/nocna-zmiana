@@ -22,6 +22,9 @@ const HURTBOX_RADIUS := 0.25
 const TRAIL_LENGTH := 1.2
 const TRAIL_WIDTH := 0.16
 const SPIN_SPEED := 14.0
+## Its glow grows to full size over its first HALO_GROWTH metres (a shot
+## leaving the guard's own gun does not fill his view with light).
+const HALO_GROWTH := 1.5
 
 ## Contact radius against bodies in [member hit_mask].
 @export var radius: float = 0.2
@@ -55,6 +58,7 @@ var _speed: float = 0.0
 var _query: PhysicsShapeQueryParameters3D
 var _spin: Node3D
 var _trail: MeshInstance3D
+var _halo: MeshInstance3D
 
 
 ## A missile at [param from] (world space) flying with [param velocity_],
@@ -188,8 +192,10 @@ func _end(reason: End) -> void:
 
 func _animate() -> void:
 	_spin.rotation.z = wrapf(_age * SPIN_SPEED, -PI, PI)
-	# the trail grows out of the muzzle instead of poking back through it
+	# the trail grows out of the muzzle instead of poking back through it,
+	# and the glow with it
 	_trail.scale.z = clampf(_age * _speed / TRAIL_LENGTH, 0.02, 1.0)
+	_halo.scale = Vector3.ONE * clampf(_age * _speed / HALO_GROWTH, 0.05, 1.0)
 
 
 func _build_visuals() -> void:
@@ -201,11 +207,12 @@ func _build_visuals() -> void:
 	core.rotation_degrees = Vector3(90.0, 0.0, 0.0)   # the mesh's long axis (Y) along the flight
 	core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_spin.add_child(core)
-	var halo := MeshInstance3D.new()
-	halo.mesh = _halo_mesh()
-	halo.material_override = _additive_material(glow_color, 0.35)
-	halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(halo)
+	_halo = MeshInstance3D.new()
+	_halo.mesh = _halo_mesh()
+	_halo.material_override = _additive_material(glow_color, 0.35)
+	_halo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_halo.scale = Vector3.ONE * 0.05
+	add_child(_halo)
 	_trail = MeshInstance3D.new()
 	_trail.mesh = _trail_mesh()
 	_trail.material_override = _additive_material(glow_color, 1.0)

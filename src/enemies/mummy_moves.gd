@@ -18,7 +18,7 @@ enum Tomb { COFFIN, SARCOPHAGUS }
 
 ## The claws: brain range, windup and recovery (s).
 const CLAW_RANGE := 1.7
-const CLAW_WINDUP := 0.55
+const CLAW_WINDUP := 0.6
 const CLAW_RECOVERY := 0.8
 ## The lash: its band (m), telegraph and recovery (s), its cone (full
 ## half-angle, degrees, on the floor plan), the slack added to its reach at

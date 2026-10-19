@@ -354,3 +354,28 @@ func test_a_rifle_only_rope_turns_the_pistol_away() -> void:
 	await physics_frames(3)
 	holder.try_fire()
 	assert_true(rope.is_open, "the rifle cuts it")
+
+
+func test_the_peep_sight_rifle_snaps_a_chain_with_one_round_from_afar() -> void:
+	var lock := _lock(ChainLock.new(), -12.0)
+	var opened := watch(lock.opened)
+	holder.position = Vector3(0, 1.05, 0)
+	holder.apply_upgrades({&"mod_rifle_peep": 1})
+	_give(&"rifle_hunt")
+	await physics_frames(3)
+	assert_true(lock.blocks_passage())
+	holder.try_fire()
+	assert_true(lock.is_open, "one round from twelve metres")
+	assert_eq(opened.size(), 1)
+	assert_false(lock.blocks_passage())
+
+
+func test_a_plain_rifle_round_only_strikes_sparks_off_a_chain() -> void:
+	var lock := _lock(ChainLock.new(), -12.0)
+	holder.position = Vector3(0, 1.05, 0)
+	_give(&"rifle_hunt")
+	await physics_frames(3)
+	holder.try_fire()
+	await physics_frames(2)
+	assert_false(lock.is_open, "the chain holds")
+	assert_eq(hints.size(), 1, "the hint shows")

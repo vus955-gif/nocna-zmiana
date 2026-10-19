@@ -33,6 +33,11 @@ var mouse_sensitivity: float = 1.0
 var invert_y: bool = false
 ## Vertical field of view of the guard's camera, in degrees.
 var fov: float = 70.0
+## Motion comfort (plan 2026-10-19-gun-feel), 0..1: screen shake (the
+## shake itself, the weapons' kick of the view, a blast's push) and the
+## view's head bob (walking bob, landing dip, the sprint's wider view).
+var screen_shake: float = 1.0
+var head_bob: float = 1.0
 var volume_master: float = 1.0
 var volume_sfx: float = 1.0
 var volume_music: float = 1.0
@@ -57,7 +62,7 @@ var graphics_quality: int = GraphicsQuality.Quality.HIGH
 
 static func keys() -> Array[StringName]:
 	return [
-		&"mouse_sensitivity", &"invert_y", &"fov",
+		&"mouse_sensitivity", &"invert_y", &"fov", &"screen_shake", &"head_bob",
 		&"volume_master", &"volume_sfx", &"volume_music", &"volume_ambience", &"volume_voice", &"volume_ui",
 		&"window_mode", &"vsync", &"max_fps", &"render_scale", &"upscaler",
 		&"language", &"show_fps", &"subtitles", &"graphics_quality",
@@ -99,6 +104,8 @@ func set_value(key: StringName, value: Variant) -> bool:
 func sanitize() -> void:
 	mouse_sensitivity = clampf(mouse_sensitivity, SENSITIVITY_MIN, SENSITIVITY_MAX)
 	fov = clampf(fov, FOV_MIN, FOV_MAX)
+	screen_shake = clampf(screen_shake, 0.0, 1.0)
+	head_bob = clampf(head_bob, 0.0, 1.0)
 	volume_master = clampf(volume_master, 0.0, 1.0)
 	volume_sfx = clampf(volume_sfx, 0.0, 1.0)
 	volume_music = clampf(volume_music, 0.0, 1.0)

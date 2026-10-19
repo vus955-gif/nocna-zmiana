@@ -76,9 +76,13 @@ var chess_found: Array[StringName] = []
 ## guide's night recordings). Marked when a line ends; saved with the next save.
 var voice_heard: Array[StringName] = []
 ## The director's counters: "destroyed" (exhibits destroyed, all nights),
-## "death_turn" ("heniek"/"system": who comments the next death), "death_night".
+## "death_turn" ("heniek"/"system": who comments the next death), "death_night",
+## "death_pending" (a death the next night comments, kept with its save).
 var voice_state: Dictionary = {}
 var difficulty: StringName = DEFAULT_DIFFICULTY
+## Secrets whose reward the guard has claimed (SecretRewards; the pouch of
+## Dust taken, the bonus, finish or mod his). Missing in older saves.
+var secret_rewards: Array[StringName] = []
 ## Save file; "" = SavePaths.save_file() (tests pass their own).
 var file_path: String = ""
 ## Why the last load_game() failed: "" (it did not), "missing", "corrupt"
@@ -125,6 +129,7 @@ func reset() -> void:
 	voice_heard = []
 	voice_state = {}
 	difficulty = DEFAULT_DIFFICULTY
+	secret_rewards = []
 	last_load_error = ""
 
 
@@ -295,6 +300,11 @@ func mark_voice_heard(key: StringName) -> bool:
 	return _add_once(voice_heard, key)
 
 
+## The reward of secret [param secret_id] is the guard's; true the first time.
+func claim_reward(secret_id: StringName) -> bool:
+	return _add_once(secret_rewards, secret_id)
+
+
 static func _add_once(list: Array[StringName], entry: StringName) -> bool:
 	if entry == &"" or list.has(entry):
 		return false
@@ -349,6 +359,7 @@ func to_dict() -> Dictionary:
 		"voice_heard": _strings(voice_heard),
 		"voice_state": voice_state.duplicate(),
 		"difficulty": String(difficulty),
+		"secret_rewards": _strings(secret_rewards),
 	}
 
 
@@ -403,6 +414,7 @@ func from_dict(data: Dictionary) -> void:
 	var level: Variant = data.get("difficulty")
 	if (level is String or level is StringName) and DIFFICULTIES.has(StringName(level)):
 		difficulty = StringName(level)
+	secret_rewards = _names(data.get("secret_rewards"))
 
 
 ## [param progress] with only well-formed entries, or {} when it is not a
@@ -434,8 +446,43 @@ static func clean_progress(progress: Variant, for_night: int) -> Dictionary:
 						"battery": maxf(_float(entry.get("battery"), 0.0), 0.0),
 					}
 			kept["weapons"] = kept_arms
+		var tired: Variant = guard.get("fatigue")
+		if tired is Dictionary:
+			# the guard's fatigue and caffeine (Fatigue.to_dict); Fatigue.from_dict clamps
+			kept["fatigue"] = {
+				"level": clampf(_float(tired.get("level"), 0.0), 0.0, 1.0),
+				"buff": str(tired.get("buff", "")),
+				"buff_left": maxf(_float(tired.get("buff_left"), 0.0), 0.0),
+				"jitter_left": maxf(_float(tired.get("jitter_left"), 0.0), 0.0),
+			}
 		clean["guard"] = kept
+	var motes := _motes(progress.get("dust"))
+	if not motes.is_empty():
+		clean["dust"] = motes
 	return clean
+
+
+## The lying Dust of a saved night: [[x, y, z, value], ...] - finite
+## places, values 1..MOTE_MOST, at most DustDropper.SAVED_MOTES; anything
+## else left out.
+static func _motes(value: Variant) -> Array:
+	var out: Array = []
+	if not value is Array:
+		return out
+	for entry: Variant in value:
+		if not entry is Array or (entry as Array).size() != 4 or not _all_numbers(entry):
+			continue
+		var worth := _int(entry[3], 0)
+		if worth < 1 or worth > MOTE_MOST:
+			continue
+		out.append([float(entry[0]), float(entry[1]), float(entry[2]), worth])
+		if out.size() >= DustDropper.SAVED_MOTES:
+			break
+	return out
+
+
+## A saved mote is worth at most this much Dust.
+const MOTE_MOST := 10000
 
 
 ## True when the save file can be opened (a test double pretends it cannot).
@@ -519,6 +566,8 @@ static func _voice_state(value: Variant) -> Dictionary:
 			out[key] = int(value[key])
 	if value.get("death_turn") in ["heniek", "system"]:
 		out["death_turn"] = String(value.death_turn)
+	if value.get("death_pending") == true:
+		out["death_pending"] = true
 	return out
 
 

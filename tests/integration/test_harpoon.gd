@@ -210,3 +210,39 @@ func test_the_line_starts_where_the_gun_shows_on_screen() -> void:
 	assert_almost_eq(moved.x, 0.1 * k, 0.001, "spread out like the wider world view")
 	assert_almost_eq(moved.y, -0.1 * k, 0.001)
 	assert_almost_eq(moved.z, -0.5, 0.001, "same depth")
+
+
+func test_the_return_line_brings_a_missed_harpoon_back_to_the_reserve() -> void:
+	Greybox.box(self, Vector3(0, 2, -6.25), Vector3(10, 4, 0.5), Color.GRAY)
+	var state := _give({&"mod_harpoon_line": 1})
+	await physics_frames(2)
+	var rounds := state.magazine + state.reserve
+	holder.try_fire()
+	await physics_frames(20)
+	var harpoon := _harpoon()
+	assert_not_null(harpoon)
+	if harpoon == null:
+		return
+	assert_eq(harpoon.phase, Harpoon.Phase.STUCK)
+	assert_true(harpoon.returning(), "on its way back")
+	assert_eq(state.magazine + state.reserve, rounds - 1, "the shot is out")
+	await physics_frames(roundi(Harpoon.RETURN_TIME * 60.0) + 12)
+	assert_false(is_instance_valid(harpoon) and not harpoon.is_queued_for_deletion(), "reeled back")
+	assert_eq(state.magazine + state.reserve, rounds, "the miss cost nothing")
+
+
+func test_without_the_line_a_missed_harpoon_stays_in_the_wall() -> void:
+	Greybox.box(self, Vector3(0, 2, -6.25), Vector3(10, 4, 0.5), Color.GRAY)
+	var state := _give()
+	await physics_frames(2)
+	var rounds := state.magazine + state.reserve
+	holder.try_fire()
+	await physics_frames(20)
+	var harpoon := _harpoon()
+	assert_not_null(harpoon)
+	if harpoon == null:
+		return
+	assert_false(harpoon.returning())
+	await physics_frames(roundi(Harpoon.RETURN_TIME * 60.0) + 12)
+	assert_true(is_instance_valid(harpoon) and harpoon.phase == Harpoon.Phase.STUCK, "it stays")
+	assert_eq(state.magazine + state.reserve, rounds - 1)

@@ -39,6 +39,14 @@ var explosive: bool = false
 ## a rope lock takes a pistol shot only from close by, a cracked wall
 ## counts flares fired at point blank.
 var origin: Vector3 = Vector3.INF
+## A round that snaps a chain link or a board by itself (the rifle with the
+## secrets' peep sight: WeaponData.lock_breaker; LockRules).
+var lock_breaker: bool = false
+## How heavy the hit lands, 0..1 (HitFeel: a flinch, a stagger, a kill that
+## crumbles or is blown apart): the guard's weapons set it from their
+## FeelProfile (a shotgun's pellets each add their share); 0 = unknown,
+## HitFeel.weight() works it out from the weapon or the damage.
+var impact: float = 0.0
 
 
 static func make(amount_: float, kind_: Kind, source_: Node = null) -> DamageInfo:

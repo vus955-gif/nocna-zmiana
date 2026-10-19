@@ -21,6 +21,8 @@ extends Node
 ## (centaur) have their whole fights here; a guardian without moments of
 ## its own gets the common ones (asleep, awake, fighting, fallen).
 ## The Lamassu (lamassu) has its whole fight here too.
+## The Two-headed Serpent (serpent) has its whole fight in
+## tests/scenarios/serpent_moments.gd (SerpentMoments.fight).
 
 const WATCHDOG_SECONDS := 400.0
 ## The bot: pistol shots a second, share that hit the aimed weak point,
@@ -86,6 +88,8 @@ func _ready() -> void:
 		await _lamassu_fight(guardian as Lamassu)
 	elif guardian is General:
 		await _general_fight(guardian as General)
+	elif guardian is Serpent:
+		await SerpentMoments.fight(self, guardian as Serpent)
 	else:
 		await _common_fight()
 	var file := FileAccess.open(_out.path_join("log.json"), FileAccess.WRITE)
@@ -403,7 +407,8 @@ func _bot() -> void:
 	var last := guard.health.current
 	_put_guard(_at(15.5, 0.0), _head())
 	while is_instance_valid(guardian) and clock < 360.0:
-		var center := guardian.global_position
+		# (a guardian whose node stays on its post says where its fight is)
+		var center: Vector3 = guardian.call(&"focus_point") if guardian.has_method(&"focus_point") else guardian.global_position
 		angle += BOT_PACE / BOT_RADIUS / Engine.physics_ticks_per_second
 		var around := Vector3(sin(angle) * 1.1, 0.0, -absf(cos(angle))).normalized()
 		var at := center + guardian.global_basis * (around * BOT_RADIUS)
@@ -776,6 +781,13 @@ func _shot(label: String, from: Vector3, at: Vector3, ok: bool) -> void:
 			entry["state"] = GeneralBrain.State.keys()[general.brain.state]
 			entry["attack"] = GeneralBrain.Attack.keys()[general.brain.attack]
 			entry["on_roof"] = general.brain.on_roof
+		elif guardian is Serpent:
+			var serpent := guardian as Serpent
+			entry["state"] = SerpentBrain.State.keys()[serpent.brain.state]
+			entry["attack"] = SerpentBrain.Attack.keys()[serpent.brain.attack]
+			entry["lead"] = SerpentBody.End.keys()[serpent.brain.lead]
+			entry["spitter"] = SerpentBody.End.keys()[serpent.brain.spitter]
+			entry["plates_left"] = serpent.rig.plates_left()
 	_log.append(entry)
 	if not ok:
 		_missed += 1
@@ -783,18 +795,42 @@ func _shot(label: String, from: Vector3, at: Vector3, ok: bool) -> void:
 	else:
 		print("%s: %s %s" % ["dry" if _dry else "shot", label, str(entry)])
 	if _dry:
+		_check_framing(label, from, at)
 		return
 	camera.global_position = from
 	camera.look_at(at, Vector3.UP)
 	camera.reset_physics_interpolation()
 	camera.current = true
 	museum.hud.visible = false
+	museum.player.weapons.visible = false   # (his first-person gun would float in this camera's view)
 	await _frames(3)
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
 	image.save_png(_out.path_join("%s.png" % label))
 	museum.hud.visible = true
+	museum.player.weapons.visible = true
 	museum.player.camera.current = true
+
+
+## A dry run's look through the moment's camera (the tour's check): inside a
+## room, out of the walls, its subject in sight - a FRAMING line otherwise
+## (the shot would miss it).
+func _check_framing(label: String, from: Vector3, at: Vector3) -> void:
+	var problems: Array[String] = []
+	if museum.floor_level.room_at(from) == &"":
+		problems.append("camera outside every room")
+	var space := get_viewport().find_world_3d().direct_space_state
+	var point := PhysicsPointQueryParameters3D.new()
+	point.position = from
+	point.collision_mask = Layers.WORLD
+	if not space.intersect_point(point).is_empty():
+		problems.append("camera inside a wall")
+	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from, at, Layers.WORLD))
+	var clear := from.distance_to(at) if hit.is_empty() else from.distance_to(hit["position"])
+	if clear < minf(3.0, from.distance_to(at) * 0.5):
+		problems.append("subject hidden %.1f m ahead" % clear)
+	if not problems.is_empty():
+		print("FRAMING: %s: %s" % [label, "; ".join(problems)])
 
 
 func _until(condition: Callable, limit: float) -> void:

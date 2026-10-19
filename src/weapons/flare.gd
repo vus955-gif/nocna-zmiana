@@ -85,6 +85,8 @@ func _impact(collider: Object, point: Vector3, normal: Vector3) -> void:
 	Blast.explode(self, point + normal * 0.05, data.blast_radius, data.damage, data.knockback,
 			DamageInfo.Kind.FIRE, by, heading, &"flare", fired_from)
 	FlareLight.stick(get_parent(), point, normal, host, data, by)
+	if host == null:
+		Fx.mark(point, normal, Fx.SCORCH, FeelProfile.of(data.id).decal_size)   # the blast's burn on the wall
 	_end(End.HIT if host != null else End.WALL)
 
 

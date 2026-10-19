@@ -113,6 +113,7 @@ static func build(layout: LevelLayout) -> void:
 	_portraits(layout)
 	_service(layout)
 	_secrets(layout)
+	_voice(layout)
 
 
 # --- the bookcases' rhythm (shared with the art) ------------------------------
@@ -618,3 +619,13 @@ static func _secrets(layout: LevelLayout) -> void:
 	layout.add_marker(&"secret_enlightenment_3", Vector3(47.5, UPPER, 27.5), study)
 	Kit.glow(layout, Vector3(47.5, UPPER + 3.2, 27.5), WARM, 1.0, study)
 	Kit.lair(layout, &"enlightenment_study", study, Vector3(47.5, UPPER, 30.0), WOLF, Grey.r(45.5, 21.5, 50.5, 33.5), 0.0)
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## The System in the King's Library: on the west wall over the arch from
+## the court, above the gallery's bookcases (they fill the wall below), to
+## the side of the KING'S LIBRARY plate over the arch's middle;
+## stop 6 south-east of the great clock, facing the door from the cabinet.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_enlightenment_1", Vector3(31.15, 8.0, 2.3), &"enlightenment_library_gallery", -PI * 0.5)
+	layout.add_marker(&"audioguide_clocks", Vector3(61.8, 0.0, -5.6), &"enlightenment_clocks", PI)

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="FeelProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/feel_profile.gd" id="1_feel"]
+
+[resource]
+script = ExtResource("1_feel")
+id = &"gatling"
+kick_back = 0.012
+kick_rise = 0.004
+kick_side = 0.003
+kick_pitch = 1.4
+kick_yaw = 0.6
+kick_roll = 1.2
+kick_frequency = 14.0
+kick_damping = 0.5
+camera_pitch = 0.16
+camera_yaw = 0.12
+camera_frequency = 6.0
+camera_damping = 1.0
+shake = 0.14
+shake_cap = 0.32
+light_color = Color(1.0, 0.75, 0.45, 1.0)
+light_energy = 2.5
+light_range = 6.0
+light_time = 0.05
+casings = 1
+casing_color = Color(0.86, 0.66, 0.3, 1.0)
+casing_size = Vector3(0.01, 0.01, 0.03)
+eject_offset = Vector3(0.04, -0.02, 0.25)
+eject_velocity = Vector3(1.2, -0.4, 0.4)
+tracer_color = Color(1.0, 0.62, 0.3, 1.0)
+tracer_width = 0.009
+tracer_time = 0.04
+hit_weight = 0.12
+blast_weight = 0.0
+decal_size = 0.08

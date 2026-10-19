@@ -9,6 +9,11 @@ extends CanvasLayer
 ## announcements, not one overwritten text.
 ## Everything waits while the game is paused (a banner raised while a note
 ## is open shows when the note is put down).
+## The banner is an exhibit label in the HUD's style (UiTheme LABEL plaque:
+## rivets, an engraved rule): the caption in amber capitals, a brass
+## ornament, the title in the serif, the detail in italic. It stands under
+## the HUD's top middle (the boss's bar, a toast, a room's card:
+## [member top_source]).
 
 const FADE_IN := 0.25
 const HOLD := 2.6
@@ -19,6 +24,8 @@ const MAX_QUEUE := 4
 ## Top of the banner (1920x1080 canvas units; the Hud's toast sits above).
 const BANNER_TOP := 150.0
 const SLIDE := 14.0
+## Air between the HUD's top middle and the banner.
+const TOP_GAP := 12.0
 ## The artifact row: top left, under the Hud's night number and clock,
 ## the night's goal and the help line (ICONS_AT.y when the HUD does not
 ## say where its block ends).
@@ -29,6 +36,9 @@ const ICONS_GAP := 14.0
 var announced: Array[PackedStringArray] = []
 ## Returns the bottom edge of the HUD's top-left block (Hud.top_left_bottom).
 var corner_source: Callable = Callable()
+## Returns the bottom edge of the HUD's top middle (Hud.top_middle_bottom):
+## the banner goes under it.
+var top_source: Callable = Callable()
 
 var _queue: Array[PackedStringArray] = []
 var _current: PackedStringArray = []
@@ -40,6 +50,8 @@ var _title: Label
 var _detail: Label
 var _icons: HBoxContainer
 var _shown_artifacts: Array[StringName] = []
+## The banner's top now (it glides when the HUD's top middle grows or shrinks).
+var _top: float = BANNER_TOP
 
 
 func _ready() -> void:
@@ -139,7 +151,9 @@ func _process(delta: float) -> void:
 	shown = clampf(shown, 0.0, 1.0)
 	_banner.modulate.a = shown
 	var slide_in := 1.0 - pow(1.0 - clampf(_time / FADE_IN, 0.0, 1.0), 3.0)
-	_banner.position.y = BANNER_TOP - SLIDE * (1.0 - slide_in)
+	_top = lerpf(_top, _wanted_top(), clampf(delta * 10.0, 0.0, 1.0))
+	_banner.position.y = _top - SLIDE * (1.0 - slide_in)
+	_center_banner_x()
 	if _time >= FADE_IN + hold + FADE_OUT:
 		_current = PackedStringArray()
 		_banner.visible = false
@@ -162,22 +176,39 @@ func _next() -> void:
 
 
 func _center_banner() -> void:
+	_top = _wanted_top()
+	_center_banner_x()
+	_banner.position.y = _top - SLIDE
+
+
+func _center_banner_x() -> void:
 	var width := _root.size.x if _root.size.x > 0.0 else 1920.0
-	_banner.position = Vector2((width - _banner.size.x) * 0.5, BANNER_TOP - SLIDE)
+	_banner.position.x = (width - _banner.size.x) * 0.5
+
+
+## BANNER_TOP, or lower when the HUD's top middle reaches further down.
+func _wanted_top() -> float:
+	if top_source.is_valid():
+		var hud_bottom := float(top_source.call())
+		if hud_bottom > 0.0:
+			return maxf(BANNER_TOP, hud_bottom + TOP_GAP)
+	return BANNER_TOP
+
+
+## The banner's bottom edge while it shows (0 when none): the HUD's
+## night card keeps under it (Hud.below_source).
+func banner_bottom() -> float:
+	if _banner == null or _current.is_empty() or not _banner.visible:
+		return 0.0
+	return _top + maxf(_banner.size.y, _banner.get_combined_minimum_size().y)
 
 
 func _build_banner() -> void:
 	_banner = PanelContainer.new()
 	_banner.name = "Banner"
 	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := UiTheme.panel_style(0.0)
-	style.bg_color = Color(0.035, 0.03, 0.028, 0.84)
-	style.content_margin_left = 44.0
-	style.content_margin_right = 44.0
-	style.content_margin_top = 16.0
-	style.content_margin_bottom = 18.0
-	_banner.add_theme_stylebox_override("panel", style)
-	_banner.custom_minimum_size = Vector2(520, 0)
+	_banner.add_theme_stylebox_override("panel", UiTheme.plaque(UiTheme.Plaque.LABEL))
+	_banner.custom_minimum_size = Vector2(540, 0)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 6)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -185,16 +216,16 @@ func _build_banner() -> void:
 	_caption = UiTheme.caption("", 20, UiTheme.ACCENT)
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_caption)
-	var rule := UiTheme.rule(140.0)
-	rule.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	column.add_child(rule)
+	column.add_child(UiTheme.ornament(200.0))
 	_title = UiTheme.label("", 38, UiTheme.TEXT, UiTheme.title_font())
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.6))
+	_title.add_theme_constant_override("shadow_offset_y", 2)
 	column.add_child(_title)
-	_detail = UiTheme.label("", 22, UiTheme.MUTED)
+	_detail = UiTheme.label("", 23, Color(0.8, 0.76, 0.69), UiTheme.italic_font())
 	_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_detail.custom_minimum_size = Vector2(520, 0)
+	_detail.custom_minimum_size = Vector2(540, 0)
 	column.add_child(_detail)
 	_banner.visible = false
 	_root.add_child(_banner)

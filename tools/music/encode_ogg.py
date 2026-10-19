@@ -32,11 +32,13 @@ ROOT = HERE.parents[1]
 SRC = ROOT / "build" / "audio_src"
 DST = ROOT / "assets"
 # bits per second (average) by channel count and kind; Floor I's music
-# (the wings' walks, the guardians' theme, its stings) at 128 kbit/s
+# (the music zones' four-stem loops, the guardians' themes, its stings) at
+# 128 kbit/s
 BITRATE = {("music", 2): 160000, ("music_floor1", 2): 128000, ("ambience", 2): 112000, ("ambience", 1): 80000,
            ("oneshot", 1): 80000, ("voice", 1): 64000}
-FLOOR1_MUSIC = ("explore_egypt", "explore_assyria", "explore_greece", "explore_enlightenment", "explore_asia",
-                "explore_americas", "guardian", "seal_sting", "gate_sting", "wing_sting")
+FLOOR1_ZONES = ("court", "egypt", "assyria", "greece", "enlightenment", "asia", "americas", "basement", "roof")
+FLOOR1_MUSIC = tuple(f"{layer}_{zone}" for zone in FLOOR1_ZONES for layer in ("explore", "combat")) + (
+    "guardian_", "seal_sting", "gate_sting", "wing_sting")
 
 
 def music_kind(stem):

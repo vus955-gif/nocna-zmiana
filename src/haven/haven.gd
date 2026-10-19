@@ -5,7 +5,9 @@ extends Area3D
 ## Exhibits never get in: the faces of the zone carry invisible walls on the
 ## ENEMY_BLOCK layer that only exhibits collide with, and an exhibit leaves
 ## a guard standing inside alone (see shelters()). Shots, the guard and
-## debris pass the walls freely.
+## debris pass the walls freely. A haven shut for a while (the café's
+## pocket during the T-Rex fight: set_active(false)) shelters nobody and its
+## walls let exhibits through.
 
 signal guard_entered(player: Player)
 signal guard_exited(player: Player)
@@ -20,6 +22,10 @@ static var _active: Array[Haven] = []
 var id: StringName = &""
 ## The zone in world space (the Haven itself is never moved).
 var bounds := AABB()
+## False while the haven is shut (see set_active()).
+var active: bool = true
+
+var _walls: StaticBody3D = null
 
 
 static func make(haven_id: StringName, zone: AABB) -> Haven:
@@ -38,7 +44,7 @@ static func shelters(point: Vector3) -> bool:
 
 static func at(point: Vector3) -> Haven:
 	for haven in _active:
-		if is_instance_valid(haven) and haven.contains(point):
+		if is_instance_valid(haven) and haven.active and haven.contains(point):
 			return haven
 	return null
 
@@ -74,12 +80,21 @@ func contains(point: Vector3) -> bool:
 	return bounds.grow(MARGIN).has_point(point)
 
 
+## Shuts ([param flag] false) or opens the haven: shut, it shelters nobody
+## and its walls stop no exhibit.
+func set_active(flag: bool) -> void:
+	active = flag
+	if _walls != null:
+		_walls.collision_layer = Layers.ENEMY_BLOCK if flag else 0
+
+
 func _build_walls() -> void:
 	var walls := StaticBody3D.new()
 	walls.name = "ExhibitWalls"
-	walls.collision_layer = Layers.ENEMY_BLOCK
+	walls.collision_layer = Layers.ENEMY_BLOCK if active else 0
 	walls.collision_mask = 0
 	add_child(walls)
+	_walls = walls
 	var half := bounds.size * 0.5
 	var height := bounds.size.y + 1.0
 	var faces := [

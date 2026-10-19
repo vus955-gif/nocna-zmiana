@@ -302,9 +302,9 @@ func _build() -> void:
 	top.add_theme_constant_override("separation", 2)
 	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_frame.add_child(top)
-	_subtitle = _label(18, Color(0.85, 0.95, 0.88, 0.7), UiTheme.spaced_font(4))
+	_subtitle = _label(18, Color(0.85, 0.95, 0.88, 0.7), UiTheme.device_font(4))
 	top.add_child(_subtitle)
-	_title = _label(34, Color(0.94, 0.97, 0.92), UiTheme.spaced_font(3))
+	_title = _label(34, Color(0.94, 0.97, 0.92), UiTheme.device_font(3))
 	top.add_child(_title)
 	var corner := VBoxContainer.new()
 	corner.alignment = BoxContainer.ALIGNMENT_END
@@ -312,13 +312,13 @@ func _build() -> void:
 	corner.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	corner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_frame.add_child(corner)
-	_rec = _label(30, Color(1.0, 0.25, 0.2), UiTheme.strong_font())
+	_rec = _label(30, Color(1.0, 0.25, 0.2), UiTheme.device_font())
 	_rec.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	corner.add_child(_rec)
-	_clock = _label(30, Color(0.94, 0.97, 0.92), UiTheme.spaced_font(2))
+	_clock = _label(30, Color(0.94, 0.97, 0.92), UiTheme.device_font(2))
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	corner.add_child(_clock)
-	_motion = _label(30, Color(1.0, 0.3, 0.22), UiTheme.spaced_font(3))
+	_motion = _label(30, Color(1.0, 0.3, 0.22), UiTheme.device_font(3))
 	_motion.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, 104)
 	_motion.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_motion.visible = false
@@ -340,10 +340,10 @@ func _build() -> void:
 	bottom.add_child(_tabs)
 	for i in mini(cameras.size(), PAGE):
 		_tabs.add_child(_tab(i))
-	_page = _label(16, Color(0.85, 0.95, 0.88, 0.7), UiTheme.spaced_font(3))
+	_page = _label(16, Color(0.85, 0.95, 0.88, 0.7), UiTheme.device_font(3))
 	_page.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	bottom.add_child(_page)
-	_hint = _label(18, Color(0.85, 0.95, 0.88, 0.8), UiTheme.spaced_font(3))
+	_hint = _label(18, Color(0.85, 0.95, 0.88, 0.8), UiTheme.device_font(3))
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	bottom.add_child(_hint)
 	_refresh_texts()
@@ -353,7 +353,7 @@ func _tab(i: int) -> Button:
 	var tab := Button.new()
 	tab.toggle_mode = true
 	tab.focus_mode = Control.FOCUS_NONE
-	tab.add_theme_font_override("font", UiTheme.spaced_font(2))
+	tab.add_theme_font_override("font", UiTheme.device_font(2))
 	tab.add_theme_font_size_override("font_size", 17)
 	var idle := StyleBoxFlat.new()
 	idle.bg_color = Color(0.0, 0.0, 0.0, 0.55)

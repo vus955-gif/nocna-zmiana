@@ -70,3 +70,49 @@ func test_the_look_key_changes_with_the_levels() -> void:
 	var before := WeaponLook.key(&"harpoon", {})
 	assert_ne(WeaponLook.key(&"harpoon", {&"harpoon_reel": 1}), before)
 	assert_eq(WeaponLook.key(&"harpoon", {&"pistol_mag": 1}), before, "another weapon's upgrade")
+
+
+func test_every_finish_belongs_to_one_weapon_and_has_its_colours() -> void:
+	assert_eq(WeaponLook.LOOKS.size(), 8, "one finish for every firearm and the taser")
+	var weapons: Array[StringName] = []
+	for look: StringName in WeaponLook.LOOKS:
+		var spec: Dictionary = WeaponLook.LOOKS[look]
+		var weapon: StringName = spec["weapon"]
+		assert_true(Loadout.WEAPON_PATHS.has(weapon), "%s: %s is a weapon" % [look, weapon])
+		assert_false(weapons.has(weapon), "%s: one finish per weapon" % look)
+		weapons.append(weapon)
+		assert_true(spec["tint"] is Color and spec["accent"] is Color, str(look))
+		var tint: Color = spec["tint"]
+		assert_gt(maxf(tint.r, maxf(tint.g, tint.b)), 0.45, "%s: a tint that leaves the texture readable" % look)
+		assert_gt(float(spec["roughness"]), 0.0, str(look))
+		assert_true(float(spec["metallic"]) >= 0.0 and float(spec["metallic"]) <= 1.0, str(look))
+		assert_true(WeaponLook.SIGNATURE.has(weapon), "%s glows on a signature part" % look)
+	for mod: StringName in WeaponLook.MODS:
+		var spec: Dictionary = WeaponLook.MODS[mod]
+		assert_true(Loadout.WEAPON_PATHS.has(spec["weapon"]), "%s: %s is a weapon" % [mod, spec["weapon"]])
+		assert_true(String(spec["part"]).begins_with(WeaponLook.MOD_PREFIX), "%s names its part" % mod)
+	assert_eq(WeaponLook.MODS.size(), 3)
+
+
+func test_finishes_and_mods_are_read_from_the_levels() -> void:
+	var levels := {WeaponLook.look_key(&"shotgun", &"faience"): 1, WeaponLook.mod_key(&"shotgun_choke"): 1,
+			WeaponLook.mod_key(&"rifle_peep"): 1, WeaponLook.look_key(&"pistol", &"founder"): 0,
+			&"look_hwacha_nonsense": 1}
+	assert_eq(WeaponLook.look_of(&"shotgun", levels), &"faience")
+	assert_eq(WeaponLook.look_of(&"pistol", levels), &"", "a level of 0 is no finish")
+	assert_eq(WeaponLook.look_of(&"hwacha", levels), &"", "only finishes of the table")
+	assert_eq(WeaponLook.look_of(&"rifle_hunt", levels), &"")
+	assert_eq(WeaponLook.look_of(&"fist", levels), &"")
+	assert_eq(WeaponLook.mods_of(&"shotgun", levels), [&"shotgun_choke"] as Array[StringName])
+	assert_eq(WeaponLook.mods_of(&"rifle_hunt", levels), [&"rifle_peep"] as Array[StringName])
+	assert_eq(WeaponLook.mods_of(&"harpoon", levels).size(), 0)
+	assert_eq(WeaponLook.look_key(&"shotgun", &"faience"), &"look_shotgun_faience")
+	assert_eq(WeaponLook.mod_key(&"rifle_peep"), &"mod_rifle_peep")
+
+
+func test_the_look_key_changes_with_a_finish_or_a_mod() -> void:
+	var before := WeaponLook.key(&"shotgun", {})
+	assert_ne(WeaponLook.key(&"shotgun", {&"look_shotgun_faience": 1}), before)
+	assert_ne(WeaponLook.key(&"shotgun", {&"mod_shotgun_choke": 1}), before)
+	assert_eq(WeaponLook.key(&"shotgun", {&"look_pistol_founder": 1, &"mod_rifle_peep": 1}), before, "another weapon's")
+	assert_eq(WeaponLook.key(&"fist", {&"look_shotgun_faience": 1}), WeaponLook.key(&"fist", {}))

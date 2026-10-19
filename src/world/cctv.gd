@@ -360,7 +360,7 @@ func _build_status(wall: Node3D, front: float) -> void:
 	back.size = Vector2(STATUS_SIZE)
 	_status.add_child(back)
 	var settings := LabelSettings.new()
-	settings.font = UiTheme.strong_font()
+	settings.font = UiTheme.device_font()
 	settings.font_size = 17
 	settings.font_color = Color(0.45, 1.0, 0.55)
 	settings.line_spacing = 2.0
@@ -495,7 +495,7 @@ func _frame_box(parent: Node3D, at: Vector3, size: Vector2, material: Material) 
 func _number(parent: Node3D, number: int, at: Vector3) -> void:
 	var label := Label3D.new()
 	label.text = str(number)
-	label.font = UiTheme.strong_font()
+	label.font = UiTheme.device_font()
 	label.font_size = 40
 	label.pixel_size = 0.0012
 	label.outline_size = 0

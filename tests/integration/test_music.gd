@@ -27,16 +27,18 @@ func _advance(seconds: float, step: float = 0.05) -> void:
 
 
 func _player(layer: StringName) -> AudioStreamPlayer:
-	return Music.players[layer] as AudioStreamPlayer
+	return Music.player_of(layer)
 
 
 func test_every_layer_and_sting_plays_on_the_music_bus() -> void:
-	for layer: StringName in Music.players:
-		var player := _player(layer)
-		assert_not_null(player, String(layer))
-		if player != null:
-			assert_eq(player.bus, &"Music")
-			assert_not_null(player.stream, String(layer) + " has its file")
+	for family: StringName in Music.EAGER:
+		assert_true(Music.family_players.has(family), String(family))
+		for layer: StringName in Music.FAMILIES[family]:
+			var player := _player(layer)
+			assert_not_null(player, String(layer))
+			if player != null:
+				assert_eq(player.bus, &"Music")
+				assert_true(Music.has_track(layer), String(layer) + " has its file")
 	for sting in Music.STINGS:
 		var player := Music.stings[sting] as AudioStreamPlayer
 		assert_eq(player.bus, &"Music")
@@ -44,14 +46,28 @@ func test_every_layer_and_sting_plays_on_the_music_bus() -> void:
 	assert_eq(AudioServer.get_bus_send(AudioServer.get_bus_index(&"Music")), &"Master")
 
 
+func test_at_boot_only_the_menu_the_lobby_and_the_stings_are_loaded() -> void:
+	var loaded: Array = Music.family_players.keys()
+	loaded.sort()
+	var eager: Array = Music.EAGER.duplicate()
+	eager.sort()
+	assert_eq(loaded, eager, "Floor I's zones and guardians wait for the floor")
+	for family: StringName in Music.FAMILIES:
+		if not Music.EAGER.has(family):
+			assert_false(Music.is_family_loaded(family), String(family))
+			assert_false(Music.is_family_loading(family), String(family))
+	for sting in Music.STINGS:
+		assert_not_null((Music.stings[sting] as AudioStreamPlayer).stream, String(sting))
+
+
 func test_menu_theme_fades_in_and_keeps_playing_through_a_pause() -> void:
 	Music.set_scene_kind(AudioContext.MENU)
 	_advance(0.05)
 	assert_true(_player(&"menu").playing, "started")
-	assert_lt(_player(&"menu").volume_db, -10.0, "starts quiet")
+	assert_lt(Music.stem_db(&"menu"), -10.0, "starts quiet")
 	_advance(Music.FADE_IN[&"menu"])
 	assert_almost_eq(Music.levels[&"menu"], 1.0, 0.001)
-	assert_almost_eq(_player(&"menu").volume_db, 0.0, 0.01)
+	assert_almost_eq(Music.stem_db(&"menu"), 0.0, 0.01)
 	get_tree().paused = true
 	assert_true(_player(&"menu").can_process(), "menu music plays on in a paused tree")
 	assert_false(_player(&"explore").can_process(), "game music pauses with the game")
@@ -172,16 +188,58 @@ func test_a_boss_node_leaving_the_tree_ends_its_music() -> void:
 	assert_eq(Music.state(), S.EXPLORE)
 
 
-func test_resync_pulls_a_drifted_stem_back() -> void:
+func test_the_stems_of_a_family_share_one_player_and_one_clock() -> void:
 	Music.set_scene_kind(AudioContext.GAME)
 	_advance(0.2)
 	var walk := _player(&"explore")
-	var tension := _player(&"explore_tension")
-	assert_true(walk.playing and tension.playing)
-	tension.seek(walk.get_playback_position() + 3.0)
-	assert_eq(Music.resync(), 1, "one stem moved")
-	assert_almost_eq(tension.get_playback_position(), walk.get_playback_position(), 0.05)
-	assert_eq(Music.resync(), 0, "in sync: nothing to do")
+	assert_true(walk.playing)
+	assert_eq(_player(&"explore_tension"), walk, "one player carries the whole family")
+	var sync := walk.stream as AudioStreamSynchronized
+	assert_not_null(sync, "its stream mixes the stems sample-locked")
+	if sync != null:
+		assert_eq(sync.stream_count, Music.FAMILIES[&"explore"].size())
+		for i in sync.stream_count:
+			assert_eq(sync.get_sync_stream(i).resource_path, Music.DIR + String(Music.FAMILIES[&"explore"][i]) + ".ogg")
+	assert_eq(Music.family_of(&"explore_tension"), &"explore")
+	assert_eq(Music.family_of(&"combat_hi"), &"combat")
+	assert_eq(Music.family_of(&"nothing"), &"")
+	assert_true(_player(&"combat_egypt") == null, "a Floor I stem is nobody's until its family is loaded")
+
+
+func test_every_stem_has_its_own_volume_on_the_shared_player() -> void:
+	Music.set_scene_kind(AudioContext.GAME)
+	Music.director.on_combat(MusicDirector.HIT_HEAT)
+	_advance(Music.FADE_IN[&"combat"] + 0.1)
+	assert_eq(_player(&"combat_hi"), _player(&"combat"))
+	assert_almost_eq(Music.stem_db(&"combat"), 0.0, 0.01, "the heavy mix at full")
+	assert_lt(Music.stem_db(&"combat_hi"), -60.0, "its hi stem runs in sync, silent")
+	assert_lt(Music.stem_db(&"explore_tension"), -60.0)
+	assert_eq(_player(&"combat").volume_db, 0.0, "the player itself carries no stem's level")
+	for i in 6:
+		Music.director.on_combat(MusicDirector.KILL_HEAT)
+	_advance(Music.FADE_IN[&"combat_hi"] + 0.1)
+	assert_almost_eq(Music.stem_db(&"combat_hi"), 0.0, 0.01, "a hot fight brings it up")
+	assert_almost_eq(Music.stem_db(&"combat"), 0.0, 0.01)
+
+
+func test_a_boss_clears_the_walk_and_the_fight_fast() -> void:
+	Music.set_scene_kind(AudioContext.GAME)
+	_advance(Music.FADE_IN[&"explore"] + 0.1)
+	Music.director.on_combat(MusicDirector.HIT_HEAT)
+	_advance(Music.FADE_IN[&"combat"] + 0.1)
+	assert_eq(Music.fade_out_time(), 0.0, "an ordinary fight: each layer fades in its own time")
+	var boss := _FakeBoss.new()
+	add_child(boss)
+	Events.boss_awakened.emit(boss)
+	assert_eq(Music.state(), S.BOSS)
+	assert_eq(Music.fade_out_time(), Music.BOSS_FADE)
+	_advance(Music.BOSS_FADE + 0.1)
+	assert_eq(Music.levels[&"combat"], 0.0, "the fight does not linger under the boss")
+	assert_eq(Music.levels[&"explore"], 0.0)
+	assert_almost_eq(Music.levels[&"boss"], 1.0, 0.001)
+	Events.boss_defeated.emit(boss)
+	assert_eq(Music.fade_out_time(), 0.0, "the sting's turn: layers go their own way again")
+	boss.queue_free()
 
 
 func test_awake_exhibits_near_the_camera_count_as_threats() -> void:
@@ -221,13 +279,13 @@ func test_exhibits_turned_to_stone_at_dawn_are_no_threat() -> void:
 
 
 func test_a_family_without_its_lead_file_is_not_restarted_every_frame() -> void:
-	var walk := _player(&"explore")
-	var stream := walk.stream
-	walk.stream = null
+	var sync := _player(&"explore").stream as AudioStreamSynchronized
+	var lead := sync.get_sync_stream(0)
+	sync.set_sync_stream(0, null)
 	Music.set_scene_kind(AudioContext.GAME)
 	_advance(0.5)
-	assert_false(_player(&"explore_tension").playing, "no family start without its lead")
-	walk.stream = stream
+	assert_false(Music.is_family_playing(&"explore"), "no family start without its lead")
+	sync.set_sync_stream(0, lead)
 
 
 func test_stop_all_leaves_nothing_playing() -> void:
@@ -235,9 +293,10 @@ func test_stop_all_leaves_nothing_playing() -> void:
 	Music.director.on_combat(MusicDirector.KILL_HEAT)
 	_advance(0.5)
 	Music.stop_all()
-	for layer: StringName in Music.players:
-		assert_false(_player(layer).playing, String(layer))
-		assert_eq(Music.levels[layer], 0.0)
+	for family: StringName in Music.family_players:
+		assert_false(Music.is_family_playing(family), String(family))
+	for layer: StringName in Music.levels:
+		assert_eq(Music.levels[layer], 0.0, String(layer))
 
 
 func test_quitting_stops_every_player_before_the_engine_goes() -> void:
@@ -250,8 +309,8 @@ func test_quitting_stops_every_player_before_the_engine_goes() -> void:
 	Ambience.advance(1.0)
 	Ambience.play_shot(&"creak", Vector3(0, 0, -15))
 	Sfx.quitting.emit()
-	for layer: StringName in Music.players:
-		assert_false(_player(layer).playing, "music " + layer)
+	for family: StringName in Music.family_players:
+		assert_false(Music.is_family_playing(family), "music " + family)
 	for layer: StringName in Ambience.players:
 		assert_false((Ambience.players[layer] as AudioStreamPlayer).playing, "bed " + layer)
 	for child in Ambience.get_children():
@@ -289,7 +348,7 @@ func test_the_power_cut_drops_the_walk_to_near_silence_then_brings_tension() -> 
 	assert_eq(Music.state(), S.TENSION)
 	_advance(Music.HUSH_FADE + 0.05)
 	assert_almost_eq(Music.levels[&"explore"], MusicDirector.HUSH_LEVEL, 0.001, "near silence within HUSH_FADE s")
-	assert_lt(_player(&"explore").volume_db, -20.0)
+	assert_lt(Music.stem_db(&"explore"), -20.0)
 	assert_true(Music.is_family_playing(&"explore"), "hushed, not stopped: the stems stay in sync")
 	_advance(MusicDirector.HUSH_TIME - Music.HUSH_FADE)
 	assert_false(Music.director.hushed())

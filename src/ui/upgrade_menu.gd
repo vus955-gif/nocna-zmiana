@@ -88,6 +88,17 @@ func open(game_state: PersistentState, run_state: NightState) -> void:
 	GameInput.push_ui(self)
 	_refresh()
 	select(_selected)
+	_scroll_home()
+
+
+## With the first row selected the list stands at its top, its category's
+## caption in view (the focus alone scrolls it a little too far on opening).
+func _scroll_home() -> void:
+	if _selected != 0 or _rows.is_empty():
+		return
+	var scroll := _rows[0].get_parent().get_parent() as ScrollContainer
+	if scroll != null:
+		scroll.set_deferred(&"scroll_vertical", 0)
 
 
 func close() -> void:
@@ -327,13 +338,16 @@ func _build_hints() -> Control:
 	return hints
 
 
-static func _buy_style(wash: float) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(UiTheme.ACCENT, wash)
-	style.border_color = Color(UiTheme.ACCENT, 0.6)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.set_content_margin_all(12.0)
+## The buy button: a plaque of brass-washed enamel with the brass rule.
+static func _buy_style(wash: float) -> PlaqueStyle:
+	var style := UiTheme.plaque(UiTheme.Plaque.CHIP)
+	style.field = UiTheme.over(Color(UiTheme.ACCENT, wash), Color(0.05, 0.043, 0.036))
+	style.rim = Color(UiTheme.ACCENT, 0.75)
+	style.cut = 8.0
+	style.content_margin_left = 12.0
+	style.content_margin_right = 12.0
+	style.content_margin_top = 12.0
+	style.content_margin_bottom = 12.0
 	return style
 
 

@@ -75,6 +75,7 @@ static func build(layout: LevelLayout) -> void:
 	_teahouse(layout)
 	_service(layout)
 	_secrets(layout)
+	_voice(layout)
 
 
 # --- rooms and passages -----------------------------------------------------
@@ -135,10 +136,14 @@ static func _china(layout: LevelLayout) -> void:
 		var column := layout.add_piece(&"column", Vector3(at.x, 0, at.y), Vector3(1.2, 12.0, 1.2), room)
 		column.tint = LACQUER
 	layout.add_piece(&"plinth", Vector3(BUDDHA.x, 0, -48.0), Vector3(1.6, 1.2, 1.6), room)
-	# a bronze Fu dog on each side of the shutter (the lion and the lioness)
+	# a guardian Fu dog of stone on each side of the shutter (the lion and the
+	# lioness). The statue is 2.5 m from snout to tail and the box of each is
+	# as long, so nobody walks through a snout; the pedestals run on to 0.4 m
+	# off the south wall and stop where they did on the live pair's side (the
+	# haunches of the dog at x 20.5 would clip the east pedestal's corner)
 	for x in [12.0, 22.0]:
-		layout.add_piece(&"pedestal", Vector3(x, 0, -42.0), Vector3(1.4, 1.0, 1.4), room)
-		layout.add_piece(&"sculpture", Vector3(x, 1.0, -42.0), Vector3(1.0, 1.8, 1.4), room, PI)
+		layout.add_piece(&"pedestal", Vector3(x, 0, -40.775), Vector3(1.4, 1.0, 2.75), room)
+		layout.add_piece(&"sculpture", Vector3(x, 1.0, -40.775), Vector3(1.0, 1.8, 2.55), room, PI)
 	# bronzes in cases along the west wall
 	East.along_z(layout, &"case", 4.0, 1.0, -58.0, -42.0, 0.0, 2.0, 1.0, room, [], 4.0, 1.0)
 	# paper lanterns over the hall
@@ -166,7 +171,9 @@ static func _china(layout: LevelLayout) -> void:
 	layout.add_ambush(AmbushSpec.on_area(&"asia_buddha", room, Grey.r(9, -54, 18, -50), -0.5, 3.0, pair))
 	Hub.slots(layout, room, 1, ARMOUR.duplicate(), [Vector2(10.0, -47.0), Vector2(17.0, -47.0)], 0.0, Vector2(17.0, -39.5))
 	Hub.walker(layout, &"asia_china_round", room, 2, ARMOUR.duplicate(), PackedVector3Array([Vector3(10, 0, -45.5), Vector3(17, 0, -45.5), Vector3(17, 0, -50.5), Vector3(10, 0, -50.5)]))
-	Hub.slots(layout, room, 2, FU_DOG.duplicate(), [Vector2(6.0, -55.5), Vector2(21.0, -47.0)], 0.0, middle)
+	# (the west one 0.6 m off the west cases: lying along its diagonal, its
+	# tail and its haunch's reach would run into the case at x 5)
+	Hub.slots(layout, room, 2, FU_DOG.duplicate(), [Vector2(6.6, -55.5), Vector2(21.0, -47.0)], 0.0, middle)
 
 
 # --- the porcelain gallery ----------------------------------------------------------
@@ -196,9 +203,15 @@ static func _porcelain(layout: LevelLayout) -> void:
 static func _korea(layout: LevelLayout) -> void:
 	var room := &"asia_korea"
 	# the fire-arrow cart in the middle, lit warm, seen from the porcelain arch
-	layout.add_piece(&"pedestal", Vector3(HWACHA.x, 0, HWACHA.z), Vector3(2.4, HWACHA.y, 1.6), room)
+	# (the box holds the whole hwacha display of the dressing: its stand's
+	# cushion under the marker, the cart behind it to the east)
+	layout.add_piece(&"pedestal", Vector3(HWACHA.x + 1.325, 0, HWACHA.z), Vector3(3.55, HWACHA.y, 1.4), room)
 	layout.add_marker(&"weapon_hwacha", HWACHA, room, PI * 0.5)
 	layout.add_marker(&"note_asia_1", HWACHA + Vector3(0.7, 0, 0.45), room, PI * 0.5)
+	# the bell pavilion's stone platform in the hall's south-east corner (the
+	# dressing raises the bell tower on it), clear of the bronze pair's slots
+	# by the cart and of the loot by the east wall
+	layout.add_piece(&"pedestal", Vector3(52.0, 0, -58.3), Vector3(3.3, 1.0, 3.7), room)
 	# celadon on the north wall, the moon jar, a folding screen on the east
 	East.along_x(layout, &"case", -62.0, 1.0, 38.0, 55.0, 0.0, 1.9, 1.0, room, [Vector2(43.5, 48.5)])
 	layout.add_piece(&"plinth", Vector3(41.0, 0, -57.5), Vector3(0.9, 1.0, 0.9), room)
@@ -284,7 +297,8 @@ static func _garden(layout: LevelLayout) -> void:
 	# stone lanterns, warm and low
 	for at: Vector2 in [Vector2(13.5, -64.0), Vector2(28.5, -64.0), Vector2(28.5, -78.5), Vector2(5.5, -76.0)]:
 		layout.add_piece(&"pedestal", Vector3(at.x, 0, at.y), Vector3(0.7, 1.7, 0.7), room)
-		Hub.lamp(layout, LightSpec.MAIN, Vector3(at.x, 1.45, at.y), STONE_LAMP, 0.6, 5.0, room)
+		# (the flame in the fire box of the kit's Kasuga lantern: 1.36 m)
+		Hub.lamp(layout, LightSpec.MAIN, Vector3(at.x, 1.36, at.y), STONE_LAMP, 0.6, 5.0, room)
 	# the cherry tree (only the trunk stops anybody)
 	layout.add_piece(&"column", Vector3(23.0, 0, -76.5), Vector3(0.6, 4.5, 0.6), room)
 	var crown := layout.add_piece(&"tree_crown", Vector3(23.0, 3.4, -76.5), Vector3(5.0, 3.0, 5.0), room, 0.0, false)
@@ -328,7 +342,8 @@ static func _teahouse(layout: LevelLayout) -> void:
 	layout.add_marker(&"museum_map_teahouse", Vector3(7.0, 1.6, -85.95), room, PI)
 	layout.add_marker(&"note_asia_2", Vector3(7.2, 0.4, -82.5), room)
 	layout.add_loot(Vector3(9.5, 0, -79.0), room)
-	layout.add_light(LightSpec.HAVEN, Vector3(8.0, 2.9, -82.0), HAVEN_LAMP, 1.2, 7.0, room, &"bulb", true)
+	# (the paper lamp of the dressed interior hangs in the room's middle)
+	layout.add_light(LightSpec.HAVEN, Vector3(7.0, 2.8, -82.0), HAVEN_LAMP, 1.2, 7.0, room, &"bulb", true)
 	layout.add_light(LightSpec.HAVEN, Vector3(5.0, 1.0, -79.0), LANTERN, 0.7, 4.0, room)
 
 
@@ -382,3 +397,13 @@ static func _secrets(layout: LevelLayout) -> void:
 	layout.add_marker(&"secret_asia_3", Vector3(27.0, 0, -83.0), shrine)
 	Kit.glow(layout, Vector3(27.0, 3.7, -83.0), STONE_LAMP, 0.9, shrine)
 	Kit.lair(layout, &"asia_shrine", shrine, Vector3(27.5, 0, -82.0), ARMOUR, Grey.r(24.5, -86, 30, -80.5), -PI * 0.5)
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## The System by the shutter from the north corridor; stop 7 beside the
+## Buddha's lotus base (east, clear of the burner and the columns), stop 8
+## between the two rows of armour.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_asia_1", Vector3(8.0, 4.0, -39.15), &"asia_china", 0.0)
+	layout.add_marker(&"audioguide_buddha", Vector3(18.4, 0.0, -53.4), &"asia_china", PI)
+	layout.add_marker(&"audioguide_armour", Vector3(40.5, 0.0, -71.2), &"asia_armor", PI)

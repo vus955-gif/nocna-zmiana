@@ -55,9 +55,9 @@ var _builder: LevelBuilder = null
 ## The crypt stairs reach -6 m; deeper stairs into the dark come later.
 const KILL_PLANE := -25.0
 ## The zones dressed with the art kit (stage P2: the hub and Egypt; stage
-## P3 adds the other wings, the basement and the roof as they are dressed:
-## Greece, the Enlightenment and the basement).
-const ART_ZONES: Array[StringName] = [&"court", &"entrance", &"booth", &"north_hall", &"egypt", &"greece", &"enlightenment", &"basement"]
+## P3: Greece, the Enlightenment and the basement; stage P4: Assyria and
+## Asia; stage P5: the Americas and the roof).
+const ART_ZONES: Array[StringName] = [&"court", &"entrance", &"booth", &"north_hall", &"egypt", &"greece", &"enlightenment", &"basement", &"assyria", &"asia", &"americas", &"roof"]
 ## Rooms open to the night sky (the roof): with the art their ceilings and
 ## light wells have no look and cast no shadow, so the moon falls through
 ## the court's glass roof beneath them.
@@ -127,7 +127,8 @@ func build() -> void:
 		Floor1Art.prepare(layout)
 		_builder.art_rooms = art_rooms(layout)
 		for room_id in SKY_ROOMS:
-			_builder.sky_rooms[room_id] = &"court"
+			# (stage P5: the roof wears its own stone - the court's, darkened by the night)
+			_builder.sky_rooms[room_id] = room_id if _builder.art_rooms.has(room_id) else &"court"
 	_builder.build()
 	doors = _builder.doors
 	_reset_doors()

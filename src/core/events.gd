@@ -43,6 +43,10 @@ signal room_entered(room: StringName, zone: StringName, first_visit: bool)
 ## metres (glass, cabinets, sprint landings...). Weapon shots are heard
 ## through [signal weapon_fired]; the perception module maps them to radii.
 signal noise_made(position: Vector3, radius: float, source: StringName)
+## A door began to open at [param position] (its middle, in the wall): the
+## creak carries [param radius] metres from the two rooms it joins
+## ([param room_a], [param room_b]) - a point in the wall belongs to neither.
+signal door_creaked(position: Vector3, radius: float, room_a: StringName, room_b: StringName)
 ## A gate of the floor opened for good (GateSpec id).
 signal gate_opened(gate: StringName)
 ## A wing guardian woke up: the HUD shows its bar with its title.
@@ -60,3 +64,21 @@ signal goal_changed(goal_key: StringName)
 ## A line under the crosshair for the guard (a lock hit with the wrong
 ## tool: "Chain - break it with something heavy"); already translated.
 signal hint_requested(text: String)
+
+# --- Floor I: the court café (plan 2026-10-10-kawiarnia-zmeczenie) ---
+## The guard stepped behind the café's counter (the first time tonight).
+signal cafe_entered
+## He drank a coffee of [param kind] (Fatigue.COFFEES: espresso, large, special).
+signal coffee_drunk(kind: StringName)
+## He came behind the counter after 3:00 and found the machine gone haywire
+## (the first time tonight).
+signal cafe_haywire
+
+# --- the voice: what Heniek and the System comment (plan 2026-10-19-glos-g2-kwestie) ---
+## A secret of the floor was found: [param tier] of its reward
+## (SecretRewards.Tier, -1 for none), [param found] secrets found so far.
+signal secret_found(secret: StringName, tier: int, found: int)
+## The guard's tiredness reached a new stage (Fatigue.stage(): 1 tired, 2 worn out).
+signal fatigue_rose(stage: int)
+## The night's clock reached a full hour: [param hour] on its face (0 = midnight ... 6).
+signal hour_struck(hour: int)

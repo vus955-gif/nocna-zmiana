@@ -22,7 +22,7 @@ const PACK := &"raptor"
 const FLOCK := &"books"
 ## Kinds make() builds (anything else falls back to FALLBACK).
 const BUILDS: Array[StringName] = [&"wolf", &"knight", &"wax", &"bust", &"raptor", &"mummy", &"hoplite", &"scarabs",
-		&"relief_warrior", &"relief_lion", &"books"]
+		&"relief_warrior", &"relief_lion", &"books", &"totem", &"jaguar", &"fu_dog", &"samurai_armor"]
 
 
 ## Creates, places and adds the exhibits under [param parent]. Awake ones
@@ -57,7 +57,8 @@ static func spawn(config: NightConfig, slots: Array[SpawnSlot], parent: Node, ta
 				tune.call(enemy)
 			if not entry.dormant:
 				enemy.starts_awake = true
-				if members.size() == 1 and enemy.patrol_route.is_empty():
+				# a wandering kind (EnemyRoles.roam: a wolf, a jaguar) roams round its post instead
+				if members.size() == 1 and enemy.patrol_route.is_empty() and EnemyRoles.roam(entry.kind) <= 0.0:
 					enemy.patrol_route = PerceptionRules.patrol_route(slot.position, slot.room, PerceptionWorld.room_at)
 			parent.add_child(enemy)
 			placed.append(enemy)
@@ -88,6 +89,14 @@ static func make(kind: StringName) -> Enemy:
 			return ReliefLion.new()
 		&"books":
 			return FlyingBook.new()   # a lone book (spawn() brings a whole flock)
+		&"totem":
+			return Totem.new()
+		&"jaguar":
+			return Jaguar.new()
+		&"fu_dog":
+			return FuDog.new()
+		&"samurai_armor":
+			return SamuraiArmor.new()
 	return make(FALLBACK)
 
 

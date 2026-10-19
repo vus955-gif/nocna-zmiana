@@ -89,3 +89,31 @@ func test_bursts_share_process_materials_and_face_the_normal() -> void:
 	assert_eq(first.process_material, second.process_material)
 	assert_true(second.transform.basis.y.is_equal_approx(Vector3.RIGHT), "burst points along the normal")
 	assert_true(second.transform.origin.is_equal_approx(Vector3(1, 0, 0)))
+
+
+## A part of a mirror-image model (the lioness: the model's x is flipped) flies
+## as a body with a proper turn; the mirror rides on the mesh that is seen.
+func test_a_mirrored_model_part_flies_as_a_body_with_a_proper_turn() -> void:
+	Fx.clear()
+	await physics_frames(1)
+	var box := BoxMesh.new()
+	box.size = Vector3(0.4, 0.2, 0.3)
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
+	var shard := MeshShards.whole(mesh)
+	var materials: Array[Material] = []
+	var xform := Transform3D(Basis(Vector3.UP, 0.7) * Basis.from_scale(Vector3(-1.0, 1.0, 1.0)), Vector3(2.0, 1.0, -3.0))
+	var body := Fx.piece(shard, materials, xform, Vector3.ZERO)
+	assert_gt(body.transform.basis.determinant(), 0.0, "the physics body is never mirrored")
+	assert_true(body.transform.basis.is_conformal(), "nor scaled")
+	var view := body.find_children("*", "MeshInstance3D", false, false)[0] as MeshInstance3D
+	assert_lt(view.transform.basis.determinant(), 0.0, "the mesh carries the mirror")
+	for corner in [Vector3(0.2, 0.1, 0.15), Vector3(-0.2, -0.1, 0.15), Vector3(0.0, 0.1, -0.15)]:
+		var shown: Vector3 = body.transform * (view.transform * corner)
+		assert_true(shown.is_equal_approx(xform * corner), "what is seen is where the part was: %s vs %s" % [str(shown), str(xform * corner)])
+	# an unmirrored part is as it was: the view keeps the (positive) scale
+	var plain := Fx.piece(shard, materials, Transform3D(Basis(Vector3.UP, 0.7), Vector3(2.0, 1.0, -3.0)), Vector3.ZERO)
+	var plain_view := plain.find_children("*", "MeshInstance3D", false, false)[0] as MeshInstance3D
+	assert_gt(plain.transform.basis.determinant(), 0.0)
+	assert_gt(plain_view.transform.basis.determinant(), 0.0)
+	Fx.clear()

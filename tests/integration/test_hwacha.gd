@@ -162,6 +162,69 @@ func test_the_bigger_volley_fires_nine() -> void:
 	await physics_frames(45)
 	assert_eq(_rockets().size(), 9)
 
+# --- the look up close -------------------------------------------------------
+
+func _launched() -> HwachaRocket:
+	var rocket := HwachaRocket.launch(Vector3(0, 1.5, 0), Vector3.FORWARD * 32.0, _data(), user)
+	add_child(rocket)
+	return rocket
+
+
+## The materials in use on every mesh under [param root].
+func _materials_of(root: Node) -> Array[Material]:
+	var found: Array[Material] = []
+	for view in root.find_children("*", "MeshInstance3D", true, false):
+		var instance := view as MeshInstance3D
+		for i in instance.mesh.get_surface_count():
+			found.append(instance.get_active_material(i))
+	return found
+
+
+func test_only_the_nozzle_of_the_arrow_is_emissive() -> void:
+	var rocket := _launched()
+	await physics_frames(1)
+	var emission_energy := 0.0
+	var emissive := 0
+	for material in _materials_of(rocket.get_node(^"Model")):
+		var surface := material as BaseMaterial3D
+		assert_not_null(surface, "the arrow's surfaces are plain materials")
+		if surface == null or not surface.emission_enabled:
+			continue
+		assert_eq(surface.emission, Color.BLACK, "emission comes from the map alone, no flat glow over the body")
+		assert_not_null(surface.emission_texture, "and the map says where")
+		emissive += 1
+		emission_energy = maxf(emission_energy, surface.emission_energy_multiplier)
+	assert_gt(emissive, 0, "the nozzle glows")
+	assert_lt(emission_energy, 4.01, "no more than the nozzle's 4x")
+	var emit := ArtLibrary.texture("hwacha_rocket", "emit").get_image()
+	if emit.is_compressed():
+		emit.decompress()
+	var lit := 0
+	for y in emit.get_height():
+		for x in emit.get_width():
+			if emit.get_pixel(x, y).get_luminance() > 0.05:
+				lit += 1
+	assert_lt(lit, emit.get_width() * emit.get_height() * 0.05, "the map lights the nozzle's few texels, not the body")
+
+
+func test_the_exhaust_sparks_neither_blow_out_nor_fill_the_lens() -> void:
+	var rocket := _launched()
+	await physics_frames(1)
+	var sparks := (rocket._trail.draw_pass_1 as BoxMesh).material as StandardMaterial3D
+	assert_eq(sparks.shading_mode, BaseMaterial3D.SHADING_MODE_UNSHADED)
+	# a modest overbright: above the bloom's threshold of 1 so they glow, nowhere near white
+	var process := rocket._trail.process_material as ParticleProcessMaterial
+	var peak := maxf(sparks.albedo_color.r * process.color.r, maxf(sparks.albedo_color.g * process.color.g, sparks.albedo_color.b * process.color.b))
+	assert_gt(peak, 1.2, "they still glow at range")
+	assert_lt(peak, 2.5, "but are no HDR white")
+	# the volley's first metres lie in front of the guard's face: a spark there fades out
+	assert_eq(sparks.distance_fade_mode, BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER)
+	assert_gt(sparks.distance_fade_min_distance, 0.4, "gone from a hand's breadth")
+	assert_gt(sparks.distance_fade_max_distance, sparks.distance_fade_min_distance)
+	assert_lt(sparks.distance_fade_max_distance, 2.5, "whole again at a few steps")
+	assert_ne(rocket._trail.draw_pass_1, FlareLight.spark_mesh(), "the flare's and the fire's own sparks are left as they were")
+
+
 
 func assert_between(value: int, low: int, high: int, message: String = "") -> void:
 	if value < low or value > high:

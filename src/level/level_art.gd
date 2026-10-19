@@ -89,6 +89,23 @@ static func as_visual(look: Node3D) -> Node3D:
 ## [param index] varies canvases and rocks. With [param layout] a statue
 ## turns to its room's main doorway and a bust to the middle of its room.
 ## Small furniture is not drawn beyond SMALL_RANGE metres.
+## True when [param spec]'s collision is drawn from its look
+## (CollisionFit; Floor1Art.FIT_COLLISION) rather than its box.
+static func fits_collision(spec: PieceSpec) -> bool:
+	return Floor1Art.ROOM_STYLES.has(spec.room) and Floor1Art.fits_collision(spec)
+
+
+## True when [param spec]'s collision is drawn from the hero pieces in its
+## box (LevelBuilder._fit_to_heroes; Floor1Art.HERO_FIT).
+static func fits_to_heroes(spec: PieceSpec) -> bool:
+	return Floor1Art.ROOM_STYLES.has(spec.room) and Floor1Art.HERO_FIT.has("%s@%s" % [spec.kit, spec.room])
+
+
+## Columns of [param spec]'s fitted collision (CollisionFit.fit).
+static func fit_columns(spec: PieceSpec) -> int:
+	return Floor1Art.fit_columns(spec)
+
+
 static func piece_look(spec: PieceSpec, index: int, layout: LevelLayout = null) -> Node3D:
 	var look := _piece_look(spec, index, layout)
 	if look != null and SMALL_PROPS.has(spec.kit):
@@ -216,13 +233,23 @@ static func _relative(ancestor: Node3D, node: Node3D) -> Transform3D:
 ## is built in the flight frame (origin at the foot).
 static func stairs_look(flight: StairsSpec) -> Node3D:
 	var kit: String = ArtKit.style(flight.room_low).get("stairs_kit", "")
-	if kit == "court" or kit == "library":
-		var own: Node3D = Floor1Art.court_stairs(flight) if kit == "court" else Floor1ArtEnlightenment.library_stairs(flight)
+	if kit == "court" or kit == "library" or kit == "temple":
+		var own: Node3D
+		match kit:
+			"court":
+				own = Floor1Art.court_stairs(flight)
+			"library":
+				own = Floor1ArtEnlightenment.library_stairs(flight)
+			_:
+				own = Floor1ArtAmericas.temple_stairs(flight)
 		own.position = Vector3(0.0, 0.0, flight.run() * 0.5)
 		return as_visual(own)
 	if BasementArt.is_basement(flight.room_low):
-		# the boiler hall's gantry stairs: open steel treads
-		return as_visual(BasementArt.stairs(flight))
+		# the boiler hall's gantry stairs: open steel treads (drawn from the
+		# foot like the others, the look stands in the flight's middle)
+		var steel := BasementArt.stairs(flight)
+		steel.position = Vector3(0.0, 0.0, flight.run() * 0.5)
+		return as_visual(steel)
 	var hall := flight.room_low == &"hall" or ArtKit.style_name(flight.room_low) == &"entrance"
 	hall = hall or ArtKit.style(flight.room_low).get("stair_rails", false)
 	# balustrades only where the flight stands free in a hall; elsewhere the
@@ -335,15 +362,15 @@ static func _group(parent: Node3D, label: String) -> Node3D:
 ## the edges of its parts where no part of the same room continues, cut
 ## into faces with the openings through them and, in the hall, the balcony
 ## slabs against them. Each record also has "xform" (the face frame in
-## world space, on the room's floor).
-static func wall_faces(layout: LevelLayout) -> Array:
+## world space, on the room's floor). [param only]: that room's faces alone.
+static func wall_faces(layout: LevelLayout, only: StringName = &"") -> Array:
 	var balconies: Array[PieceSpec] = []
 	for spec in layout.pieces:
 		if spec.kit == &"balcony":
 			balconies.append(spec)
 	var out: Array = []
 	for room in layout.rooms:
-		if not room.carved:
+		if not room.carved or (only != &"" and room.id != only):
 			continue
 		for part in room.parts:
 			var edges := [

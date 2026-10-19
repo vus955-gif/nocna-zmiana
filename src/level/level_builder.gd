@@ -42,6 +42,9 @@ var art_rooms: Dictionary = {}
 var sky_rooms: Dictionary = {}
 ## Wall bands, ceilings, floor inlays, balcony fascia (under structure).
 var dressing: Node3D = null
+## Pieces whose collision is drawn from the hero pieces standing in their
+## boxes, once those are dressed (_fit_to_heroes()).
+var _hero_fits: Array[Node3D] = []
 
 
 func _init(level_layout: LevelLayout, walkable: Node3D, havens: Node3D, structure: Node3D) -> void:
@@ -64,6 +67,53 @@ func build() -> void:
 		dressing.name = "Dressing"
 		structure_root.add_child(dressing)
 		LevelArt.dress(layout, dressing, art_rooms)
+		_fit_to_heroes()
+	# the fitted pieces' collisions, drawn on the worker threads
+	CollisionFit.fit_queued()
+
+
+## The pieces of [member _hero_fits] get their collision from what the hero
+## pieces draw inside their boxes (CollisionFit; QA Q7: the Khorsabad
+## Gate's lamassu in the greybox's lamassu boxes).
+func _fit_to_heroes() -> void:
+	if _hero_fits.is_empty():
+		return
+	var views: Array = []
+	for node in dressing.find_children("*", "MeshInstance3D", true, false):
+		var view := node as MeshInstance3D
+		if view.mesh != null and _shown(view):
+			views.append([view, _frame(view)])
+	for piece in _hero_fits:
+		var size: Vector3 = piece.get_meta(&"kit_size")
+		var box := AABB(Vector3(-size.x * 0.5, 0.0, -size.z * 0.5), size).grow(0.05)
+		var to_piece := _frame(piece).affine_inverse()
+		var parts: Array = []
+		for entry: Array in views:
+			var frame: Transform3D = to_piece * (entry[1] as Transform3D)
+			var mesh: Mesh = (entry[0] as MeshInstance3D).mesh
+			if (frame * mesh.get_aabb()).intersects(box):
+				parts.append([mesh, frame])
+		CollisionFit.queue_parts(piece as StaticBody3D, parts, size.y, 1, Rect2(box.position.x, box.position.z, box.size.x, box.size.z))
+
+
+## [param node]'s frame in its tree's topmost node's (built in a tree or not).
+static func _frame(node: Node3D) -> Transform3D:
+	var xf := Transform3D.IDENTITY
+	var n: Node = node
+	while n != null:
+		if n is Node3D:
+			xf = (n as Node3D).transform * xf
+		n = n.get_parent()
+	return xf
+
+
+static func _shown(node: Node) -> bool:
+	var n := node
+	while n != null:
+		if n is Node3D and not (n as Node3D).visible:
+			return false
+		n = n.get_parent()
+	return true
 
 
 ## Empty volumes the shell is carved around: carved room parts, every
@@ -158,6 +208,13 @@ func _build_pieces() -> void:
 			look = LevelArt.clear_glass_look(spec.size)
 		var piece := LevelKit.make(spec.kit, spec.size, spec.transform(), tint, spec.collide, {}, look)
 		piece.set_meta(&"kit_room", spec.room)
+		if look != null and spec.collide and LevelArt.fits_collision(spec):
+			# its collision drawn from its look, not the greybox box (QA Q7)
+			var visual := piece.get_node(^"Visual") as Node3D
+			if not CollisionFit.queue(piece as StaticBody3D, visual, spec.size.y, LevelArt.fit_columns(spec)) and visual.get_child_count() == 0:
+				CollisionFit.clear(piece as StaticBody3D)   # drawn by nothing: solid nowhere
+		elif look != null and spec.collide and LevelArt.fits_to_heroes(spec):
+			_hero_fits.append(piece)
 		if spec.kit == &"balcony":
 			piece.add_child(_particle_stop(spec.size))
 		var parent := structure_root

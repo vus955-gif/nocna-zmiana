@@ -714,10 +714,16 @@ static func _well(root: Node3D, well: Rect2, ceiling_y: float) -> void:
 		(view as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
+## The KING'S LIBRARY sign's middle over the court's doorway (inside), at
+## twice the kit's size (0.68 m high): over the doorway's exit sign (its
+## light 0.45 m over the 7 m arch, the sign 0.3 m high), under the cornice.
+const KING_SIGN_Y := 8.2
+
+
 ## Green enamel signs: KING'S LIBRARY over the court's doorway (inside),
 ## and under the gallery's edge before each cabinet's doorway.
 static func _signs(root: Node3D) -> void:
-	ArtKit._add(root, "lib_sign", Transform3D(Basis(Vector3.UP, -PI * 0.5).scaled(Vector3.ONE * 2.0), Vector3(WEST, 7.5, 0.0)))
+	ArtKit._add(root, "lib_sign", Transform3D(Basis(Vector3.UP, -PI * 0.5).scaled(Vector3.ONE * 2.0), Vector3(WEST, KING_SIGN_Y, 0.0)))
 	var edge := 42.0 - 0.13
 	for sign: Array in [[0.0, "lib_sign_natural"], [17.75, "lib_sign_collectors"], [-5.5, "lib_sign_librarian"], [-26.5, "lib_sign_orrery"]]:
 		ArtKit._add(root, "lib_sign", Transform3D(Basis(Vector3.UP, PI * 0.5), Vector3(edge, SLAB_UNDER - 0.19, float(sign[0]))), String(sign[1]))

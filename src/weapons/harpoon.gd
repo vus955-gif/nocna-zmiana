@@ -33,6 +33,11 @@ const PINNED_CLEARANCE := 0.38
 const FALL_GRAVITY := 14.0
 ## The line sags this much per metre of length while it flies.
 const SAG_PER_METRE := 0.012
+## The secrets' return line (WeaponData.line_return): a harpoon stuck in a
+## wall hangs there RETURN_WAIT s, then rides its line back to the gun and
+## is in the reserve again RETURN_TIME s after it struck.
+const RETURN_TIME := 1.2
+const RETURN_WAIT := 0.45
 ## The plain harpoon pins exhibits up to this max health; above it (the
 ## barbs upgrade) the model shows its barbs.
 const BASE_PIN := 60.0
@@ -63,6 +68,10 @@ var _model: Node3D
 var _floor_y: float = -INF
 var _fall_speed: float = 0.0
 var _lifetime: float = STUCK_TIME
+## Stuck in a wall with the return line: on its way back to the gun from
+## where it struck.
+var _returning: bool = false
+var _stuck_at := Vector3.ZERO
 
 
 ## A harpoon whose tip starts at [param from] flying with
@@ -105,6 +114,11 @@ func line_shown() -> bool:
 	return _line != null and _line.visible
 
 
+## True while a missed harpoon rides its return line back to the gun.
+func returning() -> bool:
+	return _returning
+
+
 func _physics_process(delta: float) -> void:
 	_age_in_phase += delta
 	match phase:
@@ -117,9 +131,14 @@ func _physics_process(delta: float) -> void:
 		Phase.STUCK:
 			_ride()
 			if _age_in_phase >= _lifetime:
+				if _returning:
+					_return_to_gun()
 				queue_free()
 				return
-			_fade()
+			if _returning:
+				_reel_back()
+			else:
+				_fade()
 		Phase.FALLING:
 			_fall(delta)
 	_update_line(delta)
@@ -286,9 +305,40 @@ func _stick_in_wall(point: Vector3, normal: Vector3) -> void:
 	global_position = point + velocity.normalized() * BURY
 	_wall_point = point
 	_wall_normal = normal
-	Fx.impact(point, normal, -1, 1.0)
+	var surface := Surface.of_hit(null, point, normal, get_tree())
+	Fx.surface_impact(point, normal, surface, 1.0)
+	Fx.mark(point, normal, surface, FeelProfile.of(_data().id).decal_size)
 	Sfx.play_at(&"harpoon_thunk", point, 0.0)
 	_settle_in_wall()
+	if _data().line_return and holder != null:
+		# a miss with the return line: it hangs a moment, then comes back
+		_returning = true
+		_stuck_at = global_position
+		_lifetime = RETURN_TIME
+		_line_left = RETURN_TIME
+
+
+## The return line: after RETURN_WAIT the harpoon slides from the wall back
+## along its line to the gun (the line stays taut the whole way).
+func _reel_back() -> void:
+	if holder == null or not is_instance_valid(holder) or not holder.is_inside_tree():
+		return
+	var t := clampf((_age_in_phase - RETURN_WAIT) / maxf(RETURN_TIME - RETURN_WAIT, 0.01), 0.0, 1.0)
+	if t <= 0.0:
+		return
+	var to := holder.line_anchor()
+	global_position = _stuck_at.lerp(to, 1.0 - pow(1.0 - t, 2.0))
+	var back := to - global_position
+	if back.length() > 0.05:
+		global_basis = Projectile._facing(-back)   # the tip stays toward the wall it left
+
+
+## Back in the gun: one harpoon more in the reserve.
+func _return_to_gun() -> void:
+	_returning = false
+	if holder != null and is_instance_valid(holder):
+		holder.add_ammo(_data().ammo_type, 1)
+		Sfx.play_at(&"hook_pull", global_position, -4.0)
 
 
 func _settle_in_wall() -> void:

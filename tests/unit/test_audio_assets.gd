@@ -9,11 +9,13 @@ const RATE := 44100
 ## wings' walks and the guardians' theme are added in _frames().
 const MUSIC_FRAMES := {&"menu": 5733000, &"explore": 5644800, &"explore_tension": 5644800, &"combat": 4838400,
 	&"combat_hi": 4838400, &"boss": 5644800, &"boss_hi": 5644800}
-## Floor I: a wing's walk (96 s; Assyria's 93.3 s) and the guardians' theme
-## (120 BPM, 32 bars: 64 s, a length the engine reports exactly).
-const WALK_FRAMES := {&"egypt": 4233600, &"assyria": 4116000, &"greece": 4233600, &"enlightenment": 4233600,
-	&"asia": 4233600, &"americas": 4233600}
-const GUARDIAN_FRAMES := 2822400
+## Floor I: a music zone's loop (its four stems: walk, tension, fight, hi;
+## 96 s, Asia's 100 s) and each wing's guardian theme (in the wing's tempo,
+## whole seconds: lengths the engine reports exactly).
+const ZONE_FRAMES := {&"court": 4233600, &"egypt": 4233600, &"assyria": 4233600, &"greece": 4233600,
+	&"enlightenment": 4233600, &"asia": 4410000, &"americas": 4233600, &"basement": 4233600, &"roof": 4233600}
+const GUARDIAN_FRAMES := {&"egypt": 2822400, &"assyria": 2822400, &"greece": 2822400, &"enlightenment": 3175200,
+	&"asia": 2646000, &"americas": 3175200}
 const BED_FRAMES := 1764000
 ## Seconds decoded on each side of a loop's wrap.
 const AROUND := 0.25
@@ -67,11 +69,12 @@ func _check_wrap(stream: AudioStreamOggVorbis, path: String) -> void:
 ## Every looping track and its frame count.
 func _frames() -> Dictionary:
 	var frames := MUSIC_FRAMES.duplicate()
-	for wing: StringName in WALK_FRAMES:
-		frames[Music.track(&"explore", wing)] = WALK_FRAMES[wing]
-		frames[Music.track(&"explore_tension", wing)] = WALK_FRAMES[wing]
-		frames[Music.track(&"guardian", wing)] = GUARDIAN_FRAMES
-		frames[Music.track(&"guardian_hi", wing)] = GUARDIAN_FRAMES
+	for zone: StringName in ZONE_FRAMES:
+		for layer in MusicDirector.ZONE_LAYERS:
+			frames[Music.track(layer, zone)] = ZONE_FRAMES[zone]
+	for wing: StringName in GUARDIAN_FRAMES:
+		frames[Music.track(&"guardian", wing)] = GUARDIAN_FRAMES[wing]
+		frames[Music.track(&"guardian_hi", wing)] = GUARDIAN_FRAMES[wing]
 	return frames
 
 
@@ -86,8 +89,10 @@ func test_every_music_track_is_known_to_the_test() -> void:
 	for family: StringName in Music.FAMILIES:
 		for layer: StringName in Music.FAMILIES[family]:
 			assert_true(frames.has(layer), String(layer))
+	for zone in MusicDirector.MUSIC_ZONES:
+		assert_true(ZONE_FRAMES.has(zone), String(zone))
 	for wing in MusicDirector.WINGS:
-		assert_true(WALK_FRAMES.has(wing), String(wing))
+		assert_true(GUARDIAN_FRAMES.has(wing), String(wing))
 
 
 func test_stems_of_a_family_have_the_same_length() -> void:

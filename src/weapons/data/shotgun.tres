@@ -20,6 +20,4 @@ magazine_size = 2
 reload_time = 1.25
 start_reserve = 10
 max_reserve = 50
-shake = 0.45
-kick = 0.18
 sound = &"shotgun"

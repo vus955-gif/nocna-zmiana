@@ -1,22 +1,21 @@
 """Audio-guide stand of the museum's System at an exhibit: a heavy cast-iron
 base, a brushed steel post, a black sloped pulpit with a big brass button
-and a row of speaker slits, and a white enamel plate with the stop number
-("1", real glyph: artlib/pixelfont.py) on the post under the pulpit. Reads
-as "press me" from across the room (backlog #39). 1.08 m tall.
+and a row of speaker slits, and a blank white enamel plate on the post under
+the pulpit: the stop number is drawn on it in the game (AudioguideStand,
+one model for every stop). Reads as "press me" from across the room
+(backlog #39). 1.08 m tall.
 
 Origin at the centre of the base on the floor; the pulpit slopes down
 toward +Y (Godot -Z: the marker's front faces the visitor). Parts:
-    audioguide_stand  (0, 0, 0)              base, post, pulpit, slits, number plate
+    audioguide_stand  (0, 0, 0)              base, post, pulpit, slits, number plate (blank)
     button            on the pulpit, right   the brass button; its local Z is the
                                              pulpit's normal (press it along -Z)
 """
 import math
 
-import numpy as np
 from mathutils import Vector
 
 from artlib import materials as M
-from artlib import pixelfont
 from artlib.geo import Part
 from artlib.kit import R, T
 from artlib.model import Model
@@ -26,8 +25,7 @@ PULPIT = Vector((0.0, 0.10, 1.02))             # centre of the sloped panel
 TILT = -28.0                                   # degrees about X: the near (+Y) edge lower
 PANEL = (0.36, 0.26, 0.03)
 BUTTON_AT = Vector((0.09, -0.04, PANEL[2] / 2))   # on the panel's top face, panel-local
-SIGN_Z = 0.80
-DIGIT = pixelfont.render("1", bold=True)
+SIGN_Z = 0.80                                  # the plate's centre; its front face is 0.051 m before the post
 
 
 def panel_matrix():
@@ -51,13 +49,8 @@ def brass(ctx):
 
 
 def number(ctx):
-    """White enamel plate, the stop number in black (front face only)."""
-    s = M.enamel(ctx, "enamel_white", 6.0, seed=625, chip=0.1, gloss=0.4, under="steel")
-    front = ctx.n[:, 1] > 0.7
-    txt = pixelfont.stamp(ctx, DIGIT, 0.0, SIGN_Z, scale=4) & front
-    s.use_ramp(M.P["plastic_black"], mask=txt, shade=np.full(ctx.N, 2.0))
-    s.rough = np.where(txt, 0.5, s.rough)
-    return s
+    """White enamel plate for the stop number (the game draws the digits)."""
+    return M.enamel(ctx, "enamel_white", 6.0, seed=625, chip=0.1, gloss=0.4, under="steel")
 
 
 FNS = {"iron": iron, "steel": steel, "panel": panel, "brass": brass, "number": number}

@@ -201,6 +201,36 @@ func test_the_armour_hangs_on_its_stand_and_flies_together_feet_first_helmet_las
 		assert_lt(rig.part(part_name).global_position.distance_to(home[part_name]), 0.01, "%s home" % part_name)
 
 
+## (The night's QA, 19.10: after his waking the quiver hung in the air beside
+## the stand and the scabbard lay on the gravel, both following him about at
+## that offset - the parts no pose drives kept the place their last flight
+## frame left them in.)
+func test_after_the_assembly_every_part_is_home_the_quiver_and_the_scabbard_too() -> void:
+	var rig := _rig()
+	rig.set_stand(Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, 1.2)))
+	var pose := _framed(rig, "chudan")
+	pose.assembly = 1.0
+	rig.apply(pose)
+	var home := {}
+	for part_name in GeneralRig.PART_NAMES:
+		home[part_name] = rig.part(part_name).global_transform
+	# the waking, frame by frame
+	for i in 91:
+		pose.assembly = i / 90.0
+		rig.apply(pose, STEP)
+	for part_name in GeneralRig.PART_NAMES:
+		var now := rig.part(part_name).global_transform
+		var was: Transform3D = home[part_name]
+		assert_lt(now.origin.distance_to(was.origin), 0.01, "%s home after the assembly (%.2f m off)" % [part_name, now.origin.distance_to(was.origin)])
+		assert_lt(now.basis.get_rotation_quaternion().angle_to(was.basis.get_rotation_quaternion()), 0.02, "%s turned home" % part_name)
+	# and they go with him when he moves on
+	world.position = Vector3(5.0, 0.0, -3.0)
+	rig.apply(pose, STEP)
+	for part_name in ["quiver", "saya"]:
+		var offset: Vector3 = rig.part(part_name).global_position - world.position
+		assert_lt(offset.distance_to((home[part_name] as Transform3D).origin), 0.01, "%s goes with him" % part_name)
+
+
 # --- the moves ----------------------------------------------------------------------
 
 func _moves_set() -> Array:

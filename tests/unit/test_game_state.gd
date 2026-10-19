@@ -211,7 +211,8 @@ func test_night_progress_survives_save_and_load() -> void:
 	_fill(state)
 	state.night_progress = {
 		"night": 4, "killed": [5, 1, 5, -2], "taken": [0], "used": ["fuse_a"],
-		"guard": {"health": 61.5, "weapons": {"pistol": {"magazine": 3, "reserve": 20, "battery": 0.0}}},
+		"guard": {"health": 61.5, "weapons": {"pistol": {"magazine": 3, "reserve": 20, "battery": 0.0}},
+			"fatigue": {"level": 0.42, "buff": "large", "buff_left": 101.5, "jitter_left": 0.0}},
 	}
 	state.save_game()
 	var loaded := _fresh()
@@ -223,6 +224,12 @@ func test_night_progress_survives_save_and_load() -> void:
 	assert_eq(progress["used"], ["fuse_a"])
 	assert_eq(progress["guard"]["health"], 61.5)
 	assert_eq(progress["guard"]["weapons"]["pistol"]["reserve"], 20)
+	assert_eq(progress["guard"]["fatigue"]["level"], 0.42)
+	assert_eq(progress["guard"]["fatigue"]["buff"], "large")
+	assert_eq(progress["guard"]["fatigue"]["buff_left"], 101.5)
+	var junk := PersistentState.clean_progress({"night": 4, "guard": {"fatigue": {"level": 9.0, "buff_left": -4.0}}}, 4)
+	assert_eq(junk["guard"]["fatigue"]["level"], 1.0, "clamped")
+	assert_eq(junk["guard"]["fatigue"]["buff_left"], 0.0)
 
 
 func test_progress_of_another_night_is_dropped() -> void:

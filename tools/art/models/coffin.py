@@ -7,11 +7,18 @@ case behind is painted outside and dark inside. The lid tips forward on its
 bottom front edge when a mummy bursts out.
 
 Kit convention: origin = centre of the stand's base, front = Godot -Z
-(Blender +Y, built final), 192 px/m. 0.78 x 2.05 x 0.75 m in all.
+(Blender +Y, built final), 192 px/m. 0.86 x 2.05 x 0.76 m in all.
 Parts: coffin (case and stand, root) and lid (child; pivot on the lid's
 bottom front edge, (0, 0.22, 0.12) Blender = Godot (0, 0.12, -0.22): rotate
-about X to tip it out). Marker MummySpawn inside the case. Texture sets:
-coffin (yellow ground), coffin_black (black ground with gilded figures).
+about X to tip it out). Marker MummySpawn inside the case, where the
+sleeping mummy's origin (its feet) stands. Texture sets: coffin (yellow
+ground), coffin_black (black ground with gilded figures).
+
+Sized to the sleeper (tests/integration/test_mummy_tomb_fit.gd measures the
+mummy's crossed-arms rest pose, loose bandages and all, against the shell):
+the case is wide across the elbows, deep behind the shoulders, the lid deep
+over the forearms; everything of the mummy lies inside the cavity with
+2 cm to spare.
 """
 import math
 
@@ -30,11 +37,43 @@ from artlib.sculpt import blob
 
 Z0 = 0.12          # the coffin stands on the stand at this height
 LEN = 1.9
-# (z along the coffin, half width, front depth (lid), back depth (case))
-SECTIONS = [(0.0, 0.16, 0.16, 0.14), (0.1, 0.175, 0.19, 0.15), (0.3, 0.165, 0.15, 0.14), (0.7, 0.2, 0.15, 0.15),
-            (1.05, 0.235, 0.165, 0.16), (1.32, 0.27, 0.175, 0.17), (1.47, 0.295, 0.17, 0.17), (1.56, 0.25, 0.2, 0.16),
+# (z along the coffin, half width, front depth (lid), back depth (case)).
+# From the feet up: the legs, a flare over the hips to the elbows of the
+# crossed arms (widest), the shoulders, the head.
+SECTIONS = [(0.0, 0.16, 0.16, 0.14), (0.1, 0.222, 0.25, 0.15), (0.3, 0.228, 0.205, 0.15), (0.7, 0.252, 0.175, 0.152),
+            (0.95, 0.306, 0.175, 0.158), (1.1, 0.355, 0.2, 0.17), (1.22, 0.376, 0.238, 0.188),
+            (1.35, 0.362, 0.25, 0.207), (1.47, 0.325, 0.216, 0.195), (1.56, 0.25, 0.2, 0.16),
             (1.68, 0.225, 0.215, 0.15), (1.79, 0.2, 0.19, 0.14), (1.86, 0.15, 0.13, 0.11), (1.9, 0.07, 0.06, 0.05)]
+# the sections before this change (the hands were laid on that skin)
+OLD_SECTIONS = [(0.0, 0.16, 0.16, 0.14), (0.1, 0.175, 0.19, 0.15), (0.3, 0.165, 0.15, 0.14), (0.7, 0.2, 0.15, 0.15),
+                (1.05, 0.235, 0.165, 0.16), (1.32, 0.27, 0.175, 0.17), (1.47, 0.295, 0.17, 0.17),
+                (1.56, 0.25, 0.2, 0.16), (1.68, 0.225, 0.215, 0.15), (1.79, 0.2, 0.19, 0.14),
+                (1.86, 0.15, 0.13, 0.11), (1.9, 0.07, 0.06, 0.05)]
 N = 20
+# width of the lid's painted front (m): the broadest section, with a margin
+LID_W = 0.8
+
+
+def _at(sections, z):
+    """(half width, front depth, back depth) of the sections at [param z] along the coffin."""
+    if z <= sections[0][0]:
+        return sections[0][1:]
+    for a, b in zip(sections, sections[1:]):
+        if z <= b[0]:
+            t = (z - a[0]) / (b[0] - a[0])
+            return tuple(a[k] * (1.0 - t) + b[k] * t for k in (1, 2, 3))
+    return sections[-1][1:]
+
+
+def _skin(sections, x, z):
+    """Height of the lid's front skin (Blender y) at [param x] across and [param z] up the coffin."""
+    w, df, _ = _at(sections, z)
+    return df * math.sqrt(max(0.0, 1.0 - (x / w) ** 2))
+
+
+def _on_skin(x, y, z):
+    """The point (x, y, z) laid on the lid as it is now, at the same height over the skin as it was over the old one."""
+    return (x, _skin(SECTIONS, x, z - Z0) + y - _skin(OLD_SECTIONS, x, z - Z0), z)
 
 
 def _ring(z, w, d, half, inset=0.0):
@@ -91,9 +130,9 @@ def case():
     if f.normal.z < 0:
         f.normal_flip()
     # the stand: a black plinth and a post with a bracket at the back
-    p.box((0.0, 0.0, Z0 / 2), (0.78, 0.72, Z0), "stand", bevel=0.012)
-    p.box((0.0, -0.29, 0.75), (0.08, 0.06, 1.3), "stand", bevel=0.008)
-    p.box((0.0, -0.21, 1.35), (0.3, 0.1, 0.05), "stand", bevel=0.008)
+    p.box((0.0, 0.0, Z0 / 2), (0.86, 0.76, Z0), "stand", bevel=0.012)
+    p.box((0.0, -0.30, 0.75), (0.08, 0.06, 1.3), "stand", bevel=0.008)
+    p.box((0.0, -0.23, 1.35), (0.3, 0.11, 0.05), "stand", bevel=0.008)
     cull_floor([p])
     return p
 
@@ -132,9 +171,9 @@ def lid():
     sculpt.into_part(p, me, "face")
     # crossed hands on the chest, carved in the round
     for sx in (-1, 1):
-        K.seg(p, (sx * 0.14, 0.19, Z0 + 1.2), (-sx * 0.05, 0.215, Z0 + 1.28), [(0.03, 0.0), (0.028, 1.0)], "lid",
-              segments=8)
-        K.sphere(p, (-sx * 0.07, 0.218, Z0 + 1.285), 0.038, "face", segments=8, rings=5, squash=(1.0, 0.6))
+        K.seg(p, _on_skin(sx * 0.14, 0.19, Z0 + 1.2), _on_skin(-sx * 0.05, 0.215, Z0 + 1.28),
+              [(0.03, 0.0), (0.028, 1.0)], "lid", segments=8)
+        K.sphere(p, _on_skin(-sx * 0.07, 0.218, Z0 + 1.285), 0.038, "face", segments=8, rings=5, squash=(1.0, 0.6))
     return p
 
 
@@ -146,7 +185,7 @@ _C = {}
 
 
 def _lid_canvas(w, h, seed=31):
-    """The front of the lid, 0.6 x 1.9 m at 192 px/m (x across from the
+    """The front of the lid, LID_W x 1.9 m at 192 px/m (x across from the
     viewer's left, rows from the head down)."""
     if (w, h) in _C:
         return _C[(w, h)]
@@ -223,12 +262,12 @@ def lid_paint(ground):
         s.use_ramp(P[ramp], shade=center + ctx.fbm(4.0, 3, seed) * 0.5 + _dither(ctx, 0.5, seed + 1))
         s.rough = np.full(ctx.N, 0.45)                     # varnished
         tx = ctx.texel
-        w = int(round(0.62 / tx))
+        w = int(round(LID_W / tx))
         h = int(round(LEN / tx))
         canvas = _lid_canvas(w, h)
         front = ctx.n[:, 1] > 0.15
         u = -ctx.p[:, 0]
-        c, r = E.sample(canvas, u[front], ctx.p[front, 2], tx, u0=-0.31, v0=Z0)
+        c, r = E.sample(canvas, u[front], ctx.p[front, 2], tx, u0=-LID_W / 2, v0=Z0)
         codes = np.full(ctx.N, -1, np.int16)
         rims = np.zeros(ctx.N, np.int16)
         codes[front] = c
@@ -302,6 +341,6 @@ def fns_for(ground):
 
 def build():
     return kit("coffin", [case(), lid()], fns_for("yellow"), ppm=192, built_final=True, ao_dist=0.18,
-               organic=(), markers=[("MummySpawn", (0.0, -0.05, Z0 + 0.95), "coffin")],
+               organic=(), markers=[("MummySpawn", (0.0, 0.0, Z0 + 0.95), "coffin")],
                variants={"coffin_black": fns_for("black")},
                preview_closeup=((0.0, 0.2, Z0 + 1.55), 0.45))

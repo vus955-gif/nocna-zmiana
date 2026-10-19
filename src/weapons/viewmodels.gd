@@ -8,8 +8,9 @@ class_name Viewmodels
 ## poke into walls.
 
 const FOV := 55.0
-## Parts of a vm_* model that belong to the guard, not the weapon.
-const HANDS: Array[String] = ["hand_r", "hand_l"]
+## Parts of a vm_* model that belong to the guard, not the weapon (the
+## sleeves are their own parts on the two-handed weapons).
+const HANDS: Array[String] = ["hand_r", "hand_l", "sleeve_r", "sleeve_l"]
 
 static var _materials: Dictionary = {}
 

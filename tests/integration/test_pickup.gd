@@ -86,6 +86,23 @@ func test_respawn_waits_while_the_game_is_paused() -> void:
 	assert_false(came_back)
 
 
+## Every kind wears its model with the rim in its own colour (the HUD
+## slot's; white for health) and an accent that stays within limits.
+func test_every_kind_wears_its_model_with_its_own_rim() -> void:
+	for type in Pickup.Type.values():
+		var pickup := _pickup(type, 1, Vector3(5, 0.5, 5))
+		var model_name: String = Pickup.MODELS[type]
+		var mesh := pickup.find_child(model_name, true, false) as MeshInstance3D
+		assert_not_null(mesh, "%s model" % model_name)
+		if mesh != null:
+			var mat := mesh.get_surface_override_material(0) as ShaderMaterial
+			assert_eq(mat.get_shader_parameter(&"rim_color"), Pickup.color_of(type), "%s rim" % model_name)
+			assert_lt(float(mat.get_shader_parameter(&"rim_strength")), 1.001, "%s rim strength" % model_name)
+			assert_lt(float(mat.get_shader_parameter(&"emit_energy")), WeaponPalette.MAX_PICKUP_EMISSION + 0.001, "%s emission" % model_name)
+			assert_eq(mesh.get_instance_shader_parameter(&"awake"), 1.0, "%s lit as a pickup" % model_name)
+		pickup.queue_free()
+
+
 ## An ammo box at the guard's feet that he uses right away (empty reserve).
 func _used_bullets(respawn_time: float) -> Pickup:
 	var pistol := player.weapons.give(load("res://src/weapons/data/pistol.tres"))

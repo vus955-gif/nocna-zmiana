@@ -67,7 +67,7 @@ Style pomieszczeń dopisane do `ArtKit.ROOMS`: `egypt_gallery` (= `egypt_vestibu
 | `amenhotep_head` | 1,6 × 2,5 × 1,5 | 4 714 | `amenhotep_head` (blok), `amenhotep_face` | kolosalna głowa, czerwony granit, utrącony nos i korona |
 | `obelisk` | 1,5 × 6,3 × 1,5 | 98 | `obelisk` | para przed Salą Kolosa; złocony piramidion |
 | `sarcophagus` | 2,7 × 1,5 × 1,4 | 516 | `sarcophagus`, **`lid`** (oś: środek spodu wieka, y 1,05 — przesuwać w X, przechylać w Z), znacznik **`MummySpawn`** (0; 0,28; 0) | zasadzki mumii (obóz, grobowiec); zestaw `sarcophagus_red` |
-| `coffin` | 0,8 × 2,0 × 0,7 | 1 796 | `coffin` (skrzynia + stojak), **`lid`** (oś na dolnej przedniej krawędzi (0; 0,12; −0,22): obrót wokół X wywraca wieko do przodu), **`MummySpawn`** (0; 1,07; 0,05) | stojące trumny; zestaw `coffin_black` |
+| `coffin` | 0,86 × 2,02 × 0,76 | 1 928 | `coffin` (skrzynia + stojak), **`lid`** (oś na dolnej przedniej krawędzi (0; 0,12; −0,22): obrót wokół X wywraca wieko do przodu), **`MummySpawn`** (0; 1,07; 0) = stopy śpiącej mumii na osi trumny | stojące trumny; zestaw `coffin_black`; skrojona pod śpiącą mumię (szeroka w łokciach skrzyżowanych rąk, głęboka za barkami), `test_mummy_tomb_fit` |
 | `rosetta_stone` | 0,8 × 1,12 × 0,3 | 198 | `rosetta_stone` | trzy pisma (hieroglify, demotyka, grecki tekst dekretu), 384 px/m |
 | `rosetta_case` | 1,2 × 1,95 × 0,8 | 888 | `rosetta_case`, `rosetta_case_glass` (do stłuczenia), **`StoneSpot`** (0; 0,62; 0) = gdzie stawiać `rosetta_stone` | Przedsionek Rosetty; mosiężna tabliczka „KAMIEŃ Z ROSETTY / 196 P.N.E.” |
 | `canopic_jars` | 1,3 × 0,6 × 0,35 | 2 750 | `canopic_jars` (deska), `jar_imsety`, `jar_hapy`, `jar_duamutef`, `jar_qebehsenuef` | w gablocie lub na cokole |

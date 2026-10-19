@@ -3,9 +3,19 @@ extends Interactable
 ## An audio-guide stand at an exhibit: press E to hear the System's recording
 ## (day version; the night one once its condition holds — VoiceDirector).
 ## The marker audioguide_<station> in the zone files places it; its pulpit
-## faces the marker's -Z.
+## faces the marker's -Z. The stop's number (STOPS, the order of the tour;
+## the recordings say "Stop one...") is drawn on the blank enamel plate of
+## the model (tools/art/models/audioguide_stand.py).
 
 const MODEL := &"audioguide_stand"
+## Station -> stop number (plan 2026-10-19-glos-g2-kwestie, 2.6).
+const STOPS := {
+	&"rosetta": 1, &"ramesses": 2, &"lamassu": 3, &"flood": 4, &"metopes": 5, &"clocks": 6,
+	&"buddha": 7, &"armour": 8, &"totems": 9, &"moai": 10, &"astrolabe": 11, &"trex": 12,
+}
+## The plate on the post: its centre's height and its front face (the model's SIGN_Z, 0.045 + 0.006).
+const PLATE_Y := 0.80
+const PLATE_FRONT := 0.051
 
 var station: StringName
 var player: AudioStreamPlayer3D
@@ -40,6 +50,8 @@ func _ready() -> void:
 		post.position = Vector3(0.0, 0.525, 0.0)
 		model = post
 	add_child(model)
+	if STOPS.has(station):
+		add_child(_stop_number(int(STOPS[station])))
 	player = AudioStreamPlayer3D.new()
 	player.bus = &"VoiceSystem"
 	player.unit_size = 4.0
@@ -47,6 +59,24 @@ func _ready() -> void:
 	player.area_mask = Layers.REVERB_ZONE
 	player.position = Vector3(0.0, 1.0, 0.0)
 	add_child(player)
+
+
+## Black digits on the white plate, readable from the front (-Z).
+static func _stop_number(stop: int) -> Label3D:
+	var digits := Label3D.new()
+	digits.name = "StopNumber"
+	digits.text = str(stop)
+	digits.font = UiTheme.strong_font()
+	digits.font_size = 64
+	digits.pixel_size = 0.0011
+	digits.outline_size = 0
+	digits.modulate = Color(0.06, 0.06, 0.07)
+	digits.shaded = true
+	digits.double_sided = false
+	digits.alpha_cut = Label3D.ALPHA_CUT_DISCARD
+	digits.position = Vector3(0.0, PLATE_Y, -PLATE_FRONT - 0.002)
+	digits.rotation.y = PI
+	return digits
 
 
 func interact(by: Node) -> void:

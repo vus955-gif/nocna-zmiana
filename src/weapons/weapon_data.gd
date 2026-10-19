@@ -41,8 +41,8 @@ enum AmmoMode { NONE, BATTERY, MAGAZINE }
 @export var battery_recharge_delay: float = 0.0
 
 @export_group("Feel")
-@export var shake: float = 0.15
-@export var kick: float = 0.05
+## The shot's sound. How the weapon kicks, shakes, flashes and lands is its
+## FeelProfile (res://src/weapons/feel/<id>.tres).
 @export var sound: StringName = &""
 ## Draw a tracer for every n-th round only (a gatling burst would read as
 ## a solid beam otherwise).
@@ -69,8 +69,6 @@ enum AmmoMode { NONE, BATTERY, MAGAZINE }
 ## Walking speed while the trigger is held (1 = no penalty); below 1 the
 ## guard cannot sprint either.
 @export var firing_move_factor: float = 1.0
-## > 0: shots shake the camera only up to this trauma (a steady rumble).
-@export var shake_cap: float = 0.0
 
 @export_group("Projectile")
 ## > 0 fires a flare instead of rays (m/s).
@@ -95,6 +93,9 @@ enum AmmoMode { NONE, BATTERY, MAGAZINE }
 ## A ray goes on through this many targets (1 = it stops at the first);
 ## each target is hit once, by the first of its zones the ray crosses.
 @export var pierce_targets: int = 1
+## A round that snaps a chain link or a board on its own (the rifle with
+## the secrets' peep sight; DamageInfo.lock_breaker, LockRules).
+@export var lock_breaker: bool = false
 
 @export_group("Projectile kind")
 ## Which projectile a projectile weapon (projectile_speed > 0) fires:
@@ -123,3 +124,6 @@ enum AmmoMode { NONE, BATTERY, MAGAZINE }
 ## Above this max health (or with a knockback resistance of at least
 ## HarpoonRules.HEAVY_RESIST) an exhibit is heavy: damage only.
 @export var heavy_health: float = 150.0
+## A harpoon stuck in a wall (a miss) is reeled back to the reserve (the
+## secrets' return line; Harpoon.RETURN_TIME).
+@export var line_return: bool = false

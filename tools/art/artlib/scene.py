@@ -47,9 +47,13 @@ def link_parents(parts, objects):
 
 def add_markers(markers, by_name, collection=None):
     """Empties exported as plain nodes (Godot Node3D): muzzles, sockets,
-    light positions. markers = [(name, (x, y, z) in model space, parent)]."""
+    light positions. markers = [(name, (x, y, z) in model space, parent)],
+    or with a fourth element, a 3x3 Matrix: the marker's basis in model
+    space (its columns = its local axes; the hand markers of
+    artlib/hands.py). Parts carry no rotation, so a basis is set as is."""
     out = []
-    for name, co, parent in markers:
+    for marker in markers:
+        name, co, parent = marker[:3]
         obj = bpy.data.objects.new(name, None)
         obj.empty_display_type = "PLAIN_AXES"
         obj.empty_display_size = 0.05
@@ -61,6 +65,8 @@ def add_markers(markers, by_name, collection=None):
             obj.location = Vector(co) - par.matrix_world.translation
         else:
             obj.location = Vector(co)
+        if len(marker) > 3:
+            obj.rotation_euler = marker[3].to_euler()
         out.append(obj)
     return out
 

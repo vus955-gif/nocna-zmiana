@@ -2,7 +2,7 @@ extends TestCase
 ## The guardians' arenas read the zones' markers (W3-W5): each guardian
 ## gets its named points (the Lamassu's relief slabs, the Serpent's loop);
 ## the relief warriors step off the walls in the Lamassu's phase 2 (once a
-## night); the Serpent glides round its loop from phase 2; the rope of the
+## night); the Serpent glides its tracks and passes its light in phase 2; the rope of the
 ## Planetarium's portcullis hangs on its counterweight marker; the arena
 ## grilles drop on the door markers facing into the arena; and nothing can
 ## be sniped from outside an arena (the Planetarium's observers' gallery).
@@ -100,29 +100,43 @@ func test_the_relief_warriors_step_off_the_walls_in_the_lamassus_phase_two() -> 
 	assert_eq(museum.exhibits().size(), before + reliefs.size(), "once a night")
 
 
-func test_the_serpent_glides_round_its_loop_from_phase_two() -> void:
+func test_the_serpent_leaves_its_ring_swaps_its_roles_in_phase_two_and_rests_when_calmed() -> void:
 	GameState.new_game()
 	_museum()
 	await physics_frames(2)
-	var serpent := await _wake(&"serpent")
+	var serpent := await _wake(&"serpent") as Serpent
+	assert_not_null(serpent, "the real Serpent stands in its temple")
+	if serpent == null:
+		return
 	assert_true(serpent.is_fighting())
-	var home := serpent.global_position
-	_hit(serpent, serpent.max_health * 0.4)
-	for i in 60 * 4:
+	assert_true(serpent.kinematic, "it moves itself along its tracks")
+	var rest := serpent.body.leader()
+	assert_gt(serpent.course.nodes.size(), 20, "its tracks come from the zone's markers")
+	# awake, it glides off its ring down toward the guard
+	for i in 60 * 8:
 		museum.player.heal(1000.0)
 		await get_tree().physics_frame
-	assert_true(serpent.kinematic, "it moves itself along the loop")
-	assert_gt(serpent.global_position.distance_to(home), 1.5, "it left its post")
-	var path: Array = serpent.points[&"path"]
-	var nearest := INF
-	for i in path.size():
-		var a: Vector3 = (path[i] as Transform3D).origin
-		var b: Vector3 = (path[(i + 1) % path.size()] as Transform3D).origin
-		nearest = minf(nearest, Geometry3D.get_closest_point_to_segment(serpent.global_position, a, b).distance_to(serpent.global_position))
-	var first: Vector3 = (path[0] as Transform3D).origin
-	assert_true(nearest < 0.3 or serpent.global_position.distance_to(first) < home.distance_to(first) + 0.1, "on the loop or gliding onto it (%.2f m off)" % nearest)
+	var leader := serpent.body.leader()
+	assert_gt(leader.distance_to(rest), 3.0, "it left its resting ring")
+	assert_eq(museum.floor_level.room_at(leader + Vector3.UP * 0.5), &"americas_temple", "and stays in its arena")
+	for j in range(serpent.body.ground_joints().x, serpent.body.ground_joints().y + 1):
+		var joint := serpent.body.joints[j]
+		assert_eq(museum.floor_level.room_at(joint + Vector3.UP * 0.5), &"americas_temple", "joint %d in the arena" % j)
+	# phase 2: the light passes to the other head, then it glides faster
+	_hit(serpent, serpent.max_health * 0.4)
+	assert_eq(serpent.phase, 2)
+	var swapped := watch(serpent.brain.roles_swapped)
+	for i in 60 * 6:
+		museum.player.heal(1000.0)
+		await get_tree().physics_frame
+		if swapped.size() > 0:
+			break
+	assert_eq(swapped.size(), 1, "the roles swapped")
+	assert_eq(serpent.brain.spitter, SerpentBody.End.B)
 	serpent.reset_fight()
-	assert_false(serpent.kinematic, "back on its post it stands again")
+	assert_false(serpent.is_fighting(), "calmed")
+	assert_lt(serpent.body.leader().distance_to(rest), 0.5, "back on its ring")
+	assert_eq(serpent.brain.spitter, SerpentBody.End.A)
 
 
 func test_nothing_is_sniped_from_the_observers_gallery() -> void:

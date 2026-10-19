@@ -147,12 +147,17 @@ func _init() -> void:
 
 
 ## The plinth it sleeps on (GuardianKeeper, every night; empty after its
-## fall).
+## fall). It is a stone the exhibits walk round (the relief warriors of
+## phase 2 too): a navigation source of the level, not of [param parent]
+## (QA Q4).
 static func dress_arena(level: MuseumFloorLevel, parent: Node3D) -> Array[Node3D]:
 	var props: Array[Node3D] = []
 	if level.markers.has(&"guardian_lamassu"):
 		var base := LamassuPlinth.make(level.markers[&"guardian_lamassu"])
-		parent.add_child(base)
+		if level.navigation != null:
+			level.add_walk_source(base)
+		else:
+			parent.add_child(base)
 		props.append(base)
 	return props
 

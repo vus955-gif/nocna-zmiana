@@ -6,10 +6,16 @@ extends Enemy
 ## from inside for 0.7 s, then it spits one slow marble shard (only when the
 ## guard is still in plain view at that moment), every 2.4 s. A taser stun
 ## drops it to the floor for 3 s, where a fist can finish it. Shatters into
-## angular marble pieces.
+## angular marble pieces. Support (EnemyRoles: it calls the others):
+## hunting with the guard in view it grinds out a call every CALL_INTERVAL
+## (the first FIRST_CALL into the hunt) that rouses up to CHAIN_MAX sleepers
+## of its room in its sight - they come to look, quietly - unless the room
+## hunts already (hunters near the guard at half the cap or more).
 
 const KIND := &"bust"
 const FIRE_INTERVAL := 2.4
+const CALL_INTERVAL := 8.0
+const FIRST_CALL := 3.0
 ## Where the shard aims, above the target's origin (the guard's chest).
 const AIM_HEIGHT := 1.1
 const MUZZLE := Vector3(0.0, 0.72, -0.2)
@@ -45,6 +51,9 @@ var _strafe_timer: float = 0.0
 var _crack_material: StandardMaterial3D
 var _inner_light: OmniLight3D
 var _crack_energy: float = 0.0
+var _call_wait: float = FIRST_CALL
+## Calls made (tests).
+var calls: int = 0
 
 
 func _configure() -> void:
@@ -162,7 +171,26 @@ func _physics_process(delta: float) -> void:
 		_strafe_timer = randf_range(STRAFE_TIME.x, STRAFE_TIME.y)
 		if randf() < 0.6:
 			_strafe_side = -_strafe_side
+	if brain.is_hunting() and _sees_target and _target_alive():
+		_call_wait -= delta
+		if _call_wait <= 0.0:
+			_call_wait = CALL_INTERVAL
+			_call()
+	elif not brain.is_hunting():
+		_call_wait = FIRST_CALL
 	super(delta)
+
+
+## The call: unless the room hunts already, a grind that rouses the
+## sleepers near it to come and look (Enemy._rouse_neighbours: at most
+## CHAIN_MAX, in its room, in its sight).
+func _call() -> void:
+	if PerceptionWorld.hunters_near(target.global_position) >= ceili(PerceptionWorld.hunter_cap * 0.5):
+		return
+	calls += 1
+	Sfx.play_at(&"bust_grind", global_position + Vector3.UP * eye_height, -4.0)
+	brain.last_known = target.global_position
+	_rouse_neighbours()
 
 
 ## Hovers on a spring above the floor while awake (air drag on knockback);
@@ -182,6 +210,12 @@ func _apply_gravity(delta: float) -> void:
 
 ## It shoots from afar: the navmesh need not bring it to the guard.
 func _attacks_from_range() -> bool:
+	return true
+
+
+## Asleep on its plinth it turns to follow an unwatched guard, but a
+## plinth goes nowhere.
+func _stirs_in_place() -> bool:
 	return true
 
 

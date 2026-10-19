@@ -213,7 +213,7 @@ func _build() -> void:
 	_stencil = label
 	label.name = "Stencil"
 	label.text = tr("LOCKER_LABEL")
-	label.font = UiTheme.strong_font()
+	label.font = UiTheme.device_font()
 	label.font_size = 64
 	label.pixel_size = 0.0016
 	label.outline_size = 0

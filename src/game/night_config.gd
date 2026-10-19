@@ -5,11 +5,14 @@ extends RefCounted
 ## what loot lies where and which fuse points hold the fuses.
 
 ## One exhibit to place: an index into the level's spawn_slots, the kind
-## drawn from the slot's kinds, and whether it waits dormant.
+## drawn from the slot's kinds, and whether it waits dormant. A watcher is
+## the one exhibit of its room the director woke to keep an eye on it
+## (NightDirector.watchers: a beat, a round).
 class Spawn:
 	var slot: int = 0
 	var kind: StringName = &""
 	var dormant: bool = true
+	var watcher: bool = false
 
 	func _init(slot_index: int, exhibit_kind: StringName, is_dormant: bool) -> void:
 		slot = slot_index
@@ -43,7 +46,7 @@ var portraits: Array[StringName] = []
 func to_dict() -> Dictionary:
 	var placed: Array = []
 	for spawn in spawns:
-		placed.append([spawn.slot, String(spawn.kind), spawn.dormant])
+		placed.append([spawn.slot, String(spawn.kind), spawn.dormant, spawn.watcher])
 	var items := {}
 	for spot: int in loot:
 		items[spot] = String(loot[spot])

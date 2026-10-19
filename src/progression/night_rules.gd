@@ -76,8 +76,10 @@ static func start_night(game: PersistentState, run: NightState) -> void:
 
 
 ## What the save keeps of the night in progress: the night state's lists
-## plus the guard's [param guard] state ({health, weapons}).
-static func progress_snapshot(game: PersistentState, run: NightState, guard: Dictionary = {}) -> Dictionary:
+## plus the guard's [param guard] state ({health, weapons}) and the Dust
+## lying uncollected [param dust] (DustDropper.lying(): laid again where it
+## lay when the night is continued).
+static func progress_snapshot(game: PersistentState, run: NightState, guard: Dictionary = {}, dust: Array = []) -> Dictionary:
 	var snapshot := {
 		"night": game.night,
 		"killed": run.killed_slots.duplicate(),
@@ -86,6 +88,8 @@ static func progress_snapshot(game: PersistentState, run: NightState, guard: Dic
 	}
 	if not guard.is_empty():
 		snapshot["guard"] = guard
+	if not dust.is_empty():
+		snapshot["dust"] = dust
 	return PersistentState.clean_progress(snapshot, game.night)
 
 

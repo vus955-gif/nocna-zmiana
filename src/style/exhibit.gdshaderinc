@@ -23,6 +23,16 @@ uniform float rim_strength = 0.3;
 uniform float rim_power = 2.6;
 // The rim fades in between these distances (m).
 uniform vec2 rim_fade = vec2(2.5, 9.0);
+// Read from afar (pickups; the light pass of 19.10): from far_fade.x on
+// (full at far_fade.y) the rim grows by far_rim, the whole body takes on a
+// faint glow of the rim's colour (far_body) and the emission map brightens
+// by far_emit (the medkit's red cross) - a box of shells still reads as its
+// colour at 15 m in a dark room, the medkit as a white box with a red
+// cross; nearer nothing changes. Exhibits keep the defaults (never).
+uniform vec2 far_fade = vec2(1000.0, 1001.0);
+uniform float far_rim = 0.0;
+uniform float far_body = 0.0;
+uniform float far_emit = 0.0;
 uniform vec3 glow_color : source_color = vec3(1.0, 0.5, 0.25);
 #ifdef WAX
 uniform sampler2D sss_tex : hint_default_white, filter_nearest_mipmap_anisotropic, repeat_enable;
@@ -55,9 +65,10 @@ void fragment() {
 	float facing = clamp(dot(normal, VIEW), 0.0, 1.0);
 	float fresnel = pow(1.0 - facing, rim_power);
 	float distance_fade = smoothstep(rim_fade.x, rim_fade.y, length(VERTEX));
+	float far = smoothstep(far_fade.x, far_fade.y, length(VERTEX));
 	vec3 emit = texture(emit_tex, UV).rgb;
-	vec3 light = emit * emit_energy * (0.45 + 0.75 * awake + 4.0 * glow * glow);
-	light += rim_color * fresnel * rim_strength * awake * distance_fade;
+	vec3 light = emit * emit_energy * (0.45 + 0.75 * awake + 4.0 * glow * glow + far_emit * far * awake);
+	light += rim_color * (fresnel * rim_strength * distance_fade * (1.0 + far_rim * far) + far_body * far) * awake;
 	// the telegraph: a thin hot edge and a faint warmth, the eyes flare
 	float edge = pow(1.0 - facing, 6.0);
 	light += glow_color * glow * glow * (0.008 + 0.45 * edge);

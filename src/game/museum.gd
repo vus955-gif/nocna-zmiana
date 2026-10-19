@@ -169,6 +169,8 @@ func _ready() -> void:
 	dust_dropper.target = player
 	dust_dropper.motes_parent = pickups_root
 	add_child(dust_dropper)
+	# the Dust that lay uncollected when this night was left (QA Q10)
+	dust_dropper.lay(game.current_progress().get("dust", []))
 	_install_features()
 	if floor_level != null:
 		floor_game = FloorGame.new()
@@ -523,11 +525,14 @@ func _install_features() -> void:
 	features.pause_requested.connect(pause_menu.open)
 
 
-## Puts back the guard's health and ammo of a resumed night.
+## Puts back the guard's health, ammo and fatigue of a resumed night.
 func _restore_guard(saved: Dictionary) -> void:
 	var health: float = saved.get("health", 0.0)
 	if health > 0.0 and health < player.health.current:
 		player.health.apply_damage(player.health.current - health)
+	var tired: Variant = saved.get("fatigue")
+	if tired is Dictionary:
+		player.fatigue.from_dict(tired)
 	var arms: Dictionary = saved.get("weapons", {})
 	for id in arms:
 		var state := player.weapons.state_of(StringName(id))
@@ -539,12 +544,12 @@ func _restore_guard(saved: Dictionary) -> void:
 		state.battery = clampf(float(entry.get("battery", 0.0)), 0.0, state.data.battery_max)
 
 
-## The guard's health and ammo for the save.
+## The guard's health, ammo and fatigue for the save.
 func _guard_state() -> Dictionary:
 	var arms := {}
 	for state in player.weapons.owned:
 		arms[String(state.data.id)] = {"magazine": state.magazine, "reserve": state.reserve, "battery": state.battery}
-	return {"health": player.health.current, "weapons": arms}
+	return {"health": player.health.current, "weapons": arms, "fatigue": player.fatigue.to_dict()}
 
 
 ## A night started without the window's focus (alt-tabbed while loading)
@@ -560,7 +565,7 @@ func _on_game_saving() -> void:
 	if run.running and not _dying and is_instance_valid(player):
 		if watch != null:
 			watch.save_into(run)
-		game.night_progress = NightRules.progress_snapshot(game, run, _guard_state())
+		game.night_progress = NightRules.progress_snapshot(game, run, _guard_state(), dust_dropper.lying() if dust_dropper != null else [])
 
 
 func _on_save_failed() -> void:
@@ -614,7 +619,7 @@ func _on_terminal_opened(_by: Node) -> void:
 
 
 func _on_upgrade_bought(_id: StringName, _level: int) -> void:
-	player.apply_upgrades(game.upgrades)
+	player.apply_upgrades(SecretRewards.effective_levels(game))
 
 
 func _on_dust_collected(amount: int) -> void:
@@ -651,6 +656,7 @@ func _on_dawn() -> void:
 		objective.process_mode = Node.PROCESS_MODE_DISABLED
 	for exhibit in exhibits():
 		exhibit.freeze()
+	_freeze_props()
 	if objective != null and is_instance_valid(objective.boss):
 		_freeze_boss(objective.boss)
 	if floor_game != null:
@@ -660,12 +666,31 @@ func _on_dawn() -> void:
 	Events.dawn_broke.emit()
 	var survived := game.night
 	var carried := run.dust
+	var secrets := _secrets_summary()
 	NightRules.on_dawn(game, run)
 	hud.show_card(tr("NIGHT_DAWN"), NightClock.dawn_text())
 	await get_tree().create_timer(DAWN_DELAY, false).timeout
-	dawn_screen.play(survived, carried)
+	dawn_screen.play(survived, carried, secrets)
 	await dawn_screen.finished
 	_next_night()
+
+
+## The floor's secrets for the dawn card: found in all and tonight, the
+## rewards claimed ({} in the lobby: it has no world content of the floor).
+func _secrets_summary() -> Dictionary:
+	if floor_game == null or floor_game.world == null:
+		return {}
+	var world := floor_game.world
+	return {"found": world.secrets_found(), "total": world.secrets_total(), "tonight": world.found_tonight,
+			"rewards": world.rewards_claimed(), "rewards_total": world.rewards_total()}
+
+
+## What the exhibits left standing about the rooms (a Fu dog's ball on its
+## plinth, kept in the exhibits' node) greys over with them.
+func _freeze_props() -> void:
+	for node in enemies_root.get_children():
+		if node.is_in_group(Enemy.PROP_GROUP):
+			Enemy.turn_to_stone(node)
 
 
 func _freeze_boss(boss: TRex) -> void:

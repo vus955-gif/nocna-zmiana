@@ -79,7 +79,11 @@ func test_every_encounter_room_gets_one_set_with_matching_kinds() -> void:
 		var slot := lobby.spawn_slots[spawn.slot]
 		assert_eq(slot.set_id, config.encounter_sets[slot.room], "only the chosen set")
 		assert_true(slot.kinds.has(spawn.kind))
-		assert_eq(spawn.dormant, slot.dormant)
+		if spawn.watcher:
+			# the room's watcher (NightDirector.watchers): a sleeper's slot, kept awake
+			assert_true(slot.dormant and not spawn.dormant, "a watcher is a sleeper woken to keep watch")
+		else:
+			assert_eq(spawn.dormant, slot.dormant)
 	var sets_seen := {}
 	for night_seed in 60:
 		var hall_set: int = NightDirector.plan(night_seed, 2, lobby).encounter_sets[&"hall"]
@@ -261,6 +265,7 @@ func test_the_first_night_starts_gently_on_the_way_out() -> void:
 			if not way.has(room):
 				continue
 			assert_false(NightDirector.GENTLE_SWAP.has(spawn.kind), "seed %d: a %s in the %s on night 1" % [night_seed, spawn.kind, room])
+			assert_false(spawn.watcher, "seed %d: no watchers on the way out on night 1 (only the level's patrols)" % night_seed)
 			if not spawn.dormant:
 				awake += 1
 		assert_lt(awake, NightDirector.GENTLE_AWAKE + 1, "seed %d: %d awake on the way out" % [night_seed, awake])
@@ -273,3 +278,133 @@ func test_later_nights_keep_their_wolves() -> void:
 			if spawn.kind == &"wolf" and lobby.spawn_slots[spawn.slot].room == &"diorama":
 				wolves += 1
 	assert_gt(wolves, 0, "the gentle start is for night 1 only")
+
+
+# --- watchers (ecology: one awake per sleeping room) ----------------------------------------
+
+func _three_wax_room() -> LevelDescription:
+	var level := LevelDescription.new()
+	var kinds: Array[StringName] = [&"wax"]
+	for i in 3:
+		level.spawn_slots.append(SpawnSlot.make(Vector3(i * 2.0, 0, 0), &"gallery", 0, kinds))
+	var pair: Array[StringName] = [&"wax", &"mummy"]
+	level.spawn_slots.append(SpawnSlot.make(Vector3(0, 0, 6), &"tombs", SpawnSlot.ALWAYS_SET, pair))
+	level.spawn_slots.append(SpawnSlot.make(Vector3(2, 0, 6), &"tombs", SpawnSlot.ALWAYS_SET, pair))
+	level.spawn_slots.append(SpawnSlot.make(Vector3(4, 0, 6), &"tombs", SpawnSlot.ALWAYS_SET, pair))
+	var busts: Array[StringName] = [&"bust"]
+	for i in 3:
+		level.spawn_slots.append(SpawnSlot.make(Vector3(i * 2.0, 0, 12), &"study", 0, busts))
+	var two: Array[StringName] = [&"knight"]
+	for i in 2:
+		level.spawn_slots.append(SpawnSlot.make(Vector3(i * 2.0, 0, 18), &"armory", 0, two))
+	return level
+
+
+func test_a_room_of_three_sleepers_gets_one_watcher() -> void:
+	var config := NightDirector.plan(99, 2, _three_wax_room())
+	var gallery: Array = config.spawns.filter(func(s: NightConfig.Spawn) -> bool: return s.slot < 3)
+	assert_eq(gallery.size(), 3)
+	var awake: Array = gallery.filter(func(s: NightConfig.Spawn) -> bool: return not s.dormant)
+	assert_eq(awake.size(), 1, "one of the three keeps watch")
+	assert_true((awake[0] as NightConfig.Spawn).watcher)
+	assert_eq(config.to_dict()["spawns"].filter(func(row: Array) -> bool: return row[3]).size(), 1, "to_dict tells which")
+
+
+func test_ambushes_supports_and_small_rooms_get_no_watcher() -> void:
+	var config := NightDirector.plan(99, 2, _three_wax_room())
+	for spawn in config.spawns:
+		if spawn.slot >= 3 and spawn.slot < 6:
+			assert_true(spawn.dormant, "an ambush's mummies sleep in their tombs")
+		if spawn.slot >= 6 and spawn.slot < 9:
+			assert_true(spawn.dormant, "busts are support: they wait")
+		if spawn.slot >= 9:
+			assert_true(spawn.dormant, "two knights are too few for a watch")
+
+
+func test_a_room_with_an_awake_exhibit_keeps_its_draw() -> void:
+	var level := _three_wax_room()
+	level.spawn_slots[1].dormant = false
+	var config := NightDirector.plan(99, 2, level)
+	var gallery: Array = config.spawns.filter(func(s: NightConfig.Spawn) -> bool: return s.slot < 3)
+	assert_eq(gallery.filter(func(s: NightConfig.Spawn) -> bool: return not s.dormant).size(), 1, "the patrol it had, nobody else")
+	assert_false(gallery.any(func(s: NightConfig.Spawn) -> bool: return s.watcher))
+
+
+## A gallery of [param count] wax sleepers.
+func _wax_gallery(count: int) -> LevelDescription:
+	var level := LevelDescription.new()
+	var kinds: Array[StringName] = [&"wax"]
+	for i in count:
+		level.spawn_slots.append(SpawnSlot.make(Vector3(i * 2.0, 0, 0), &"gallery", 0, kinds))
+	return level
+
+
+## How many keep watch in a gallery of [param count] wax sleepers on
+## [param night], over the seeds whose draw leaves the whole gallery asleep
+## (a room with an awake exhibit keeps its draw): one entry per such seed.
+func _watchers_in_galleries(count: int, night: int) -> Array[int]:
+	var found: Array[int] = []
+	for night_seed in 40:
+		var config := NightDirector.plan(night_seed, night, _wax_gallery(count))
+		var drawn := config.spawns.size()
+		var awake_alone := config.spawns.filter(func(s: NightConfig.Spawn) -> bool: return not s.dormant and not s.watcher).size()
+		if drawn < count or awake_alone > 0:
+			continue
+		found.append(config.spawns.filter(func(s: NightConfig.Spawn) -> bool: return s.watcher).size())
+	return found
+
+
+## Review 19.10 (measured on Floor I): three sleepers made a watch on the
+## first night too, nearly doubling its exhibits on their feet - the first
+## night waits for a room of five.
+func test_the_first_night_keeps_watch_only_in_a_room_of_five() -> void:
+	assert_eq(NightDirector.watcher_room(1), 5)
+	assert_eq(NightDirector.watcher_room(2), 3)
+	assert_eq(NightDirector.watcher_room(7), 3)
+	var three := _watchers_in_galleries(3, 1)
+	var four := _watchers_in_galleries(4, 1)
+	var five := _watchers_in_galleries(5, 1)
+	var later := _watchers_in_galleries(3, 2)
+	assert_gt(three.size() + four.size() + five.size() + later.size(), 20, "(enough seeds leave a whole gallery asleep)")
+	for count: int in three + four:
+		assert_eq(count, 0, "three or four sleepers, night 1: nobody wakes")
+	for count: int in five:
+		assert_eq(count, 1, "five, night 1: one keeps watch")
+	for count: int in later:
+		assert_eq(count, 1, "three, night 2: one keeps watch")
+
+
+## Saves keep slot indices (night_progress.killed, pack losses) and the
+## night is drawn again from its seed; a watcher only stays awake, so an old
+## save's slots still name the same exhibits. The rows of to_dict() keep
+## their first three fields (slot, kind, dormant) where they were: a reader
+## of the old three-field rows reads them the same.
+func test_watcher_rows_extend_the_old_three_fields() -> void:
+	for night_seed in [5, 777, 12345]:
+		var config := NightDirector.plan(night_seed, 3, lobby)
+		var rows: Array = config.to_dict()["spawns"]
+		assert_eq(rows.size(), config.spawns.size())
+		for i in rows.size():
+			var row: Array = rows[i]
+			var spawn := config.spawns[i]
+			assert_eq(row.size(), 4)
+			assert_eq(row.slice(0, 3), [spawn.slot, String(spawn.kind), spawn.dormant], "the old fields first, unchanged")
+			assert_eq(row[3], spawn.watcher)
+			assert_true(lobby.spawn_slots[spawn.slot].kinds.has(spawn.kind), "the slot's own kind: a watcher swaps no kind")
+
+
+func test_watchers_change_nothing_else_in_the_night() -> void:
+	for night_seed in [5, 777, 12345]:
+		var with := NightDirector.plan(night_seed, 3, lobby).to_dict()
+		var config := NightDirector.plan(night_seed, 3, lobby)
+		for spawn in config.spawns:
+			if spawn.watcher:
+				spawn.dormant = true
+				spawn.watcher = false
+		var without := config.to_dict()
+		with.erase("spawns")
+		without.erase("spawns")
+		assert_eq(with, without, "seed %d: loot, doors, fuses and portraits as drawn" % night_seed)
+	var a := NightDirector.plan(31, 2, lobby).to_dict()
+	var b := NightDirector.plan(31, 2, lobby).to_dict()
+	assert_eq(a, b, "the same seed picks the same watchers")

@@ -49,6 +49,15 @@ func test_weapon_noise_radii() -> void:
 	assert_eq(PerceptionRules.weapon_noise(&"unknown_gun"), PerceptionRules.DEFAULT_WEAPON_NOISE)
 
 
+## Review 19.10: the flare's little burst was heard 30 m round like a rocket's.
+func test_a_blast_is_heard_as_far_as_it_is_loud() -> void:
+	assert_eq(PerceptionRules.blast_noise(&"flare"), 15.0, "a flare's burst is small")
+	assert_eq(PerceptionRules.blast_noise(&"hwacha"), 30.0)
+	assert_eq(PerceptionRules.blast_noise(&""), PerceptionRules.BLAST_NOISE, "any other explosion: the big bang")
+	assert_eq(PerceptionRules.BLAST_NOISE, 30.0)
+	assert_eq(PerceptionRules.blast_noise(&"flare"), PerceptionRules.weapon_noise(&"flare"), "no louder than the shot that fired it")
+
+
 func test_noise_carries_through_open_passages_only() -> void:
 	var graph := RoomGraph.new()
 	graph.add_door(&"d1", &"a", &"b")

@@ -64,3 +64,43 @@ func test_slug_builds_a_one_ray_profile() -> void:
 		assert_eq(slug.spread_deg, 0.0)
 		assert_eq(slug.weak_point_multiplier, 2.0)
 		assert_eq(slug.ammo_type, &"shells", "same shells")
+
+
+func test_secret_bonus_steps_add_to_the_guard_numbers() -> void:
+	assert_eq(UpgradeEffects.max_health({&"bonus_health": 2}), 120.0)
+	assert_eq(UpgradeEffects.max_health({&"health": 1, &"bonus_health": 1}), 130.0, "on top of the bought level")
+	assert_eq(UpgradeEffects.stamina_max({&"bonus_stamina": 1}), 110.0)
+	assert_eq(UpgradeEffects.stamina_regen({&"bonus_stamina": 3}), 30.0, "a step is capacity only")
+	assert_eq(UpgradeEffects.battery_capacity({&"bonus_battery": 1}), 140.0)
+	assert_eq(UpgradeEffects.battery_capacity({&"battery": 1, &"bonus_battery": 2}), 220.0, "seconds added after the upgrade's factor")
+	assert_almost_eq(UpgradeEffects.reserve_factor({&"bonus_pockets": 2}), 1.2)
+	assert_almost_eq(UpgradeEffects.reserve_factor({&"pockets": 1, &"bonus_pockets": 1}), 1.35)
+	assert_eq(UpgradeEffects.spare_ammo(20, {&"bonus_pockets": 1}), 22)
+	assert_almost_eq(UpgradeEffects.dust_magnet_radius({&"bonus_magnet": 1}), DustMote.MAGNET_RADIUS + 1.5)
+	assert_eq(UpgradeEffects.max_health({&"bonus_health": -3}), 100.0, "junk counts for nothing")
+	assert_eq(UpgradeEffects.max_health({&"bonus_health": 2.0}), 120.0, "a float from a save")
+
+
+func test_secret_mods_change_how_the_weapons_work() -> void:
+	var shotgun := _weapon(&"shotgun").duplicate() as WeaponData
+	UpgradeEffects.apply_to_weapon(shotgun, {&"mod_shotgun_choke": 1, &"shotgun_slug": 1})
+	assert_eq(shotgun.pierce_targets, 2, "the carver's choke: shot goes on through the first target")
+	assert_eq(UpgradeEffects.alt_profile(shotgun).pierce_targets, 2, "slugs too")
+	var rifle := _weapon(&"rifle_hunt").duplicate() as WeaponData
+	UpgradeEffects.apply_to_weapon(rifle, {&"mod_rifle_peep": 1})
+	assert_true(rifle.lock_breaker, "the peep sight: a round snaps a chain link")
+	assert_eq(rifle.pierce_targets, 3, "nothing else changes")
+	var harpoon := _weapon(&"harpoon").duplicate() as WeaponData
+	UpgradeEffects.apply_to_weapon(harpoon, {&"mod_harpoon_line": 1})
+	assert_true(harpoon.line_return, "the return line")
+	for id in [&"shotgun", &"rifle_hunt", &"harpoon"]:
+		var plain := _weapon(id).duplicate() as WeaponData
+		UpgradeEffects.apply_to_weapon(plain, {&"mod_shotgun_choke": 0})
+		assert_false(plain.lock_breaker, "%s plain" % id)
+		assert_false(plain.line_return, "%s plain" % id)
+		assert_eq(plain.pierce_targets, _weapon(id).pierce_targets, "%s plain" % id)
+	assert_false(_weapon(&"rifle_hunt").lock_breaker, "rifle_hunt.tres untouched")
+	assert_eq(_weapon(&"shotgun").pierce_targets, 1, "shotgun.tres untouched")
+	assert_true(UpgradeEffects.has_mod({&"mod_rifle_peep": 1}, &"rifle_peep"))
+	assert_false(UpgradeEffects.has_mod({&"mod_rifle_peep": 0}, &"rifle_peep"))
+	assert_false(UpgradeEffects.has_mod({}, &"rifle_peep"))

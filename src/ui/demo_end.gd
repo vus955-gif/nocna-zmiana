@@ -53,6 +53,7 @@ func _ready() -> void:
 		_stat(grid, "completion", "END_FLOOR1_COMPLETION", "%d%%" % FloorCompletion.percent(GameState, layout))
 		var secrets: Array = parts.get("secrets", [0, 0])
 		_stat(grid, "secrets", "DEMO_SECRETS", "%d / %d" % [secrets[0], secrets[1]])
+		_stat(grid, "rewards", "END_FLOOR1_REWARDS", "%d / %d" % [SecretRewards.claimed(GameState), SecretRewards.total()])
 		var chess: Array = parts.get("chess", [0, FloorCompletion.CHESS])
 		_stat(grid, "chess", "END_FLOOR1_CHESS", "%d / %d" % [chess[0], chess[1]])
 	else:

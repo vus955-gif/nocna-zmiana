@@ -21,10 +21,12 @@ extends RefCounted
 
 const Court := preload("res://src/level/floor1/zones/court.gd")
 const Egypt := preload("res://src/level/floor1/zones/egypt.gd")
-## The wings dressed in stage P3 keep their art in modules of their own
-## ([method wings]: Floor1ArtGreece, Floor1ArtEnlightenment), asked by the
-## prefix of the room id ([method wing_of]). Each has piece_look, fixture,
-## dress, gate_leaf, portals and disguised_gates.
+## The wings dressed in stages P3 and P4 keep their art in modules of their
+## own ([method wings]: Floor1ArtGreece, Floor1ArtEnlightenment,
+## Floor1ArtAssyria, Floor1ArtAsia), asked by the prefix of the room id
+## ([method wing_of]). Each has piece_look, fixture, dress, gate_leaf,
+## portals, disguised_gates and extra_lights, and may add a door_leaf of its
+## own ([method door_leaf] asks a wing only if it has the method).
 
 ## Floor I room id -> its style in ArtKit.ROOMS (the zones P2 dresses;
 ## MuseumFloorLevel.ART_ZONES). Other zones add theirs in stage P3.
@@ -66,7 +68,65 @@ const ROOM_STYLES := {
 	&"enlightenment_service_stairs": &"corridor_w", &"enlightenment_stacks": &"corridor_w",
 	&"enlightenment_archive": &"enlightenment_librarian", &"enlightenment_bindery": &"closet",
 	&"enlightenment_study": &"enlightenment_librarian",
+	# stage P4: the Assyrian wing (Floor1ArtAssyria) and the Asian wing
+	# (Floor1ArtAsia); the secrets wear their neighbours' plain styles
+	&"assyria_gate": &"assyria_gate", &"assyria_balawat": &"assyria_balawat", &"assyria_courtyard": &"assyria_courtyard",
+	&"assyria_nimrud": &"assyria_nimrud", &"assyria_lions": &"assyria_lions", &"assyria_lions_gallery": &"assyria_lions",
+	&"assyria_library": &"assyria_library", &"assyria_freight_stairs": &"assyria_service_stairs",
+	&"assyria_tablets": &"assyria_tablets", &"assyria_lion_cage": &"assyria_tablets",
+	&"assyria_freight_lift": &"assyria_service_stairs",
+	&"asia_china": &"asia_china", &"asia_porcelain": &"asia_porcelain", &"asia_korea": &"asia_korea",
+	&"asia_armor": &"asia_armor", &"asia_garden": &"asia_garden", &"asia_teahouse": &"asia_teahouse",
+	&"asia_service_stairs": &"corridor_w", &"asia_armory_vault": &"asia_armor", &"asia_garden_shrine": &"asia_teahouse",
+	&"asia_crate_store": &"closet",
+	# stage P5: the Americas and Oceania wing (Floor1ArtAmericas) and the roof
+	# (Floor1ArtRoof); the staff rooms and secrets wear plain styles
+	&"americas_north": &"americas_north", &"americas_totems": &"americas_totems", &"americas_moai": &"americas_moai",
+	&"americas_pacific": &"americas_pacific", &"americas_pit": &"americas_pit", &"americas_temple": &"americas_temple",
+	&"americas_moai_hideout": &"americas_moai_hideout", &"americas_workshop": &"americas_workshop",
+	&"americas_service_stairs": &"corridor_w", &"americas_undercroft": &"corridor_w", &"americas_store": &"closet",
+	&"roof_stairs": &"corridor_w", &"roof_catwalks": &"roof_walks", &"roof_plant": &"roof_deck",
+	&"roof_loft": &"roof_hut", &"roof_shed": &"roof_hut",
 }
+## Pieces whose collision is drawn from their look (CollisionFit: prisms of
+## what is drawn, band by band) instead of the greybox box, which their
+## models fill only in part (QA Q7: a tipi is a cone, the steam engine a
+## narrow bed, a Reading Room desk wider than its box): kit -> the rooms
+## (empty: every room of Floor I).
+const FIT_COLLISION := {
+	&"balcony_post": [&"basement_boiler"], &"bison": [], &"cafe_table": [], &"catalogue": [&"court_reading"], &"chariot": [], &"clock": [],
+	&"case": [&"americas_moai"], &"coat_rack": [&"entrance_cloakroom"],
+	&"column": [&"court", &"entrance_hall", &"asia_china"], &"crate": [&"egypt_gallery"],
+	&"desk": [&"court_reading", &"egypt_gallery"], &"info_desk": [], &"kayak": [], &"pedestal": [&"asia_korea"],
+	&"plinth": [&"americas_pacific"], &"railing": [&"assyria_lions_gallery"],
+	&"scaffold": [], &"sculpture": [&"court", &"enlightenment_cabinet"],
+	&"shelf": [&"court_reading", &"enlightenment_cabinet", &"greece_cast_store", &"basement_workshop"], &"steam_engine": [],
+	&"tipi": [], &"totem": [], &"totem_pole": [], &"water_tank": [], &"whaleboat": [],
+}
+
+
+## Pieces whose collision is drawn from the hero pieces standing in their
+## boxes ("kit@room"): the Khorsabad Gate's lamassu.
+const HERO_FIT: Array[String] = ["lamassu@assyria_gate"]
+
+## Fitted pieces drawn in columns along their x ("kit@room" -> how many):
+## the card catalogue's arc round the astrolabe, the drum's bookcases (each
+## curved along the drum; a blind portal's leaves sit in the middle one's
+## recess).
+const FIT_COLUMNS := {"catalogue@court_reading": 4, "shelf@court_reading": 3, "pedestal@asia_korea": 3}
+
+
+## True when [param spec]'s collision is drawn from its look (FIT_COLLISION).
+static func fits_collision(spec: PieceSpec) -> bool:
+	var rooms: Variant = FIT_COLLISION.get(spec.kit)
+	return rooms != null and ((rooms as Array).is_empty() or (rooms as Array).has(spec.room))
+
+
+## How many columns [param spec]'s fitted collision is drawn in (1: one).
+static func fit_columns(spec: PieceSpec) -> int:
+	return int(FIT_COLUMNS.get("%s@%s" % [spec.kit, spec.room], 1))
+
+
 ## Every model this module places (the art test checks each is registered
 ## and has its file).
 const MODELS: Array[String] = [
@@ -104,12 +164,17 @@ const PORTALS := {
 	&"court_reading_door": {},
 	&"j_court_north": {},
 	&"j_egypt_assyria": {},
+	&"j_assyria_americas": {},
 }
 ## The sealed gates' portals: opening -> [[room whose face, model, native
-## opening], ...].
+## opening], ...]. (The Khorsabad Gate on the Assyrian face of j_egypt_assyria
+## is Floor1ArtAssyria's hero piece; the Balawat gates' alabaster portal
+## frames the bronze leaves on the Assyrian face of the Wing Seal, a carved
+## stone portal on the Moai room's.)
 const SEAL_PORTALS := {
 	&"j_court_north": [[&"court", "hall_arch_4m", Vector2(4.0, 4.5)], [&"north_hall", "hall_arch_4m", Vector2(4.0, 4.5)]],
 	&"j_egypt_assyria": [[&"egypt_colossus", "egypt_portal_great", Vector2(6.0, 7.5)]],
+	&"j_assyria_americas": [[&"assyria_balawat", "asy_portal_4m", Vector2(4.0, 4.5)], [&"americas_moai", "americas_portal_4m", Vector2(4.0, 4.5)]],
 }
 ## Group of the astrolabe's art (FloorFinale's Astrolabe skips its greybox
 ## when the level has one).
@@ -173,9 +238,23 @@ static func piece_look(spec: PieceSpec, index: int, layout: LevelLayout) -> Node
 			return _holder("Visual") if spec.room == &"court_reading" else null
 		&"shelf":
 			if spec.room == &"court_reading":
-				return _holder("Visual")
+				# its segment of the drum's bookcases (rr_bookcase, or the one
+				# framing a blind portal every fourth segment; the models stand
+				# at the drum's middle, turned to the piece's bearing)
+				var case := _holder("Visual")
+				var bearing := atan2(spec.position.x, -spec.position.z)
+				var door := posmod(roundi(rad_to_deg(bearing) / 22.5), 4) == 0
+				ArtKit._add(case, "rr_bookcase_door" if door else "rr_bookcase", spec.transform().affine_inverse() * Transform3D(Basis(Vector3.UP, -bearing), Vector3.ZERO))
+				return case
 		&"catalogue":
-			return _holder("Visual")   # rr_catalogue_arc round the astrolabe ([method dress])
+			if spec.room == &"court_reading":
+				# its part of rr_catalogue_arc's ring round the astrolabe (the
+				# model stands at the drum's middle, turned to the piece's bearing)
+				var arc := _holder("Visual")
+				var bearing := atan2(spec.position.x, -spec.position.z)
+				ArtKit._add(arc, "rr_catalogue_arc", spec.transform().affine_inverse() * Transform3D(Basis(Vector3.UP, -bearing), Vector3.ZERO))
+				return arc
+			return _holder("Visual")
 		&"balcony":
 			if spec.room == &"court":
 				# the ring slabs are the court_balcony_seg models; the landings
@@ -193,7 +272,7 @@ static func piece_look(spec: PieceSpec, index: int, layout: LevelLayout) -> Node
 				return _fit(_holder("Visual"), "entrance_column", Vector3(size.x / 1.72, size.y / 12.0, size.z / 1.72))
 			if style == &"egypt_colossus_hall":
 				return _fit(_holder("Visual"), "egypt_column_open", Vector3(size.x / 2.6, size.y / 11.0, size.z / 2.6))
-		&"pedestal":
+		&"pedestal", &"dais":
 			if spec.room == &"court_reading":
 				return _holder("Visual")   # the astrolabe's own steps ([method dress])
 			if String(style).begins_with("egypt"):
@@ -206,6 +285,8 @@ static func piece_look(spec: PieceSpec, index: int, layout: LevelLayout) -> Node
 			return _cafe_counter(size)
 		&"cafe_table":
 			return _cafe_table(index)
+		&"cafe_flap":
+			return _cafe_flap(size)
 		&"shop_front":
 			return _shop(size, spec.room)
 		&"grate":
@@ -292,12 +373,20 @@ static func wing_of(room: StringName) -> Variant:
 		return Floor1ArtGreece
 	if id.begins_with("enlightenment_"):
 		return Floor1ArtEnlightenment
+	if id.begins_with("assyria_"):
+		return Floor1ArtAssyria
+	if id.begins_with("asia_"):
+		return Floor1ArtAsia
+	if id.begins_with("americas_"):
+		return Floor1ArtAmericas
+	if id.begins_with("roof_"):
+		return Floor1ArtRoof
 	return null
 
 
-## The art modules of the stage P3 wings.
+## The art modules of the stage P3, P4 and P5 wings (and the roof).
 static func wings() -> Array:
-	return [Floor1ArtGreece, Floor1ArtEnlightenment]
+	return [Floor1ArtGreece, Floor1ArtEnlightenment, Floor1ArtAssyria, Floor1ArtAsia, Floor1ArtAmericas, Floor1ArtRoof]
 
 
 ## True for a point over the balcony's ring (north of the landings by the
@@ -364,6 +453,66 @@ static func _cafe_table(index: int) -> Node3D:
 		var at := Vector3(sin(a), 0.0, cos(a)) * 0.62
 		ArtKit._add(root, "cafe_chair", Transform3D(Basis(Vector3.UP, a + PI + 0.15 * sin(index + k)), at))
 	return root
+
+
+## The counter flap shutting the barista's aisle (CafeCorner lifts it): a
+## marble slab with a brass hinge strip along its back edge (+Z, over the
+## aisle: "Slab" turns about it and folds back to ~20 deg above flat, under
+## a walking guard's eyes) on a short oak section hung at the -X end (the
+## back bar's: "Panel" swings about it). Built in code in the counter's
+## colours - it moves, so it is no baked model.
+static var _flap_materials: Dictionary = {}
+
+static func _cafe_flap(size: Vector3) -> Node3D:
+	var root := _holder("Visual")
+	var slab := Node3D.new()
+	slab.name = "Slab"
+	slab.position = Vector3(0.0, size.y, size.z * 0.5)
+	root.add_child(slab)
+	_block(slab, Vector3(size.x, 0.05, size.z), Vector3(0.0, -0.025, -size.z * 0.5), _flap_material(&"marble"))
+	_block(slab, Vector3(size.x + 0.02, 0.03, 0.06), Vector3(0.0, -0.015, -0.03), _flap_material(&"brass"))
+	var panel := Node3D.new()
+	panel.name = "Panel"
+	panel.position = Vector3(-size.x * 0.5, 0.0, 0.0)
+	root.add_child(panel)
+	var body := Vector3(size.x - 0.04, size.y - 0.07, size.z - 0.1)
+	_block(panel, body, Vector3(size.x * 0.5, body.y * 0.5, 0.0), _flap_material(&"oak"))
+	_block(panel, Vector3(size.x - 0.04, 0.1, size.z - 0.08), Vector3(size.x * 0.5, 0.05, 0.0), _flap_material(&"plinth"))
+	_block(panel, Vector3(0.06, body.y - 0.2, 0.02), Vector3(size.x - 0.12, body.y * 0.5, -size.z * 0.5 + 0.06), _flap_material(&"brass"))
+	return root
+
+
+static func _flap_material(id: StringName) -> StandardMaterial3D:
+	if _flap_materials.has(id):
+		return _flap_materials[id]
+	var mat := StandardMaterial3D.new()
+	match id:
+		&"marble":
+			mat.albedo_color = Color(0.16, 0.15, 0.14)
+			mat.roughness = 0.35
+		&"plinth":
+			mat.albedo_color = Color(0.11, 0.1, 0.1)
+			mat.roughness = 0.4
+		&"oak":
+			mat.albedo_color = Color(0.36, 0.23, 0.12)
+			mat.roughness = 0.75
+		&"brass":
+			mat.albedo_color = Color(0.75, 0.6, 0.3)
+			mat.metallic = 0.9
+			mat.roughness = 0.35
+	_flap_materials[id] = mat
+	return mat
+
+
+static func _block(parent: Node3D, size: Vector3, at: Vector3, material: Material) -> MeshInstance3D:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	var view := MeshInstance3D.new()
+	view.mesh = mesh
+	view.position = at
+	view.material_override = material
+	parent.add_child(view)
+	return view
 
 
 ## The museum shop's kiosk: the box in the court's stone, the shop front
@@ -480,7 +629,7 @@ static func _crate(spec: PieceSpec, index: int) -> Node3D:
 			_camp_crate(root, size, index)
 			return root
 		&"egypt_tomb_passage":
-			ArtKit._add(root, "coffin", Transform3D(Basis.from_scale(size / Vector3(0.78, 2.02, 0.72)), Vector3.ZERO), "coffin" if index % 2 == 0 else "coffin_black")
+			ArtKit._add(root, "coffin", Transform3D(Basis.from_scale(size / MummyTomb.COFFIN_SIZE), Vector3.ZERO), "coffin" if index % 2 == 0 else "coffin_black")
 			return root
 		&"egypt_cache", &"egypt_service_corridor":
 			_camp_crate(root, size, index)
@@ -568,9 +717,10 @@ static func _pilaster(spec: PieceSpec, layout: LevelLayout) -> Node3D:
 
 
 ## True when a balcony slab gets the hall's fascia and coffers (the court's
-## ring slabs are the balcony models; its landings are plain stone).
+## ring slabs are the balcony models; its landings are plain stone; the Lion
+## Hunt gallery's slabs are plain alabaster under their merlons).
 static func wants_fascia(spec: PieceSpec) -> bool:
-	return spec.room != &"court" and not BasementArt.is_basement(spec.room)
+	return spec.room != &"court" and not BasementArt.is_basement(spec.room) and not String(spec.room).begins_with("assyria_")
 
 
 # --- fixtures and frames ---------------------------------------------------------
@@ -770,6 +920,16 @@ static func gate_leaf(opening_id: StringName, size: Vector3, side: float) -> Var
 	return null
 
 
+## The leaf of an ordinary swinging door whose face room's wing has a leaf
+## of its own (an optional hook: the Asian wing's tea house shoji), in
+## Door's leaf frame, or null (ArtKit's leaves).
+static func door_leaf(face_room: StringName, size: Vector3, style_id: int, side: float) -> Variant:
+	var wing: Variant = wing_of(face_room)
+	if wing != null and wing.has_method(&"door_leaf"):
+		return wing.door_leaf(face_room, size, style_id, side)
+	return null
+
+
 static func _group(parent: Node3D, label: String, room: StringName) -> Node3D:
 	var n := Node3D.new()
 	n.name = label
@@ -790,18 +950,18 @@ static func _court(_layout: LevelLayout, root: Node3D) -> void:
 ## The drum (16 segments, a portal every 4), its bookcases and coffered dome
 ## with the oculus, the card catalogue's ring, the astrolabe (its rings turn
 ## slowly).
-static func _reading_room(layout: LevelLayout, root: Node3D) -> void:
+static func _reading_room(_layout: LevelLayout, root: Node3D) -> void:
 	for k in 16:
 		var basis := Basis(Vector3.UP, deg_to_rad(22.5 * k))
 		var door := k % 4 == 0
 		ArtKit._add(root, "rr_drum_door" if door else "rr_drum_wall", Transform3D(basis, Vector3.ZERO))
-		ArtKit._add(root, "rr_bookcase_door" if door else "rr_bookcase", Transform3D(basis, Vector3.ZERO))
+		if k == 0:
+			# (the other segments' bookcases are the shelf pieces' looks:
+			# piece_look(); the north door's has no shelf piece)
+			ArtKit._add(root, "rr_bookcase_door", Transform3D(basis, Vector3.ZERO))
 		ArtKit._add(root, "rr_dome_sector", Transform3D(basis, Vector3.ZERO))
 	ArtKit._add(root, "rr_oculus", Transform3D.IDENTITY)
-	for spec in layout.pieces:
-		if spec.kit == &"catalogue" and spec.room == &"court_reading":
-			var bearing := rad_to_deg(atan2(spec.position.x, -spec.position.z))
-			ArtKit._add(root, "rr_catalogue_arc", Transform3D(Basis(Vector3.UP, deg_to_rad(-bearing)), Vector3.ZERO))
+	# (the card catalogue's arcs are its pieces' looks: piece_look())
 	var astrolabe := ArtKit._add(root, "astrolabe", Transform3D.IDENTITY)
 	astrolabe.add_to_group(ASTROLABE_GROUP)
 	var parts := ArtLibrary.parts(astrolabe)
@@ -925,6 +1085,12 @@ static func _seal_portals(layout: LevelLayout, root: Node3D, rooms: Dictionary) 
 			var local := Transform3D(Basis(Vector3.UP, yaw).scaled(k), Vector3(0, 0, face * passage.depth() * 0.5))
 			var portal := ArtKit._add(root, String(entry[1]), frame * local)
 			portal.set_meta(&"kit_room", room)
+
+
+## LevelBuilder.passage_frame without a builder (for the wings' modules):
+## origin in the middle of the passage's floor, -Z from room A to room B.
+static func passage_frame(layout: LevelLayout, passage: OpeningSpec) -> Transform3D:
+	return _passage_frame(layout, passage)
 
 
 ## LevelBuilder.passage_frame without a builder: origin in the middle of the

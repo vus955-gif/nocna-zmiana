@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="FeelProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/feel_profile.gd" id="1_feel"]
+
+[resource]
+script = ExtResource("1_feel")
+id = &"shotgun"
+kick_back = 0.085
+kick_rise = 0.03
+kick_side = 0.006
+kick_pitch = 15.0
+kick_yaw = 1.5
+kick_roll = 4.0
+kick_frequency = 3.0
+kick_damping = 0.55
+camera_pitch = 2.4
+camera_yaw = 0.5
+camera_frequency = 2.6
+camera_damping = 0.8
+fov_punch = 2.5
+shake = 0.42
+shake_cap = 0.62
+hit_shake = 0.08
+flash_size = 0.24
+flash_color = Color(1.0, 0.7, 0.35, 1.0)
+flash_time = 0.06
+light_color = Color(1.0, 0.72, 0.4, 1.0)
+light_energy = 5.0
+light_range = 9.0
+light_time = 0.08
+smoke = 4
+breech_casings = 2
+casing_color = Color(0.62, 0.12, 0.1, 1.0)
+casing_size = Vector3(0.02, 0.02, 0.045)
+eject_offset = Vector3(0.0, 0.02, 0.4)
+eject_velocity = Vector3(0.6, 1.9, 0.4)
+tracer_color = Color(1.0, 0.8, 0.5, 1.0)
+tracer_width = 0.006
+tracer_time = 0.035
+sound_db = 1.0
+sound_pitch = 0.94
+sound_jitter = 0.05
+hit_weight = 1.0
+blast_weight = 0.0
+decal_size = 0.07

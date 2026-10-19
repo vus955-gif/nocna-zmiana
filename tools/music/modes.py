@@ -21,6 +21,15 @@ MODES = {
     "harmonic": [0, 2, 3, 5, 7, 8, 11],
     "penta": [0, 3, 3, 5, 7, 7, 10],
     "aeolian": [0, 2, 3, 5, 7, 8, 10],
+    # the biome score's (gen_biomes): Greece's bright B part, Asia's dark
+    # in-scale (miyako-bushi D Eb G A Bb: the third and seventh degrees fold
+    # down onto Eb and Bb), the boiler room's Locrian (the tritone Ab)
+    "mixolydian": [0, 2, 4, 5, 7, 9, 10],
+    "insen": [0, 1, 1, 5, 7, 8, 8],
+    # the in-scale with the third folded up onto G (a held lullaby F becomes G,
+    # not a long Eb over the tonic)
+    "insen_up": [0, 1, 5, 5, 7, 8, 8],
+    "locrian": [0, 1, 3, 5, 6, 8, 10],
 }
 D4 = 62
 

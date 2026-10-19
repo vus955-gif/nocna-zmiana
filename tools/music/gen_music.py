@@ -1,5 +1,8 @@
 """Procedural score of Nocna Zmiana (menu, exploration, tension, combat,
-boss, stings). Deterministic: every track has its own seed.
+boss, stings). Deterministic: every track has its own seed. Floor I's
+music (the music zones' four-stem loops in metal and electronic genres,
+the guardians' themes) is gen_biomes.py, its stings gen_wings.py; this
+module runs them all ('wings', or zone_<zone>, guardian_<wing>, stings).
 
 Writes 44.1 kHz 16-bit stereo WAV intermediates to build/audio_src/music/
 (gitignored); tools/music/encode_ogg.py (run in Blender) encodes them to
@@ -878,12 +881,15 @@ TRACKS = {"menu": menu, "explore": explore, "combat": combat, "boss": boss, "vic
 
 
 def all_tracks():
-    """The lobby's score plus Floor I's (gen_wings.py): every name the
+    """The lobby's score plus Floor I's (gen_biomes.py: the zones' loops and
+    the guardians' themes; gen_wings.py: the stings): every name the
     command line takes. 'wings' renders all of Floor I."""
-    import gen_wings   # noqa: E402  (imports this module back: kept out of the top level)
+    import gen_biomes   # noqa: E402  (both import this module back: kept out of the top level)
+    import gen_wings   # noqa: E402
     tracks = dict(TRACKS)
     tracks.update(gen_wings.tracks())
-    tracks["wings"] = lambda: [gen_wings.tracks()[k]() for k in ("walks", "guardians", "stings")]
+    tracks.update(gen_biomes.tracks())
+    tracks["wings"] = lambda: [tracks[k]() for k in ("biomes", "guardians", "stings")]
     return tracks
 
 

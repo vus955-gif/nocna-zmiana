@@ -175,7 +175,7 @@ func set_room(room: StringName, on: bool) -> void:
 		if is_instance_valid(node):
 			var motes := node as GPUParticles3D
 			_show(motes, on)
-			motes.emitting = on and motes.visible
+			motes.emitting = on and motes.visible and LevelKit.is_burning(motes)
 	for node: Variant in entry["decor"]:
 		if is_instance_valid(node):
 			(node as Node).process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED

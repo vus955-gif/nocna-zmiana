@@ -42,6 +42,9 @@ Parts (pivots in model space; Blender (x, y, z) -> Godot (x, z, -y)):
     rocket_9    ( 0.08, 0.35, -0.05)       ( 0.08, -0.05, -0.35)      upg_box9
     upg_fuses   (0.03, 0.01, -0.1275)      (0.03, -0.1275, -0.01)     hwacha   "quick fuse": brass igniter rail
                                                                                and caps on the back of all 9 tubes
+    sleeve_r/_l the wrist of its hand                                 hwacha   the sleeves (the game turns them
+                                                                               toward the elbows; markers Wrist_*,
+                                                                               Grip_*, Elbow_*: artlib/hands.py arm())
     fuse        (-0.0775, 0.11, -0.1115)   (-0.0775, -0.1115, -0.11)  hwacha   slow-match coil on its peg,
                                                                                glowing ember at the end
     hand_r      (0.175, 0.064, -0.1275)    (0.175, -0.1275, -0.064)   hwacha   right fist on the rear right
@@ -681,22 +684,28 @@ def build():
     fu = Part("fuse", origin=tuple(PEG + Vector((-0.013, 0, 0)) + s), parent="hwacha")
     fuse(fu)
     parts.append(fu)
+    # both hands on the vertical side handles (cant 35), the forearms back
+    # toward the eye and down; built in gun space like everything else and
+    # shifted after (the markers get the shift by hand)
     g0, g1 = grip_axis(1)
     gc = g0.lerp(g1, 0.5)
     right = Part("hand_r", origin=tuple(gc + s), parent="hwacha")
     m = hands.hand_matrix(gc, (g1 - g0).normalized(), (1.0, -0.2, 0.0), sx=1)
-    wrist = hands.add_hand(right, m, sx=1, tris=900)
-    hands.add_sleeve(right, wrist, (0.2, -0.85, -0.5), length=0.34, sx=1)
+    sleeve_r, markers_r = hands.arm("r", right, m, 1, math.radians(35.0), (0.1, -0.85, -0.5), 0.34, tris=900,
+                                    parent="hwacha")
     g0, g1 = grip_axis(-1)
     gc = g0.lerp(g1, 0.5)
     left = Part("hand_l", origin=tuple(gc + s), parent="hwacha")
     m = hands.hand_matrix(gc, (g1 - g0).normalized(), (-1.0, -0.2, 0.0), sx=-1)
-    wrist = hands.add_hand(left, m, sx=-1, tris=900)
-    hands.add_sleeve(left, wrist, (-0.3, -0.85, -0.45), length=0.36, watch=True, sx=-1)
-    parts += [right, left]
+    sleeve_l, markers_l = hands.arm("l", left, m, -1, math.radians(35.0), (-0.08, -0.85, -0.5), 0.36, watch=True,
+                                    tris=900, parent="hwacha")
+    for sleeve in (sleeve_r, sleeve_l):
+        sleeve.origin = sleeve.origin + s
+    parts += [right, left, sleeve_r, sleeve_l]
     for p in parts:
         _shift(p)
     markers = [("Muzzle", tuple(Vector((0.0, YM, (ZR[0] + ZR[1]) / 2)) + s), None)]
+    markers += [(name, tuple(Vector(co) + s), *rest) for name, co, *rest in markers_r + markers_l]
     markers += [(f"Tube_{k + 1}", tuple(Vector((TUBES[k][0], YM, TUBES[k][1])) + s), None) for k in range(6)]
     if upg:
         markers += [(f"Tube_{k + 1}", tuple(Vector((TUBES[k][0], YM, TUBES[k][1])) + s), "upg_box9")
@@ -706,7 +715,8 @@ def build():
     back = tuple(Vector((-0.04, Y0, 0.07)) + s)
     face = tuple(Vector((0.0, YM + 0.06, 0.07)) + s)
     side = tuple(Vector((-BX - 0.04, 0.03, 0.05)) + s)
-    return Model("vm_hwacha", parts, FNS, ppm=512, organic=("hand_r", "hand_l"), ao_dist=0.04, ao_rays=12,
+    return Model("vm_hwacha", parts, FNS, ppm=512, organic=("hand_r", "hand_l", "sleeve_r", "sleeve_l"), ao_dist=0.04,
+                 ao_rays=12,
                  ao_stride=1, front=1, markers=markers, variants={"vm_hwacha_master": MASTER},
                  preview_yaws=(-60.0, 40.0, 110.0, 250.0), preview_elevation=16.0,
                  preview_extra=[("back", back, 0.13, 205.0, 24.0), ("face", face, 0.17, -24.0, 10.0),

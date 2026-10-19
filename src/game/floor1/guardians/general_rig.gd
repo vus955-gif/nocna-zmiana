@@ -30,6 +30,9 @@ const PART_NAMES: Array[String] = ["pelvis", "torso", "head", "upperarm_l", "upp
 	"forearm_l", "forearm_r", "hand_l", "hand_r", "sword", "saya", "bow", "quiver", "arrow", "thigh_l", "thigh_r",
 	"shin_l", "shin_r", "foot_l", "foot_r", "kusazuri_f", "kusazuri_b", "kusazuri_l", "kusazuri_r"]
 const MARKERS: Array[String] = ["face", "back", "blade_tip", "glint", "bow_grip", "arrow_nock", "saya_mouth"]
+## The parts that ride their parents as carved (no pose turns them): the
+## scabbard on the hips, the quiver on the back.
+const UNPOSED: Array[String] = ["saya", "quiver"]
 const SIDES: Array[String] = ["l", "r"]
 ## The pelvis's rest pivot (body space).
 const PELVIS_REST := Vector3(0.0, 1.292, 0.0)
@@ -316,6 +319,13 @@ func apply(p: Pose, delta: float = 0.0) -> void:
 		shake = Vector3(_noise.get_noise_2d(_time * 90.0, 0.0), _noise.get_noise_2d(0.0, _time * 90.0), _noise.get_noise_2d(_time * 70.0, 50.0)) * p.shiver
 	var pelvis := Transform3D(Basis.from_euler(p.pelvis_turn + shake), p.pelvis)
 	part("pelvis").transform = pelvis
+	# the parts no pose drives sit at rest on their parents (the assembly
+	# reads every part's place before it flies them: one left where its last
+	# flight frame put it would stay there for good)
+	for part_name in UNPOSED:
+		var still := part(part_name)
+		if still != null:
+			still.transform = rest[part_name]
 	for leg in 2:
 		_leg(leg, p, pelvis)
 	_kusazuri(p)

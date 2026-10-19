@@ -16,6 +16,9 @@ extends Enemy
 ##   swarms in their cracks and by the sarcophagi), silent; woken, the
 ##   beetles stir and rise into the cloud over EMERGE_TIME and the hum
 ##   (the scarab_swarm loop) swells in.
+## - Once disturbed it never heaps up again (backlog #8): calm, it streams
+##   along the walls of its room (PerceptionRules.wall_route, found at its
+##   post), gathers on a fallen exhibit and flees a blast (EnemyRoles).
 ## - It dies as a rain of dead beetles and broken wing cases
 ##   (scarab_debris) in a puff of chitin.
 ## The Colossus pours them out of his throne awake (summoned: relentless);
@@ -99,6 +102,31 @@ func _ready() -> void:
 	if brain.state != EnemyBrain.State.DORMANT:
 		_rise = 0.0   # poured out awake: it spreads from where it came out
 		_start_hum()
+	if patrol_route.is_empty() and brain.roam_radius <= 0.0:
+		_find_stream.call_deferred()
+
+
+## Its stream: the walls of its room round its post (once it stands in
+## the world).
+func _find_stream() -> void:
+	if not is_inside_tree() or brain.patrol.size() >= 2:
+		return
+	var space := get_world_3d().direct_space_state
+	var cast := func(from: Vector3, to: Vector3) -> Dictionary:
+		return space.intersect_ray(PhysicsRayQueryParameters3D.create(from, to, Layers.WORLD))
+	# each point on the walkable floor of its room (none in a display case)
+	var route := PackedVector3Array()
+	for point in PerceptionRules.wall_route(home, cast):
+		var spot: Variant = _roam_filter(point)
+		if spot != null:
+			route.append(spot)
+	if route.size() >= 2:
+		brain.set_route(route)
+
+
+## The walls it streams along (tests).
+func stream() -> PackedVector3Array:
+	return brain.patrol
 
 
 func _build_body() -> void:
@@ -187,6 +215,8 @@ func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
 	if from == EnemyBrain.State.DORMANT and to != EnemyBrain.State.DESTROYED:
 		_age = 0.0
 		_start_hum()
+		if not summoned:
+			brain.rest_state = EnemyBrain.State.PATROL   # disturbed, it streams from now on
 	elif to == EnemyBrain.State.DORMANT and _hum != null:
 		_hum.stop()
 
@@ -391,3 +421,13 @@ static func _piece(piece_name: String) -> Array:
 				_pieces["dead" if id == &"scarab" else String(view.name)] = [view.mesh, materials]
 			source.free()
 	return _pieces.get(piece_name, [])
+
+
+## It has its own answer to a hit: no whole-body flinch.
+func _reaction_scale() -> float:
+	return 0.0
+
+
+## Its own chips fly off a heavy hit (no generic ones on top).
+func _chips_on_hits() -> bool:
+	return false

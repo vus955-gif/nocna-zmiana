@@ -356,3 +356,8 @@ static func _dark() -> StandardMaterial3D:
 	material.albedo_color = Color(0.03, 0.025, 0.02)
 	material.roughness = 1.0
 	return material
+
+
+## It has its own answer to a hit: no whole-body flinch.
+func _reaction_scale() -> float:
+	return 0.0

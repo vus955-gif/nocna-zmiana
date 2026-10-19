@@ -284,6 +284,38 @@ func test_interrupt_calls_off_a_windup_but_not_a_recovery() -> void:
 	assert_eq(brain.state, EnemyBrain.State.ATTACK, "a struck blow runs its recovery on")
 
 
+func test_cut_recovery_shortens_a_struck_attacks_recovery() -> void:
+	brain.recovery = 2.0
+	_to_attack()
+	brain.update(0.7, true, 1.0)   # the windup ends: struck, a 2 s recovery begins
+	assert_true(brain.has_struck())
+	brain.cut_recovery(0.5)
+	brain.update(0.4, true, 1.0)
+	assert_eq(brain.state, EnemyBrain.State.ATTACK, "0.5 s are left")
+	brain.update(0.2, true, 1.0)
+	assert_eq(brain.state, EnemyBrain.State.HUNT, "the recovery was cut short")
+
+
+func test_cut_recovery_never_lengthens_and_leaves_other_states_alone() -> void:
+	var strikes := watch(brain.strike)
+	_to_attack()
+	brain.cut_recovery(0.0)
+	brain.update(0.4, true, 1.0)
+	assert_false(brain.has_struck(), "a windup has no recovery to cut")
+	brain.update(0.3, true, 1.0)
+	assert_eq(strikes.size(), 1, "the windup ran its course")
+	brain.cut_recovery(5.0)   # longer than the 0.7 s left: no change
+	brain.update(0.6, true, 1.0)
+	assert_eq(brain.state, EnemyBrain.State.ATTACK)
+	brain.update(0.2, true, 1.0)
+	assert_eq(brain.state, EnemyBrain.State.HUNT, "the 0.7 s recovery ran its course")
+	brain.cut_recovery(0.0)
+	assert_eq(brain.state, EnemyBrain.State.HUNT, "outside an attack it does nothing")
+	brain.stun(1.0)
+	brain.cut_recovery(0.0)
+	assert_true(brain.is_stunned(), "a stun is not a recovery")
+
+
 func test_stun_interrupts_windup_and_ends_in_a_hunt() -> void:
 	var strikes := watch(brain.strike)
 	_to_attack()
@@ -356,3 +388,147 @@ func _to_hunt() -> void:
 func _to_attack() -> void:
 	_to_hunt()
 	brain.update(0.01, true, 1.0)
+
+
+# --- beats, roaming, fleeing (ecology) ------------------------------------------------
+
+func test_a_beat_stands_at_its_posts_facing_them() -> void:
+	brain.patrol = PackedVector3Array([Vector3.ZERO, Vector3(8, 0, 0)])
+	brain.patrol_dwell = PackedFloat32Array([6.0, 2.0])
+	brain.patrol_yaw = PackedFloat32Array([0.5, NAN])
+	brain.start_patrol()
+	brain.update(0.1, false, INF)   # at its post already
+	assert_false(brain.walking(), "it stands at its post")
+	assert_almost_eq(brain.post_yaw(), 0.5, 0.001, "facing the post's way")
+	brain.update(5.7, false, INF)
+	assert_false(brain.walking(), "a post is held 6 s, not the plain pause")
+	brain.update(0.3, false, INF)
+	assert_true(brain.walking(), "then on along the beat")
+	assert_true(is_nan(brain.post_yaw()), "walking: no post to face")
+	assert_eq(brain.goal, Vector3(8, 0, 0))
+	brain.position = brain.goal
+	brain.update(0.1, false, INF)
+	assert_false(brain.walking())
+	assert_true(is_nan(brain.post_yaw()), "this point has no facing")
+	brain.update(2.1, false, INF)
+	assert_true(brain.walking(), "the second post is held 2 s")
+	assert_eq(brain.goal, Vector3.ZERO)
+
+
+func test_after_a_look_round_it_goes_back_to_its_beat() -> void:
+	brain.patrol = PackedVector3Array([Vector3.ZERO, Vector3(8, 0, 0)])
+	brain.patrol_dwell = PackedFloat32Array([6.0, 6.0])
+	brain.start_patrol()
+	brain.update(0.1, false, INF)
+	brain.hear(Vector3(3, 0, -5))
+	brain.update(0.81, false, INF)
+	assert_eq(brain.state, EnemyBrain.State.INVESTIGATE)
+	brain.position = Vector3(3, 0, -5)
+	brain.update(0.1, false, INF)
+	assert_eq(brain.state, EnemyBrain.State.SEARCH)
+	_seconds_while(EnemyBrain.State.SEARCH, 12.0)
+	assert_eq(brain.state, EnemyBrain.State.RETURN)
+	assert_eq(brain.goal, Vector3.ZERO, "the nearest post of its beat")
+	brain.position = Vector3.ZERO
+	brain.update(0.1, false, INF)
+	brain.update(EnemyBrain.SETTLE_TIME, false, INF)
+	assert_eq(brain.state, EnemyBrain.State.PATROL)
+	brain.update(0.1, false, INF)
+	assert_false(brain.walking(), "back on its post, it holds it")
+
+
+func test_a_roamer_wanders_round_its_post() -> void:
+	brain.home = Vector3(10, 0, 10)
+	brain.position = brain.home
+	brain.roam_radius = 5.0
+	brain.start_patrol()
+	var goals: Array[Vector3] = []
+	var paused := 0
+	for i in 400:
+		brain.update(0.1, false, INF)
+		if brain.walking():
+			if goals.is_empty() or not goals[goals.size() - 1].is_equal_approx(brain.goal):
+				goals.append(brain.goal)
+			brain.position = brain.position.move_toward(brain.goal, 0.3)   # 3 m/s
+		else:
+			paused += 1
+	assert_gt(goals.size(), 2, "several places (%d)" % goals.size())
+	for goal in goals:
+		assert_lt(Vector2(goal.x - 10.0, goal.z - 10.0).length(), 5.01, "within its roam radius: %s" % goal)
+		assert_gt(Vector2(goal.x - 10.0, goal.z - 10.0).length(), 1.0, "not on its post: %s" % goal)
+	assert_gt(paused, 20, "it pauses between places")
+
+
+func test_the_roam_filter_rejects_or_moves_points() -> void:
+	brain.roam_radius = 5.0
+	brain.roam_filter = func(point: Vector3) -> Variant:
+		return null if point.x < 0.0 else Vector3(point.x, 0.0, 0.0)   # only east, and snapped to z = 0
+	brain.start_patrol()
+	var goals: Array[Vector3] = []
+	for i in 300:
+		brain.update(0.1, false, INF)
+		if brain.walking():
+			if goals.is_empty() or not goals[goals.size() - 1].is_equal_approx(brain.goal):
+				goals.append(brain.goal)
+			brain.position = brain.position.move_toward(brain.goal, 0.3)
+	assert_gt(goals.size(), 1)
+	for goal in goals:
+		assert_true(goal.x >= 0.0 and is_zero_approx(goal.z), "filtered and snapped: %s" % goal)
+
+
+func test_flee_runs_from_the_point_then_goes_home() -> void:
+	brain.flee(Vector3(0, 0, -3))
+	assert_eq(brain.state, EnemyBrain.State.FLEE)
+	assert_true(brain.walking())
+	assert_true(brain.is_active())
+	assert_true(brain.is_alerted())
+	assert_false(brain.knows_guard())
+	assert_almost_eq(brain.pace(), 1.0, 0.001, "it runs")
+	assert_almost_eq(brain.goal.z, EnemyBrain.FLEE_DISTANCE, 0.01, "straight away from the blast")
+	brain.hear(Vector3(5, 0, 5))
+	assert_eq(brain.state, EnemyBrain.State.FLEE, "nothing distracts a fleeing exhibit")
+	brain.position = brain.goal
+	brain.update(0.1, false, INF)
+	assert_eq(brain.state, EnemyBrain.State.RETURN, "there, it goes home")
+	assert_eq(brain.goal, Vector3.ZERO)
+	brain.position = Vector3.ZERO
+	brain.update(0.1, false, INF)
+	brain.update(EnemyBrain.SETTLE_TIME, false, INF)
+	assert_eq(brain.state, EnemyBrain.State.DORMANT)
+
+
+func test_a_summoned_exhibit_never_flees() -> void:
+	# a boss's add (the Colossus's scarabs) fights on: fleeing would end in
+	# the walk "home" to where it was poured out, and sleep there
+	brain.relentless = true
+	brain.wake()
+	brain.flee(Vector3(0, 0, -3))
+	assert_eq(brain.state, EnemyBrain.State.SUSPICIOUS)
+
+
+func test_flee_gives_up_after_its_travel_time() -> void:
+	brain.flee(Vector3(0, 0, -3))
+	var steps := int((EnemyBrain.FLEE_TRAVEL - 0.1) / 0.1)
+	for i in steps:
+		brain.update(0.1, false, INF)
+		brain.position = brain.position.move_toward(brain.goal, 0.05)   # a slow crawl (a crowd in the way): never there
+	assert_eq(brain.state, EnemyBrain.State.FLEE)
+	brain.update(0.2, false, INF)
+	assert_eq(brain.state, EnemyBrain.State.RETURN)
+
+
+func test_a_flee_blocked_by_a_wall_ends_in_the_walk_home() -> void:
+	brain.flee(Vector3(0, 0, -3))
+	brain.update(EnemyBrain.STALL_TIME + 0.1, false, INF)   # it never moved: a wall
+	assert_eq(brain.state, EnemyBrain.State.RETURN)
+
+
+func test_a_patroller_flees_and_comes_back_to_its_route() -> void:
+	brain.patrol = PackedVector3Array([Vector3.ZERO, Vector3(8, 0, 0)])
+	brain.start_patrol()
+	brain.flee(Vector3(-2, 0, 0))
+	assert_eq(brain.state, EnemyBrain.State.FLEE)
+	brain.position = brain.goal
+	brain.update(0.1, false, INF)
+	assert_eq(brain.state, EnemyBrain.State.RETURN)
+	assert_eq(brain.goal, Vector3(8, 0, 0), "the nearest point of its route")

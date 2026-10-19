@@ -48,8 +48,37 @@ const SIGNATURE := {
 
 ## Prefix of every upgrade part in the models.
 const PART_PREFIX := "upg_"
+## Keys of a secret's finish ("look_<weapon>_<id>") and mod ("mod_<id>")
+## among the guard's upgrade levels (SecretRewards.effective_levels).
+const LOOK_PREFIX := "look_"
+const MOD_PREFIX := "mod_"
 ## The warm gold of the master finish (sheen and signature glow).
 const MASTER_COLOR := Color(1.0, 0.74, 0.38)
+
+## The secrets' unique finishes (SecretRewards, GREAT tier): one per weapon.
+## A finish is a material layer over the model (ViewmodelRig.look_material):
+## "tint" multiplies the albedo, "roughness" scales it, "metallic" is a
+## floor, "accent" lights the signature part and tints the rim. A baked
+## texture set "<model>_<look>" takes over when the art has one.
+const LOOKS := {
+	&"faience": {"weapon": &"shotgun", "tint": Color(0.55, 0.85, 0.85), "roughness": 0.6, "metallic": 0.1, "accent": Color(1.0, 0.8, 0.35)},
+	&"founder": {"weapon": &"pistol", "tint": Color(0.5, 0.47, 0.47), "roughness": 0.7, "metallic": 0.2, "accent": Color(0.9, 0.93, 1.0)},
+	&"warden": {"weapon": &"taser", "tint": Color(0.75, 0.72, 0.5), "roughness": 1.0, "metallic": 0.0, "accent": Color(0.6, 1.0, 0.5)},
+	&"signal": {"weapon": &"flare", "tint": Color(1.0, 0.62, 0.3), "roughness": 0.6, "metallic": 0.0, "accent": Color(0.95, 0.75, 0.35)},
+	&"balawat": {"weapon": &"gatling", "tint": Color(0.85, 0.65, 0.4), "roughness": 0.8, "metallic": 0.2, "accent": Color(0.3, 0.45, 1.0)},
+	&"sloane": {"weapon": &"rifle_hunt", "tint": Color(0.8, 0.55, 0.45), "roughness": 0.7, "metallic": 0.0, "accent": Color(0.95, 0.75, 0.35)},
+	&"lacquer": {"weapon": &"hwacha", "tint": Color(0.85, 0.3, 0.25), "roughness": 0.5, "metallic": 0.0, "accent": Color(1.0, 0.8, 0.35)},
+	&"scrimshaw": {"weapon": &"harpoon", "tint": Color(0.95, 0.92, 0.82), "roughness": 0.9, "metallic": 0.0, "accent": Color(0.2, 0.78, 0.85)},
+}
+
+## The secrets' mods (SecretRewards, GREAT tier; their numbers:
+## UpgradeEffects.apply_to_weapon): the part each puts on the first-person
+## model (built by ViewmodelRig, named "mod_<id>").
+const MODS := {
+	&"shotgun_choke": {"weapon": &"shotgun", "part": "mod_shotgun_choke"},
+	&"rifle_peep": {"weapon": &"rifle_hunt", "part": "mod_rifle_peep"},
+	&"harpoon_line": {"weapon": &"harpoon", "part": "mod_harpoon_line"},
+}
 
 
 ## The upgrades of weapon [param weapon] (its catalog category; the fists
@@ -129,10 +158,48 @@ static func mastered(weapon: StringName, levels: Dictionary) -> bool:
 	return true
 
 
-## A short signature of the look (the levels of the weapon's upgrades):
-## when it changes the guard gets to look his weapon over.
+## A short signature of the look (the levels of the weapon's upgrades, its
+## finish and its mods): when it changes the guard gets to look his weapon
+## over.
 static func key(weapon: StringName, levels: Dictionary) -> String:
 	var parts := PackedStringArray()
 	for id in upgrades_of(weapon):
 		parts.append("%s=%d" % [id, UpgradeEffects.level(levels, id)])
+	var look := look_of(weapon, levels)
+	if look != &"":
+		parts.append("look=" + String(look))
+	for mod in mods_of(weapon, levels):
+		parts.append("mod=" + String(mod))
 	return ",".join(parts)
+
+
+## The weapon id of a view id (the fists' view is &"fist").
+static func weapon_of_view(weapon: StringName) -> StringName:
+	return &"fists" if weapon == &"fist" else weapon
+
+
+static func look_key(weapon: StringName, look: StringName) -> StringName:
+	return StringName(LOOK_PREFIX + String(weapon) + "_" + String(look))
+
+
+static func mod_key(mod: StringName) -> StringName:
+	return StringName(MOD_PREFIX + String(mod))
+
+
+## The finish of [param weapon] among [param levels] (a LOOKS id), or &"".
+static func look_of(weapon: StringName, levels: Dictionary) -> StringName:
+	var owner := weapon_of_view(weapon)
+	for look: StringName in LOOKS:
+		if (LOOKS[look] as Dictionary)["weapon"] == owner and int(levels.get(look_key(owner, look), 0)) > 0:
+			return look
+	return &""
+
+
+## The mods of [param weapon] among [param levels] (MODS ids, table order).
+static func mods_of(weapon: StringName, levels: Dictionary) -> Array[StringName]:
+	var owner := weapon_of_view(weapon)
+	var out: Array[StringName] = []
+	for mod: StringName in MODS:
+		if (MODS[mod] as Dictionary)["weapon"] == owner and int(levels.get(mod_key(mod), 0)) > 0:
+			out.append(mod)
+	return out

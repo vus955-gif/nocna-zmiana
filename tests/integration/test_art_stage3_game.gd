@@ -297,7 +297,7 @@ func test_new_ammo_pickups_wear_their_models() -> void:
 		assert_not_null(mesh, "pickup %s model" % model_name)
 		if mesh != null:
 			var mat := mesh.get_surface_override_material(0) as ShaderMaterial
-			assert_eq(mat.get_shader_parameter(&"rim_color"), ArtLibrary.PICKUP_RIM_COLOR, "%s warm rim in the dark" % model_name)
+			assert_eq(mat.get_shader_parameter(&"rim_color"), Pickup.color_of(type), "%s rim in its kind's colour in the dark" % model_name)
 		pickup.queue_free()
 
 

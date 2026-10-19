@@ -20,7 +20,7 @@ const GUARD_CHEST := 0.9
 ## [param world] is any node in the scene (it gives the physics space).
 ## Every hit is [member DamageInfo.explosive] and carries [param weapon]
 ## and [param origin] (where the shot was fired from); [param sound] is
-## the bang.
+## the bang. The guard's camera feels it (ShakeCamera.feel_blast).
 static func explode(world: Node, center: Vector3, radius: float, damage: float, knockback: float,
 		kind: DamageInfo.Kind, source: Node, push_hint: Vector3 = Vector3.FORWARD, weapon: StringName = &"",
 		origin: Vector3 = Vector3.INF, sound: StringName = &"flare_blast") -> Array[Node]:
@@ -59,6 +59,13 @@ static func explode(world: Node, center: Vector3, radius: float, damage: float, 
 	Fx.impact(center, Vector3.UP, -1, 1.5)
 	Fx.flash(center, Color(1.0, 0.5, 0.2), 6.0, radius * 3.0, 0.25)
 	Sfx.play_at(sound, center)
+	# the guard feels a blast near him: a shake and a push of the view
+	var camera := world.get_viewport().get_camera_3d() as ShakeCamera
+	if camera != null:
+		camera.feel_blast(center, radius)
+	# heard where it bursts (the shot itself was heard at the guard), as far as
+	# that kind of burst carries: a flare's is small
+	Events.noise_made.emit(center, PerceptionRules.blast_noise(weapon), ReactionRules.SOURCE_BLAST)
 	return hit
 
 

@@ -2,10 +2,13 @@ class_name Raptor
 extends Enemy
 ## Velociraptor skeleton (exhibit "Velociraptor — stado"): small (1.1 m),
 ## fast (7.5 m/s) and fragile (25 HP); hunts in packs of 3-4 (RaptorPack).
-## A pack splits to the guard's left and right: further than FLANK_UNTIL
-## from him each raptor runs for a point FLANK_OFFSET beside him (its
-## [member flank_side], relative to where he looks), closer in it goes
-## straight for him. From 4 m it crouches and hisses (0.3 s), then leaps
+## A pack hunts with a driver and flankers (backlog #25): when its hunt
+## begins the raptor nearest the guard goes straight for him (the driver,
+## [member flank_side] 0) and the others split to his left and right -
+## further than FLANK_UNTIL from him each flanker runs for a point
+## FLANK_OFFSET beside him (relative to where he looks), closer in it goes
+## straight for him; a fallen driver is replaced by the next nearest at the
+## next rally. From 4 m it crouches and hisses (0.6 s), then leaps
 ## on an arc aimed to land on him and bites mid-air (8), skidding to a halt
 ## and open to punishment after. Old bone: it breaks into little bones.
 ## A pack (same [member pack_id]) hunts together: when one starts the hunt
@@ -77,7 +80,7 @@ func _configure() -> void:
 	dust_value = 3
 	brain.reaction_time = 0.6
 	brain.attack_range = 4.0
-	brain.windup = 0.3
+	brain.windup = 0.6
 	brain.recovery = 0.75
 
 
@@ -89,6 +92,23 @@ func _ready() -> void:
 ## True while it runs for the guard's flank (not straight at him).
 func flanking() -> bool:
 	return _flanking
+
+
+## The pack's driver: it goes straight in while the others flank.
+func driver() -> bool:
+	return flank_side == 0.0
+
+
+## Hands out the pack's parts for a hunt on a guard at [param guard]: the
+## raptor nearest him drives (flank_side 0), the others flank, alternating
+## right and left by their distance.
+static func assign_roles(pack: Array, guard: Vector3) -> void:
+	var order: Array = pack.duplicate()
+	order.sort_custom(func(a: Raptor, b: Raptor) -> bool:
+		return a.global_position.distance_squared_to(guard) < b.global_position.distance_squared_to(guard))
+	for i in order.size():
+		var raptor: Raptor = order[i]
+		raptor.flank_side = 0.0 if i == 0 else (1.0 if i % 2 == 1 else -1.0)
 
 
 ## 0..1: how deep it crouches for the leap (the telegraph).
@@ -201,22 +221,54 @@ func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
 		Sfx.play_at(&"raptor_hiss", global_position + Vector3.UP * eye_height)
 	elif to == EnemyBrain.State.HUNT:
 		_rally_pack()
+	elif to == EnemyBrain.State.DESTROYED and driver() and pack_id != 0:
+		_pass_the_drive()
+
+
+## The driver fell: the hunting rest of the pack picks a new one at once
+## (the nearest to the guard drives, the others flank).
+func _pass_the_drive() -> void:
+	var rest: Array = []
+	for other in PerceptionWorld.exhibits():
+		var mate := other as Raptor
+		if mate == null or mate == self or mate.pack_id != pack_id or mate.is_frozen() or not mate.is_inside_tree():
+			continue
+		if mate.brain.state == EnemyBrain.State.DESTROYED:
+			continue
+		rest.append(mate)
+	var hunting := rest.any(func(mate: Raptor) -> bool: return mate.brain.is_hunting())
+	if hunting:
+		Raptor.assign_roles(rest, target.global_position if _target_alive() else brain.last_known)
 
 
 ## The pack hunts together: the others join this one's hunt (quietly: one
-## screech is enough).
+## screech is enough), and the pack has a driver (the nearest to the
+## guard). Every new hunt - nobody of the pack hunting yet - hands the parts
+## out anew; a hunt already on keeps its driver, and a new one is picked
+## when the old fell.
 func _rally_pack() -> void:
 	if pack_id == 0:
 		return
+	var pack: Array = [self]
+	var has_driver := driver()
+	var hunting := false
 	for other in PerceptionWorld.exhibits():
 		var mate := other as Raptor
 		if mate == null or mate == self or mate.pack_id != pack_id or mate.is_frozen():
 			continue
-		if mate.brain.is_hunting() or mate.brain.state == EnemyBrain.State.STUNNED or mate.brain.state == EnemyBrain.State.DESTROYED:
+		if mate.brain.state == EnemyBrain.State.DESTROYED or not mate.is_inside_tree():
+			continue
+		pack.append(mate)
+		has_driver = has_driver or mate.driver()
+		if mate.brain.is_hunting():
+			hunting = true
+		if mate.brain.is_hunting() or mate.brain.state == EnemyBrain.State.STUNNED:
 			continue
 		if mate.brain.state == EnemyBrain.State.DORMANT or mate.brain.state == EnemyBrain.State.PATROL:
 			mate.brain.quiet = true
 		mate.brain.alarm(brain.last_known)
+	if not has_driver or not hunting:
+		Raptor.assign_roles(pack, brain.last_known)
 
 
 static var _next_pack: int = 0

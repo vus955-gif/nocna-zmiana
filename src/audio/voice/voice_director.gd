@@ -23,6 +23,11 @@ const GUIDE_RANGE := 12.0
 const RADIO_CLICK := 0.14        ## s of the click before Heniek speaks
 const SPEED_OF_SOUND := 343.0
 const CALM_SAMPLE := 0.25        ## s between looks at the perception world (only while something waits or plays)
+const IDLE_TIME := 120.0         ## s on one spot before the System notices (once a night)
+const IDLE_RADIUS := 1.0         ## m the camera may drift and still count as standing still
+## The longest a dawn line may be: the next night loads about 8 s after dawn
+## (Museum.DAWN_DELAY + the dawn card), and a new night silences the voice.
+const DAWN_AIR := 7.0
 
 ## Off in test and scenario runs (AudioContext.automatic()); a test switches it on.
 var enabled := false
@@ -39,6 +44,7 @@ var _radio_wait := 0.0
 var _radio: AudioStreamPlayer
 var _radio_fx: AudioStreamPlayer
 var _pa_fallback: AudioStreamPlayer
+var _subtitles: SubtitleBar
 var _speakers: Array = []         ## loudspeakers playing the current line
 var _guide_stand: Node3D = null
 var _night := 0
@@ -51,6 +57,10 @@ var _since_nudge := STALL_GAP
 var _goal: StringName = &""
 var _calm_cached := true
 var _calm_timer := 0.0
+var _dawn := false                ## dawn broke: the exhibits stand frozen, the world counts as calm
+var _idle_anchor := Vector3.INF   ## where the camera stood still since (INF: not yet looked)
+var _idle_time := 0.0
+var _idle_fired := false
 
 
 func _ready() -> void:
@@ -76,19 +86,32 @@ func _ready() -> void:
 	Events.seal_collected.connect(func(_seal: StringName) -> void:
 		_progress()
 		trigger(&"seal_collected", {}))
-	Events.gate_opened.connect(func(_gate: StringName) -> void:
+	Events.gate_opened.connect(func(gate: StringName) -> void:
 		_progress()
-		trigger(&"gate_opened", {}))
+		trigger(&"gate_opened", {"gate": gate}))
 	Events.goal_changed.connect(func(goal: StringName) -> void:
 		_goal = goal
 		_progress())
 	Events.boss_awakened.connect(func(_boss: Node) -> void: trigger(&"boss_awakened", {}))
 	Events.boss_defeated.connect(func(_boss: Node) -> void: trigger(&"boss_defeated", {}))
+	# the court café (plan 2026-10-10-kawiarnia-zmeczenie): the recordings come later
+	Events.cafe_entered.connect(func() -> void: trigger(&"cafe_entered", {}))
+	Events.coffee_drunk.connect(func(kind: StringName) -> void: trigger(&"coffee_drunk", {"kind": kind}))
+	Events.cafe_haywire.connect(func() -> void: trigger(&"cafe_haywire", {}))
+	# G2 (plan 2026-10-19-glos-g2-kwestie): the finds, the tiredness, the clock's hours
+	Events.secret_found.connect(func(_secret: StringName, tier: int, found: int) -> void:
+		_progress()
+		trigger(&"secret_found", {"kind": tier_name(tier), "count": found}))
+	Events.fatigue_rose.connect(func(stage: int) -> void: trigger(&"fatigue_rose", {"count": stage}))
+	Events.hour_struck.connect(func(hour: int) -> void: trigger(&"hour_struck", {"hour": hour}))
 	Events.player_died.connect(_on_player_died)
-	Events.player_damaged.connect(func(_amount: float, _from: Vector3) -> void: queue.calm_time = 0.0)
+	Events.player_damaged.connect(func(_amount: float, _from: Vector3) -> void:
+		if not _dawn:   # after dawn the world is frozen: a stray hit must not hold the dawn line back
+			queue.calm_time = 0.0)
 	Events.enemy_destroyed.connect(_on_enemy_destroyed)
 	get_tree().scene_changed.connect(_on_scene_changed)
-	add_child(SubtitleBar.new())   # listens to line_started / line_ended
+	_subtitles = SubtitleBar.new()
+	add_child(_subtitles)   # listens to line_started / line_ended
 
 
 func _player(bus: StringName) -> AudioStreamPlayer:
@@ -109,6 +132,7 @@ func _process(delta: float) -> void:
 func advance(dt: float) -> void:
 	_tick_night(dt)
 	_tick_stall(dt)
+	_tick_idle(dt)
 	if _line != &"":
 		_tick_line(dt)
 	var key := queue.advance(dt, _calm_sampled(dt))
@@ -137,6 +161,10 @@ func reset() -> void:
 	_since_progress = 0.0
 	_since_nudge = STALL_GAP
 	_goal = &""
+	_set_dawn(false)
+	_idle_anchor = Vector3.INF
+	_idle_time = 0.0
+	_idle_fired = false
 
 
 func current_line() -> StringName:
@@ -323,6 +351,8 @@ func _listener() -> Vector3:
 ## waits or plays; idle, the last answer stands (hunters_near scans every
 ## exhibit, and the first look after a push corrects it anyway).
 func _calm_sampled(dt: float) -> bool:
+	if _dawn:
+		return true
 	if queue.is_speaking() or not queue.pending.is_empty():
 		_calm_timer -= dt
 		if _calm_timer <= 0.0:
@@ -394,18 +424,24 @@ func _progress() -> void:
 	_since_progress = 0.0
 
 
-func _on_night_started(night: int, _modifier: StringName) -> void:
+func _on_night_started(night: int, modifier: StringName) -> void:
 	_silence()
 	queue.clear()
 	_night = night
 	_night_clock = 0.0
 	_fired.clear()
 	_witching = false
+	_set_dawn(false)
+	_idle_anchor = Vector3.INF
+	_idle_time = 0.0
+	_idle_fired = false
 	_progress()
 	_since_nudge = STALL_GAP
-	trigger(&"night_started", {})
-	if _died:
+	trigger(&"night_started", {"modifier": modifier})
+	# (a death of a game left and started afresh is in the save: QA #51)
+	if _died or bool(GameState.voice_state.get("death_pending", false)):
 		_died = false
+		GameState.voice_state.erase("death_pending")
 		_comment_death()
 
 
@@ -437,6 +473,9 @@ func _queue_death_line(speaker: String) -> bool:
 func _on_player_died() -> void:
 	_silence()
 	_died = true
+	# kept with the save the death makes (the next night comments it even
+	# when the game is started afresh in between)
+	GameState.voice_state["death_pending"] = true
 
 
 ## Leaving the game (menu, end screen, a dev viewer): quiet, nothing queued,
@@ -455,15 +494,63 @@ func _on_witching_hour() -> void:
 	trigger(&"witching_hour", {})
 
 
+## The next night loads a few seconds after dawn (DAWN_AIR): the dawn line
+## goes on air at once, over whatever was speaking (it stays unheard), with
+## no wait for calm (everything stands frozen) or for the gap after a line.
 func _on_dawn_broke() -> void:
+	_silence()
+	queue.clear()
+	_set_dawn(true)
+	queue.calm_time = VoiceQueue.CALM_NEEDED
 	trigger(&"dawn_broke", {})
 	_night_clock = -1.0
 
 
-func _on_room_entered(_room: StringName, zone: StringName, first_visit: bool) -> void:
+## Dawn broke (true) or a new night began (false). From dawn until the next
+## night the subtitles sit above the dawn card, so its veil never hides a line's end.
+func _set_dawn(on: bool) -> void:
+	_dawn = on
+	_subtitles.set_over_dawn(on)
+
+
+func _on_room_entered(room: StringName, zone: StringName, first_visit: bool) -> void:
 	if first_visit:
 		_progress()
-		trigger(&"room_entered", {"zone": zone})
+		trigger(&"room_entered", {"zone": zone, "room": room, "kind": &"haven" if is_haven_room(room) else &""})
+
+
+## True for the room of one of Floor I's havens (Floor1Plan.HAVENS).
+static func is_haven_room(room: StringName) -> bool:
+	for haven: Array in Floor1Plan.HAVENS:
+		if haven[2] == room:
+			return true
+	return false
+
+
+## A secret reward's tier as rules name it: &"small", &"medium", &"great" (&"" for none).
+static func tier_name(tier: int) -> StringName:
+	var key: Variant = SecretRewards.Tier.find_key(tier)
+	return StringName(String(key).to_lower()) if key != null else &""
+
+
+## Two minutes on one spot (a night running, a camera to look through): the
+## System notices, once a night.
+func _tick_idle(dt: float) -> void:
+	if _night_clock < 0.0 or _idle_fired:
+		return
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	var here := camera.global_position
+	# a refuge is no place to be noticed: inside one the count keeps restarting
+	if Haven.shelters(here) or _idle_anchor == Vector3.INF or here.distance_to(_idle_anchor) > IDLE_RADIUS:
+		_idle_anchor = here
+		_idle_time = 0.0
+		return
+	_idle_time += dt
+	if _idle_time >= IDLE_TIME:
+		_idle_fired = true
+		trigger(&"idle", {})
 
 
 func _on_enemy_destroyed(_enemy: Node, _info: DamageInfo, _finisher: bool) -> void:

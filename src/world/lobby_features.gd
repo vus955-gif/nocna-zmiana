@@ -98,6 +98,8 @@ func _ready() -> void:
 	var host_hud: Variant = museum.get(&"hud") if is_instance_valid(museum) else null
 	if host_hud is Hud:
 		hud.corner_source = (host_hud as Hud).top_left_bottom
+		hud.top_source = (host_hud as Hud).top_middle_bottom
+		(host_hud as Hud).below_source = hud.banner_bottom
 	add_child(hud)
 	reader = NoteReader.new()
 	reader.name = "NoteReader"

@@ -1,13 +1,26 @@
 extends Node
 ## Visual effects service (autoload "Fx"): hit particles, physical debris,
-## tracers, taser arcs, light flashes, bullet holes and hitstop. Everything
+## tracers, taser arcs, light flashes, marks on walls and hitstop. A shot on
+## the level shows what it hit (plan 2026-10-19-gun-feel): surface_impact()
+## throws stone dust and grit, wood splinters, metal sparks or carpet fluff,
+## and mark() leaves that surface's own mark - a hole with a pale chipped
+## rim in stone, a long dark splinter-hole in wood, a bright dent in metal,
+## a soft spot in carpet, a scorch where a blast burst. Everything
 ## it spawns is parented here and removes itself after a while (lifetimes
 ## stand still while the game is paused); a scene change clears it all.
 ## Transforms are set before add_child() so physics interpolation never
 ## smears a node in from the origin.
 
 const MAX_CHUNKS := 80
-const MAX_DECALS := 60
+const MAX_DECALS := 80
+## Live bursts of a shot's grit and dust on a wall (surface_impact()); the
+## oldest make room, so sustained shotgun fire never piles up nodes.
+const MAX_IMPACT_BURSTS := 40
+## Below this strength (a pellet's share of a blast) a hit throws no
+## second puff of dust: a handful of pellets would only add nodes.
+const DUST_MIN_STRENGTH := 0.6
+## A mark's kind for a blast's burn (mark()).
+const SCORCH := &"scorch"
 const CHUNK_LIFETIME := 8.0
 const DECAL_LIFETIME := 30.0
 ## Microseconds per frame spent cutting model meshes for debris ahead of
@@ -16,10 +29,13 @@ const SHARD_BUDGET_USEC := 2500
 
 var _chunks: Array = []
 var _decals: Array = []
+var _impact_bursts: Array = []
 var _meshes: Dictionary = {}
 var _materials: Dictionary = {}
 var _processes: Dictionary = {}
 var _hole: Texture2D = null
+## Surface (or SCORCH) -> its mark's texture.
+var _marks: Dictionary = {}
 var _hitstop_token: int = 0
 ## Real time (s) when the running hitstop ends; negative when none runs.
 var _hitstop_end: float = -1.0
@@ -97,13 +113,19 @@ func puff(position: Vector3, color: Color, amount: int = 24, radius: float = 0.6
 ## particles (a model's own parts fly as debris instead, see piece()).
 func shatter(center: Vector3, kind: ExhibitMaterial.Kind, plan: GibPlanner.Plan, push: Vector3, chunks: bool = true) -> void:
 	var glow := kind == ExhibitMaterial.Kind.METAL
-	_burst(center, Vector3.UP, ExhibitMaterial.particle_color(kind), glow, plan.particles, plan.impulse, 1.2, 180.0, 9.8, 0.06)
+	var flat_push := Vector3(push.x, 0.0, push.z).normalized()
+	# the harder the blow throws the pieces back (plan.push past the plain
+	# plan's), the more the burst leans that way and narrows; a plain kill
+	# or a crumble puffs out all round
+	var lean := clampf((plan.push - 0.9) / (GibPlanner.PUSH.y - 0.9), 0.0, 1.0)
+	var heading := (Vector3.UP + flat_push * 1.2 * lean).normalized()
+	_burst(center, heading, ExhibitMaterial.particle_color(kind), glow, plan.particles, plan.impulse, 1.2,
+			lerpf(180.0, 70.0, lean), 9.8, 0.06)
 	if not chunks:
 		return
-	var flat_push := Vector3(push.x, 0.0, push.z).normalized()
 	for i in plan.chunks:
-		var scatter := Vector3(randf_range(-1.0, 1.0), randf_range(0.3, 1.2), randf_range(-1.0, 1.0))
-		var velocity := (flat_push * 0.8 + scatter * 0.7).normalized() * plan.impulse * randf_range(0.7, 1.2)
+		var scatter := Vector3(randf_range(-1.0, 1.0), randf_range(0.3, 1.2) * plan.lift / 0.85, randf_range(-1.0, 1.0))
+		var velocity := (flat_push * plan.push * 0.9 + scatter * plan.spread).normalized() * plan.impulse * randf_range(0.7, 1.2)
 		var offset := Vector3(randf_range(-0.3, 0.3), randf_range(-0.5, 0.5), randf_range(-0.3, 0.3))
 		chunk(center + offset, ExhibitMaterial.color(kind), plan.chunk_size * randf_range(0.7, 1.3), velocity)
 
@@ -147,10 +169,13 @@ func chunk_view(color: Color, dims: Vector3) -> MeshInstance3D:
 ## One piece of a broken model as physical debris: [param shard] (a
 ## MeshShards.Piece of a mesh that sits at [param xform] in the world) with
 ## [param materials] (one per piece surface). Scale in [param xform] (a
-## melted wax figure) stays on the mesh, never on the body. Shrinks away
-## after CHUNK_LIFETIME seconds like the other chunks.
+## melted wax figure) stays on the mesh, never on the body, and so does a
+## mirror (the lioness' model is flipped): a body with a negative scale is
+## no body. Shrinks away after CHUNK_LIFETIME seconds like the other chunks.
 func piece(shard: MeshShards.Piece, materials: Array[Material], xform: Transform3D, velocity: Vector3, spin: float = 8.0) -> RigidBody3D:
 	var turn := xform.basis.orthonormalized()
+	if turn.determinant() < 0.0:
+		turn = turn * Basis.from_scale(Vector3(-1.0, 1.0, 1.0))   # a proper turn; the flip goes to the view below
 	var view := MeshInstance3D.new()
 	view.mesh = shard.mesh
 	var shape_basis := turn.inverse() * xform.basis
@@ -231,12 +256,27 @@ func flash(position: Vector3, color: Color, energy: float, light_range: float, d
 	tween.tween_callback(light.queue_free)
 
 
-## Dark mark where a bullet hit a wall. Oldest ones disappear first.
+## Dark mark where a bullet hit a wall (a stone one). Oldest ones
+## disappear first.
 func bullet_hole(position: Vector3, normal: Vector3) -> void:
-	if normal.is_zero_approx():
-		return   # the ray started inside the wall: no surface to mark
-	var decal := hole_decal()
-	decal.transform = Transform3D(_basis_with_up(normal), position)
+	mark(position, normal, Surface.STONE, 0.14)
+
+
+## The mark a hit leaves on [param surface] (a Surface name, or SCORCH for
+## a blast's burn), [param size] metres across, turned at random about the
+## surface's normal. Oldest ones disappear first. Returns the decal (null
+## for a point-blank hit: no surface to mark).
+func mark(position: Vector3, normal: Vector3, surface: StringName, size: float) -> Decal:
+	if normal.is_zero_approx() or size <= 0.0:
+		return null   # the ray started inside the wall: no surface to mark
+	var decal := Decal.new()
+	decal.texture_albedo = mark_texture(surface)
+	var stretch := 1.6 if surface == Surface.WOOD else 1.0
+	var depth := maxf(size * 0.6, 0.1) if surface == SCORCH else 0.1
+	decal.size = Vector3(size * stretch, depth, size)
+	decal.normal_fade = 0.25
+	var turn := _basis_with_up(normal) * Basis(Vector3.UP, randf() * TAU)
+	decal.transform = Transform3D(turn, position)
 	add_child(decal)
 	_decals.append(decal)
 	while _decals.size() > MAX_DECALS:
@@ -244,6 +284,39 @@ func bullet_hole(position: Vector3, normal: Vector3) -> void:
 		if is_instance_valid(oldest):
 			oldest.queue_free()
 	_free_after(decal, DECAL_LIFETIME)
+	return decal
+
+
+## What a shot throws off the level where it hit [param surface]:
+## stone dust and grit, wood splinters, metal sparks, carpet fluff.
+## [param strength] scales it (a rifle round more than a pellet); a weak
+## hit (under DUST_MIN_STRENGTH) leaves out the second, dusty burst. At
+## most MAX_IMPACT_BURSTS of these stay alive, the oldest going first.
+func surface_impact(position: Vector3, normal: Vector3, surface: StringName, strength: float = 1.0) -> void:
+	var amount := int(clampf(10.0 * strength, 4.0, 40.0))
+	var dust := strength >= DUST_MIN_STRENGTH
+	match surface:
+		Surface.WOOD:
+			_surface_burst(position, normal, Color(0.62, 0.44, 0.27), false, amount, 4.5, 0.6, 35.0, 12.0, 0.04)
+			if dust:
+				_surface_burst(position, normal, Color(0.5, 0.4, 0.3), false, maxi(amount / 3, 2), 1.0, 0.9, 60.0, -0.2, 0.06)
+		Surface.METAL:
+			_surface_burst(position, normal, Color(1.0, 0.72, 0.36), true, amount + 4, 7.5, 0.35, 45.0, 9.8, 0.02)
+		Surface.CARPET:
+			_surface_burst(position, normal, Color(0.42, 0.33, 0.29), false, maxi(amount / 2, 3), 1.4, 0.6, 70.0, 3.0, 0.022)
+		_:
+			# stone: grit thrown hard, a pale puff of dust that hangs
+			_surface_burst(position, normal, Color(0.62, 0.6, 0.56), false, amount, 3.5, 0.7, 40.0, 9.8, 0.045)
+			if dust:
+				_surface_burst(position, normal, Color(0.78, 0.76, 0.72), false, maxi(amount / 3, 2), 0.9, 1.2, 70.0, -0.3, 0.08)
+
+
+## The texture of [param surface]'s mark (made once; SCORCH a blast's burn).
+func mark_texture(surface: StringName) -> Texture2D:
+	var key := surface if surface == SCORCH or Surface.ALL.has(surface) else Surface.STONE
+	if not _marks.has(key):
+		_marks[key] = _make_mark(key)
+	return _marks[key]
 
 
 ## A bullet hole's decal (projecting along its -Y), not placed nor added.
@@ -284,20 +357,33 @@ func clear() -> void:
 		child.queue_free()
 	_chunks.clear()
 	_decals.clear()
+	_impact_bursts.clear()
 	_hitstop_token += 1
 	_hitstop_end = -1.0
 	Engine.time_scale = 1.0
 
 
+## A burst of a shot on the level (surface_impact()), kept in the ring of
+## MAX_IMPACT_BURSTS: past it the oldest still alive is freed, like marks.
+func _surface_burst(position: Vector3, direction: Vector3, color: Color, glow: bool, amount: int, speed: float, lifetime: float, spread_deg: float, gravity: float, size: float) -> void:
+	_impact_bursts.append(_burst(position, direction, color, glow, amount, speed, lifetime, spread_deg, gravity, size))
+	while _impact_bursts.size() > MAX_IMPACT_BURSTS:
+		var oldest = _impact_bursts.pop_front()
+		if is_instance_valid(oldest):
+			oldest.queue_free()
+
+
 ## The emitter is turned so its +Y (the material's direction) points along
-## [param direction]; that keeps the process materials shareable.
-func _burst(position: Vector3, direction: Vector3, color: Color, glow: bool, amount: int, speed: float, lifetime: float, spread_deg: float, gravity: float, size: float) -> void:
+## [param direction]; that keeps the process materials shareable. Returns
+## the burst.
+func _burst(position: Vector3, direction: Vector3, color: Color, glow: bool, amount: int, speed: float, lifetime: float, spread_deg: float, gravity: float, size: float) -> GPUParticles3D:
 	var up := direction if direction.length() > 0.01 else Vector3.UP
 	var particles := burst_node(color, glow, amount, speed, lifetime, spread_deg, gravity, size)
 	particles.transform = Transform3D(_basis_with_up(up), position)
 	add_child(particles)
 	particles.emitting = true
 	_free_after(particles, lifetime + 0.5)
+	return particles
 
 
 ## One particle burst (one-shot, spraying along its +Y), not placed, not
@@ -368,6 +454,68 @@ func _glow_material(color: Color) -> StandardMaterial3D:
 		material.albedo_color = Color(color.r * 3.0, color.g * 3.0, color.b * 3.0)
 		_materials[key] = material
 	return _materials[key]
+
+
+## A mark of [param surface] (64 x 64): a dark hole and what is round it.
+static func _make_mark(surface: StringName) -> ImageTexture:
+	var size := 64
+	var image := Image.create_empty(size, size, false, Image.FORMAT_RGBA8)
+	var noise := FastNoiseLite.new()
+	noise.seed = hash(surface)
+	noise.frequency = 0.09
+	var half := (size - 1) * 0.5
+	for y in size:
+		for x in size:
+			var d := Vector2(x - half, y - half) / half
+			var r := d.length()
+			var angle := atan2(d.y, d.x)
+			var rough := noise.get_noise_2d(x, y)
+			var edge := noise.get_noise_1d(angle * 9.0) * 0.12
+			var color := Color(0, 0, 0, 0)
+			match surface:
+				SCORCH:
+					var soot := clampf(1.0 - (r + edge * 2.0 + rough * 0.15) / 0.95, 0.0, 1.0)
+					var tone := Color(0.06, 0.045, 0.035).lerp(Color(0.2, 0.13, 0.08), clampf(r * 1.3, 0.0, 1.0))
+					color = Color(tone.r, tone.g, tone.b, soot * soot * (0.85 + rough * 0.15))
+				Surface.WOOD:
+					# a long hole along the grain, pale splinters torn out round it
+					var grain := Vector2(d.x * 0.62, d.y)
+					var gr := grain.length()
+					var splinter := maxf(1.0 - absf(d.y + rough * 0.25) / 0.16, 0.0) * maxf(1.0 - absf(d.x) / 0.95, 0.0)
+					if gr < 0.26 + edge:
+						color = Color(0.05, 0.035, 0.025, 1.0)
+					elif splinter > 0.0 and gr < 0.85:
+						color = Color(0.72, 0.56, 0.36, splinter * 0.8)
+					elif gr < 0.42 + edge:
+						color = Color(0.2, 0.13, 0.08, 0.7)
+				Surface.METAL:
+					if r < 0.2 + edge * 0.5:
+						color = Color(0.08, 0.08, 0.09, 0.9)
+					elif r < 0.42 + edge * 0.5:
+						color = Color(0.78, 0.8, 0.84, 0.75 * (1.0 - (r - 0.2) / 0.25))
+					elif r < 0.75:
+						color = Color(0.25, 0.25, 0.27, 0.25 * (1.0 - r / 0.75))
+				Surface.CARPET:
+					var spot := clampf(1.0 - (r + rough * 0.35) / 0.7, 0.0, 1.0)
+					color = Color(0.07, 0.05, 0.05, spot * 0.75)
+				_:
+					# stone: a dark hole, a pale chipped rim, hairline cracks
+					var crack := 0.0
+					for ray in 5:
+						var dir := Vector2.from_angle(float(ray) * 1.27 + 0.4)
+						var along := d.dot(dir)
+						if along > 0.2 and along < 0.92:
+							crack = maxf(crack, maxf(1.0 - absf(d.cross(dir) + rough * 0.06) / 0.035, 0.0))
+					if r < 0.22 + edge:
+						color = Color(0.04, 0.035, 0.03, 1.0)
+					elif r < 0.55 + edge * 1.5:
+						var chip := 0.55 + rough * 0.25
+						color = Color(0.82, 0.8, 0.76, clampf(chip, 0.2, 0.8))
+					elif crack > 0.0:
+						color = Color(0.1, 0.09, 0.08, crack * 0.7)
+			image.set_pixel(x, y, color)
+	image.generate_mipmaps()
+	return ImageTexture.create_from_image(image)
 
 
 func _hole_texture() -> Texture2D:

@@ -9,8 +9,10 @@ Viewmodel conventions as in vm_fists.py. Parts:
                                              (break open: rotate about X, muzzle down)
     hammer_l, hammer_r   (-/+0.018, -0.19, 0.0)  hammers, pivot at their axle
     hand_r               (0, -0.262, -0.04)  on the stock wrist
-    hand_l               (0, 0.06, -0.034)   under the fore-end
-Marker: Muzzle (0, 0.48, 0) between the muzzles (greybox: Godot (0, 0, -0.48)).
+    hand_l               (0, 0.06, -0.034)   under the fore-end (goes with the barrels)
+    sleeve_r, sleeve_l   at the wrist of each hand (the game turns them toward the elbows)
+Marker: Muzzle (0, 0.48, 0) between the muzzles (greybox: Godot (0, 0, -0.48));
+the arm markers Wrist_*/Grip_* (on the hands) and Elbow_* (artlib/hands.py arm()).
 
 Upgrade parts (hidden until bought, one per upgrade level; see
 _upgrade_bits_b.py):
@@ -255,15 +257,17 @@ def build():
     _hammer(hl, -1)
     hr = Part("hammer_r", origin=(0.018, -0.19, 0.0))
     _hammer(hr, 1)
+    # right hand on the straight stock wrist: the forearm continues the
+    # stock's line (cant 70), the sleeve back along it and a little down; it
+    # sits below the frame
     right = Part("hand_r", origin=(0, -0.262, -0.04))
     m = hands.hand_matrix((0, -0.262, -0.036), (0, 0.9, 0.44), (1.0, 0.0, 0.6), sx=1)
-    wrist = hands.add_hand(right, m, sx=1, tris=1000)
-    hands.add_sleeve(right, wrist, (0.3, -0.8, -0.8), length=0.22, sx=1)
+    sleeve_r, markers_r = hands.arm("r", right, m, 1, math.radians(70.0), (0.05, -0.95, -0.3), 0.22)
     left = Part("hand_l", origin=(0, 0.06, -0.034))
     # palm under the fore-end, knuckles on its right, fingers over the top
+    # (cant 35); the forearm down and left to an elbow under the gun
     m = hands.hand_matrix((0, 0.06, -0.034), (0, 1, 0), (0.7, 0.0, -0.7), sx=-1)
-    wrist = hands.add_hand(left, m, sx=-1, tris=1000)
-    hands.add_sleeve(left, wrist, (-0.55, -0.8, -0.55), length=0.36, watch=True, sx=-1)
+    sleeve_l, markers_l = hands.arm("l", left, m, -1, math.radians(35.0), (-0.50, -0.62, -0.60), 0.36, watch=True)
     # upgrades: only on the viewmodel (nothing else builds from this file)
     chk = Part("upg_choke", origin=(0.0, MUZZLE_Y - 0.004, 0.0), parent="barrels")
     _chokes(chk)
@@ -274,9 +278,10 @@ def build():
     from models import _upgrade_bits_a as hb
     base = {k: hb.ao_without(f, ("upg_",), rays=12, dist=0.03) for k, f in FNS.items()}
     fns = dict(base, **UPG_FNS)
-    return Model("vm_shotgun", [gun, barrels, hl, hr, right, left, chk, sad], fns, ppm=384,
-                 organic=("hand_r", "hand_l"), ao_dist=0.03, ao_rays=12, ao_stride=1, front=1,
-                 markers=[("Muzzle", (0.0, 0.48, 0.0), None)], variants={"vm_shotgun_master": MASTER_FNS},
+    return Model("vm_shotgun", [gun, barrels, hl, hr, right, left, sleeve_r, sleeve_l, chk, sad], fns, ppm=384,
+                 organic=("hand_r", "hand_l", "sleeve_r", "sleeve_l"), ao_dist=0.03, ao_rays=12, ao_stride=1, front=1,
+                 markers=[("Muzzle", (0.0, 0.48, 0.0), None)] + markers_r + markers_l,
+                 variants={"vm_shotgun_master": MASTER_FNS},
                  preview_yaws=(-60.0, 40.0, 110.0, 250.0), preview_elevation=16.0,
                  preview_fp=(CAM, LOOK),
                  preview_extra=[("upg_choke", (0.0, 0.455, 0.0), 0.06, -35.0, 25.0),

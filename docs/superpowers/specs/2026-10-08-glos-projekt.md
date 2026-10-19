@@ -2,6 +2,7 @@
 
 > **Stan:** 8 października 2026, projekt zatwierdzony przez właściciela w rozmowie (części 1–3). Gałąź docelowa: `pietro-1`.
 > **Etap G1 (szkielet) wykonany** na gałęzi `voice-g1` (plan `docs/superpowers/plans/2026-10-08-glos-g1-szkielet.md`, sekcja „Stan prac”): narzędzia, reżyser, kanały, napisy, zapis, opcje, rekwizyty, 4 kwestie próbne. Odstępstwo: obróbka Systemu (§5.3) bez pyworld – własne YIN + TD-PSOLA w numpy (brak Windows SDK na tym komputerze). Czeka na wybór głosów przez właściciela (`build/voice-samples/index.html`).
+> **Etap G2 (kwestie) wykonany** na gałęzi `voice-g2` (plan `docs/superpowers/plans/2026-10-19-glos-g2-kwestie.md`): 140 kwestii (Heniek 69, System 47, audioprzewodnik 12 stanowisk × A/B), 12 głośników, 12 stojaków z numerami, nowe zdarzenia (sekret, zmęczenie, pełna godzina, bezruch) i świt bez czekania. Eskalacja Systemu ponad stopień 2 — tekstem i tempem; stopień 3 obróbki czeka na odsłuch właściciela.
 > **Powiązane:** lista zadań `docs/backlog-pietro1.md` (#32 kawiarnia jako hub, #34 eskalacja nocy, #35 zmieniony świat, #38 nawigacja bez strzałek, #41 audio storytelling, #51 odporny zapis, #52 opcje), fabuła `docs/fabula-pietro1.md`, specyfikacja całości `docs/Nocna-Zmiana-specyfikacja.md`.
 > **Zmienia decyzję z 3.10** („osobowość strażnika tekstem, radio bez głosu aktora”): radio i komunikaty muzeum dostają głos syntezowany.
 

@@ -59,6 +59,15 @@ const FUSE := Vector3(-96.5, 0.9, -44.0)
 ## The courtyard's cover: four genii on bases and two cedar columns.
 const GENII: Array[Vector2] = [Vector2(-87, -71), Vector2(-70.5, -71), Vector2(-87, -61.5), Vector2(-70.5, -61.5)]
 const CEDARS: Array[Vector2] = [Vector2(-85, -77), Vector2(-72.5, -77)]
+## The fire tripods of the dressing (Floor1ArtAssyria.BRAZIERS: their
+## flames 1.38 m over these points), against the Balawat room's south wall
+## by the Black Obelisk and the courtyard's north wall by the Lamassu's
+## plinth. A solid box under each (a stand-in: the fixture draws the tripod),
+## or a guard walks through the legs of a fire.
+const TRIPODS := {
+	&"assyria_balawat": [Vector2(-53.6, -78.55), Vector2(-48.4, -78.55)],
+	&"assyria_courtyard": [Vector2(-84.0, -79.6), Vector2(-73.5, -79.6)],
+}
 ## Where the relief warriors step off the arena's walls in phase 2:
 ## [floor point 0.6 m off the wall, yaw facing into the arena].
 const RELIEFS := [
@@ -79,6 +88,7 @@ static func build(layout: LevelLayout) -> void:
 	_library(layout)
 	_freight(layout)
 	_secrets(layout)
+	_voice(layout)
 
 
 # --- rooms and passages -----------------------------------------------------
@@ -126,9 +136,12 @@ static func _doors(layout: LevelLayout) -> void:
 static func _gate(layout: LevelLayout) -> void:
 	var room := &"assyria_gate"
 	# the two lamassu guarding this side of the gate: bodies along the
-	# passage, the bearded heads facing the gate (south), 3.2 m between them
-	for x in [-53.3, -48.7]:
-		layout.add_piece(&"lamassu", Vector3(x, 0, -41.7), Vector3(1.4, 4.5, 4.6), room, PI)
+	# passage, the bearded heads facing the gate (south), 3.0 m between them
+	# (the boxes are the Khorsabad Gate's towers, x +-1.5..3.5 of the axis
+	# and from the wall's face to the gate's north face, as the kit asks:
+	# docs/art/kit-pietro1-asyria.md 6; the dressing stands the gate model on them)
+	for x in [-53.5, -48.5]:
+		layout.add_piece(&"lamassu", Vector3(x, 0, -41.5), Vector3(2.0, 4.5, 5.0), room, PI)
 	# tribute bearers on the walls; a stele as cover off the axis
 	for z in [-41.5, -55.0]:
 		NW.relief(layout, Vector3(-62.94, 0.8, z), 3.5, 2.6, -PI * 0.5, room)
@@ -185,6 +198,7 @@ static func _balawat(layout: LevelLayout) -> void:
 		layout.add_piece(&"column", Vector3(at.x, 0, at.y), Vector3(1.2, 7.8, 1.2), room)
 	for spot in [Vector3(-58.5, 0, -78.2), Vector3(-47.8, 0, -58.3)]:
 		layout.add_loot(spot, room)
+	_tripods(layout, room)
 	for z in [-63.0, -78.0]:
 		Kit.sconce(layout, Vector3(-62.8, TORCH_Y, z), -PI * 0.5, TORCH, 1.0, room, 7.0)
 	for z in [-68.5, -75.0]:
@@ -202,6 +216,12 @@ static func _balawat(layout: LevelLayout) -> void:
 	layout.add_spawn(Vector3(-59.0, 0, -58.8), room, 2, RELIEF_WARRIOR.duplicate(), true, 0.0)
 	layout.add_spawn(Vector3(-55.0, 0, -72.5), room, 2, RELIEF_WARRIOR.duplicate(), true, PI)
 	layout.add_spawn(Vector3(-49.0, 0, -68.0), room, 2, RELIEF_WARRIOR.duplicate(), true, PI * 0.5)
+
+
+## The solid stand-ins under the room's fire tripods (see TRIPODS).
+static func _tripods(layout: LevelLayout, room: StringName) -> void:
+	for at: Vector2 in TRIPODS.get(room, []):
+		layout.add_piece(&"brazier", Vector3(at.x, 0, at.y), Vector3(0.62, 1.4, 0.62), room)
 
 
 # --- the palace courtyard (the Lamassu's arena) -----------------------------------
@@ -239,6 +259,7 @@ static func _courtyard(layout: LevelLayout) -> void:
 		NW.relief(layout, at + back + Vector3.UP * 0.6, 3.0, 3.0, yaw, room)
 	for spot in [Vector3(-92.8, 0, -54.2), Vector3(-64.8, 0, -78.8)]:
 		layout.add_loot(spot, room)
+	_tripods(layout, room)
 	# the moon pours in through the open roof (no fuse: always on); torches
 	# low round the walls, one behind the Lamassu throwing it forward
 	Hub.spot(layout, Hub.MOON_GROUP, Vector3(-78.75, 13.6, -66.5), Vector3(-78.75, 0, -66.5), Hub.MOON, 2.6, 20.0, 70.0, room, true)
@@ -466,3 +487,13 @@ static func _secrets(layout: LevelLayout) -> void:
 	layout.add_marker(&"secret_assyria_3", Vector3(-59.5, LOW, -31.0), lift)
 	Kit.glow(layout, Vector3(-59.5, LOW + 2.7, -31.5), WORK, 0.8, lift)
 	Kit.lair(layout, &"assyria_lift", lift, Vector3(-59.5, LOW, -32.2), RELIEF_WARRIOR, Grey.r(-62, -33.5, -57, -29.5), 0.0)
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## The System at the Khorsabad Gate (the gate's wall, between the library
+## door and the west lamassu); stop 3 at the west lamassu's flank (five
+## legs: it walks seen from the side), stop 4 before the flood tablet's case.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_assyria_1", Vector3(-57.5, 4.0, -39.15), &"assyria_gate", 0.0)
+	layout.add_marker(&"audioguide_lamassu", Vector3(-56.3, 0.0, -41.0), &"assyria_gate", PI * 0.5)
+	layout.add_marker(&"audioguide_flood", Vector3(-58.0, 0.0, -32.4), &"assyria_library", 0.0)

@@ -3,6 +3,19 @@ extends Enemy
 ## Fast, fragile stuffed wolf. Crouches, then pounces from up to 6 m on an
 ## arc aimed to land on the target, biting mid-air. Skids to a halt on
 ## landing and is open to punishment while it recovers. Sheds sawdust.
+## Awake and calm it prowls its diorama (EnemyRoles: a roam of 5 m round
+## its post) and sniffs the guard's trail: every SNIFF_EVERY routine ticks
+## the freshest crumb within SNIFF_RANGE that is at least SNIFF_MIN_AGE old
+## (in its bounds) sends it to look, nose down, quietly (PerceptionWorld.track
+## lays the trail). A scent is where he walked a while ago: not the guard
+## himself, felt through a wall.
+
+## Routine ticks (Enemy.ROUTINE_INTERVAL) between sniffs of the trail.
+const SNIFF_EVERY := 6
+## It picks up a crumb this far away (m)...
+const SNIFF_RANGE := 6.0
+## ...once it is this old (s).
+const SNIFF_MIN_AGE := 3.0
 
 @export var max_leap_speed: float = 13.0
 @export var leap_lift: float = 3.5
@@ -10,6 +23,9 @@ extends Enemy
 var _leaping := false
 var _leap_hit := false
 var _airborne := false
+var _sniff_wait: int = 0
+var _sniffed := Vector3.INF
+var _sniffing := false
 
 
 func _configure() -> void:
@@ -26,7 +42,7 @@ func _configure() -> void:
 	leash = PerceptionRules.HUNTER_LEASH
 	brain.reaction_time = 0.6
 	brain.attack_range = 6.0
-	brain.windup = 0.45
+	brain.windup = 0.6
 	brain.recovery = 0.9
 
 
@@ -54,6 +70,40 @@ func _build_greybox() -> void:
 		for z in [-0.35, 0.35]:
 			add_part(box_mesh(Vector3(0.09, 0.42, 0.09)), Vector3(x, 0.21, z), dark)
 	add_part(box_mesh(Vector3(0.08, 0.08, 0.4)), Vector3(0, 0.7, 0.62), fur, Vector3(25.0, 0.0, 0.0))
+
+
+## Following a scent: nose down on the way to the crumb.
+func sniffing() -> bool:
+	return _sniffing and (brain.state == EnemyBrain.State.SUSPICIOUS or brain.state == EnemyBrain.State.INVESTIGATE)
+
+
+## Calm on its round, it sniffs the trail now and then.
+func _routine_tick() -> void:
+	super()
+	if not brain.is_calm():
+		return
+	_sniff_wait -= 1
+	if _sniff_wait > 0:
+		return
+	_sniff_wait = SNIFF_EVERY
+	var crumb := PerceptionWorld.freshest_crumb(global_position, SNIFF_RANGE, SNIFF_MIN_AGE)
+	if crumb == Vector3.INF or crumb.is_equal_approx(_sniffed):
+		return
+	_refresh_bounds()
+	if not _within_bounds(crumb, PerceptionWorld.room_at(crumb)):
+		return
+	_sniffed = crumb
+	brain.quiet = true   # a scent is no call-out: it wakes nobody
+	brain.hear(crumb, true)
+	_sniffing = brain.state == EnemyBrain.State.SUSPICIOUS
+	if not _sniffing:
+		brain.quiet = false
+
+
+func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
+	super(from, to)
+	if to != EnemyBrain.State.SUSPICIOUS and to != EnemyBrain.State.INVESTIGATE:
+		_sniffing = false
 
 
 func _physics_process(delta: float) -> void:

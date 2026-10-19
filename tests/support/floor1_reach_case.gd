@@ -138,7 +138,16 @@ func walk_order(order: Array[StringName], label: String, per_haven: bool) -> voi
 					_check(reach["ok"], "night:%s:%s" % [door_id, goal], "%s: with %s locked the goal %s is reached from %s" % [state, door_id, goal, haven_id])
 				await survey.use_gates(open)
 		print("W7 %s: %d gates open, %d havens known, steps %s, %.0f m2" % [state, open.size(), known.size(), available, survey.graph.area_of(comp)])
+		await on_state(state, progress, open, comp)
 		ProgressRules.apply(progress, step)
+
+
+## Called for every state of walk_order() once its checks are done (the
+## survey stands in it: [param open] gates open, the start's navmesh
+## component [param comp]); more checks of a state go here (QA #50: the
+## pits of test_floor1_softlocks).
+func on_state(_state: String, _progress: FloorProgress, _open: Array[StringName], _comp: int) -> void:
+	pass
 
 
 ## From the gates [param open], every gate of [param candidates] whose

@@ -34,6 +34,15 @@ const FACE_AT := Vector3(0.0, 1.715, -0.11)
 const FACE_RADIUS := 0.085
 ## Seconds between looks for comrades to form a phalanx with.
 const JOIN_CHECK := 0.3
+## Calm hoplites this close (m, the same room) are a line: when one of them
+## goes to look at something the others go with it (quietly), whatever the
+## noise's cap of investigators (backlog #25: the line moves as one). Only
+## the one that heard it calls its line - the comrades it called do not call
+## theirs in turn, or a long row of them would all go.
+const LINE_RADIUS := 8.0
+## A line is at most this many comrades besides itself (the nearest): three
+## men go to look, never more.
+const LINE_MAX := 2
 ## Marble chips fly off a hit of at least CHIP_DAMAGE; a head hit of
 ## PLATE_DAMAGE knocks the crest off, a low one (under GREAVE_HEIGHT) a
 ## greave.
@@ -42,6 +51,8 @@ const PLATE_DAMAGE := 20.0
 const GREAVE_HEIGHT := 0.6
 
 var _join_timer: float = 0.0
+## It has called its line for this errand (cleared when it rests again).
+var _line_called := false
 
 
 func _configure() -> void:
@@ -158,6 +169,54 @@ func _look_for_comrades() -> void:
 		Phalanx.join(self, near)
 
 
+## Sent to look at a noise, it takes its line along at once (so the line
+## turns and steps off together, whoever of it the noise's cap picked).
+func react(point: Vector3, point_room: StringName, reaction: ReactionRules.Reaction, source: StringName = &"") -> bool:
+	var awake := super(point, point_room, reaction, source)
+	if reaction == ReactionRules.Reaction.INVESTIGATE and brain.state == EnemyBrain.State.SUSPICIOUS and _within_bounds(point, point_room):
+		_rally_line(point)
+	return awake
+
+
+## Going to look at something (however it came to), it takes its line
+## along: the calm hoplites near it in its room come too, quietly.
+func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
+	super(from, to)
+	if to == EnemyBrain.State.DORMANT or to == EnemyBrain.State.PATROL:
+		_line_called = false
+	elif to == EnemyBrain.State.INVESTIGATE and from == EnemyBrain.State.SUSPICIOUS:
+		_rally_line(brain.last_known)
+
+
+## Calls its line once per errand - and only when it went to look on its own
+## account: not when it was called itself (quiet), nor when it saw the guard.
+func _rally_line(point: Vector3) -> void:
+	if _line_called or brain.quiet or brain.spotted():
+		return
+	_line_called = true
+	var room := current_room()
+	var near: Array = []
+	for other in PerceptionWorld.exhibits():
+		var comrade := other as Hoplite
+		if comrade == null or comrade == self or not comrade.is_inside_tree() or comrade.is_frozen():
+			continue
+		if not comrade.brain.is_calm() and comrade.brain.state != EnemyBrain.State.SUSPICIOUS:
+			continue
+		if comrade.brain.spotted():
+			continue   # it saw the guard: its own hunt comes first
+		var distance := comrade.global_position.distance_to(global_position)
+		if distance > LINE_RADIUS:
+			continue
+		if room != &"" and comrade.current_room() != room:
+			continue
+		near.append([distance, comrade])
+	near.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	for i in mini(near.size(), LINE_MAX):
+		var comrade: Hoplite = near[i][1]
+		comrade.brain.quiet = true
+		comrade.brain.hear(point, true)
+
+
 ## In a phalanx it walks to its place in the line and faces the line's
 ## front; alone it closes to spear reach on the attack ring.
 func _steer(delta: float, has_target: bool) -> Vector3:
@@ -215,3 +274,8 @@ func _on_damaged(info: DamageInfo) -> void:
 	elif height < GREAVE_HEIGHT:
 		var local := global_transform.affine_inverse() * info.position
 		body.shed("plate_greave_l" if local.x < 0.0 else "plate_greave_r", info.direction)
+
+
+## Its own chips fly off a heavy hit (no generic ones on top).
+func _chips_on_hits() -> bool:
+	return false

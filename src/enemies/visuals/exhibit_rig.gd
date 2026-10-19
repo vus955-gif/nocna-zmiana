@@ -172,8 +172,8 @@ func shatter(center: Vector3, plan: GibPlanner.Plan, push: Vector3) -> void:
 			var out := at - center
 			out.y = 0.0
 			out = out.normalized() if out.length_squared() > 0.0001 else Vector3.ZERO
-			var lift := Vector3.UP * randf_range(0.5, 1.2)
-			var velocity := carried + (flat * 0.9 + out * 0.7 + lift).normalized() * plan.impulse * randf_range(0.6, 1.15)
+			var lift := Vector3.UP * randf_range(0.6, 1.4) * plan.lift
+			var velocity := carried + (flat * plan.push + out * plan.spread + lift).normalized() * plan.impulse * randf_range(0.6, 1.15)
 			Fx.piece(shard, MeshShards.materials_for(shard, materials), xform, velocity, 10.0 if plan.gibbed else 5.0)
 	model.visible = false
 

@@ -1,7 +1,9 @@
 """Pickup: the museum's old first-aid tin. White stove-enamel box with a red
 cross front and back, chipped to rusty steel at the edges, black carrying
-handle, two steel latches, hinges on the back. 0.30 x 0.11 x 0.22 m.
-Origin at the box centre; faces -Y."""
+handle, two steel latches, hinges on the back. 0.30 x 0.11 x 0.22 m. The
+one white pickup (_pickup_palette.py: health is never an ammo colour): the
+enamel glows very faintly and the cross a little in the dark, the rim is
+white. Origin at the box centre; faces -Y."""
 import numpy as np
 
 from artlib import kit
@@ -9,6 +11,7 @@ from artlib import materials as M
 from artlib.geo import Part
 from artlib.kit import R, T
 from artlib.model import Model
+from models import _pickup_palette as PP
 
 W, D, H = 0.3, 0.11, 0.22
 
@@ -26,6 +29,8 @@ def tin(ctx):
     seam = (np.abs(ctx.p[:, 2] - 0.055) < ctx.texel * 0.8) & ~face | \
            (face & (np.abs(ctx.p[:, 2] - 0.055) < ctx.texel * 0.8) & ~cross)
     s.shade[seam] -= 3.0
+    PP.glow(s, (s.ramp_id == 0) & ~seam, 0.12)
+    PP.glow(s, painted & ~seam, 0.35)
     return s
 
 

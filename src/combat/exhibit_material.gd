@@ -10,6 +10,13 @@ class_name ExhibitMaterial
 enum Kind { WAX, TAXIDERMY, MARBLE, METAL, BONE, CANVAS, LINEN, WOOD }
 
 
+## True for materials that shed chips on a heavy hit (HitFeel): wax lumps,
+## sawdust tufts, marble and bone flakes, cedar chips, rags; armour clanks
+## and a canvas tears instead.
+static func chips(kind: Kind) -> bool:
+	return kind != Kind.METAL and kind != Kind.CANVAS
+
+
 ## Colour of debris chunks.
 static func color(kind: Kind) -> Color:
 	match kind:

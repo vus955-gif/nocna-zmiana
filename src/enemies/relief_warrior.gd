@@ -209,6 +209,8 @@ func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
 		move = _planned
 	if from == EnemyBrain.State.DORMANT and to != EnemyBrain.State.DESTROYED:
 		wall.wake()
+	elif to == EnemyBrain.State.DORMANT:
+		wall.rest()
 
 
 func _on_strike() -> void:
@@ -287,3 +289,8 @@ func _set_hurtable(on: bool) -> void:
 	_hurtable = on
 	for zone in _zones:
 		zone.collision_layer = Layers.HURTBOX if on else 0
+
+
+## Its own chips fly off a heavy hit (no generic ones on top).
+func _chips_on_hits() -> bool:
+	return false

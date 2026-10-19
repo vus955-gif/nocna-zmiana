@@ -83,6 +83,10 @@ func test_dawn_ends_the_night_without_a_death() -> void:
 	museum.player.global_position = OUTSIDE
 	RunState.add_dust(33, false)
 	(museum.objective.fuse_pickups.values()[0] as FusePickup).interact(museum.player)
+	var prop := MeshInstance3D.new()   # what an exhibit left on its plinth (a Fu dog's ball)
+	prop.mesh = SphereMesh.new()
+	prop.add_to_group(Enemy.PROP_GROUP)
+	museum.enemies_root.add_child(prop)
 	var next := watch(museum.next_night_requested)
 	var dawned := watch(Events.dawn_broke)
 	museum.watch.clock.elapsed = NightClock.seconds_to_dawn() - 0.2
@@ -90,6 +94,7 @@ func test_dawn_ends_the_night_without_a_death() -> void:
 	assert_eq(dawned.size(), 1)
 	for exhibit in museum.exhibits():
 		assert_true(exhibit.is_frozen(), "every exhibit stopped dead")
+	assert_not_null(prop.material_override, "and what they left standing greys over with them")
 	assert_true(museum.objective.boss.process_mode == Node.PROCESS_MODE_DISABLED, "the skeleton too")
 	assert_eq(GameState.night, 2)
 	assert_eq(GameState.run_dust, 33, "the Dust stays with the guard")

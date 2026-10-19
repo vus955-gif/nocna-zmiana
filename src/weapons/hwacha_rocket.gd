@@ -10,16 +10,29 @@ extends Node3D
 ## flare's). Hits are explosive and carry weapon = hwacha (boards and
 ## cracked walls give way). Past max_range it fizzles out in the air.
 ## Only every LIGHT_EVERY-th rocket carries a light (a volley is six).
+## The exhaust's sparks are little glowing boxes of their own (see
+## [method spark_mesh]), not the flare's: the first metres of a volley lie
+## right in front of the guard's face.
 ## The node's origin is the arrowhead; -Z points along its flight.
 
 const MODEL := &"hwacha_rocket"
 const LIGHT_EVERY := 3
 const LENGTH := 0.5
 const TRAIL_COLOR := Color(1.0, 0.55, 0.2)
+const SPARK_SIZE := 0.025
+## A spark's brightness: over the bloom's threshold of 1 so it glows at
+## range, not so far over it that it turns into flat white.
+const SPARK_ENERGY := 2.0
+## A spark fades out (dithered) between these distances from the camera:
+## gone nearer than the first, whole beyond the second. Held in front of
+## the lens it was a flat white block filling a tenth of the screen.
+const SPARK_FADE_NEAR := 0.6
+const SPARK_FADE_FAR := 1.8
 
 ## Rockets launched so far (which ones get a light).
 static var _launched: int = 0
 static var _materials: Dictionary = {}
+static var _spark_mesh: Mesh = null
 
 var velocity := Vector3.ZERO
 var shot: WeaponData = null
@@ -92,6 +105,8 @@ func _burst(hurtbox: Hurtbox, point: Vector3, normal: Vector3) -> void:
 		if host != null and host.brain.state != EnemyBrain.State.DESTROYED and data.burn_time > 0.0:
 			Burn.ignite(host, data.burn_dps, data.burn_time, by)
 	var blast := data.blast_damage if data.blast_damage > 0.0 else data.damage
+	if hurtbox == null:
+		Fx.mark(point, normal, Fx.SCORCH, FeelProfile.of(data.id).decal_size)   # its burst's burn on the wall
 	if data.blast_radius > 0.0:
 		Blast.explode(self, point + normal * 0.05, data.blast_radius, blast, data.knockback, data.damage_kind, by,
 				heading, data.id, fired_from, &"hwacha_pop")
@@ -173,7 +188,7 @@ func _build() -> void:
 	process.scale_max = 1.5
 	process.color = TRAIL_COLOR
 	_trail.process_material = process
-	_trail.draw_pass_1 = FlareLight.spark_mesh()
+	_trail.draw_pass_1 = spark_mesh()
 	add_child(_trail)
 	_launched += 1
 	if _launched % LIGHT_EVERY == 0:
@@ -184,6 +199,24 @@ func _build() -> void:
 		light.shadow_enabled = false
 		light.position = Vector3(0.0, 0.0, 0.2)
 		add_child(light)
+
+
+## The exhaust's spark (shared): an unshaded box tinted by its particle's
+## colour, overbright by SPARK_ENERGY and faded out near the camera.
+static func spark_mesh() -> Mesh:
+	if _spark_mesh == null:
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3.ONE * SPARK_SIZE
+		var material := StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.vertex_color_use_as_albedo = true
+		material.albedo_color = Color(SPARK_ENERGY, SPARK_ENERGY, SPARK_ENERGY)
+		material.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER
+		material.distance_fade_min_distance = SPARK_FADE_NEAR
+		material.distance_fade_max_distance = SPARK_FADE_FAR
+		mesh.material = material
+		_spark_mesh = mesh
+	return _spark_mesh
 
 
 static func _material(color: Color) -> StandardMaterial3D:

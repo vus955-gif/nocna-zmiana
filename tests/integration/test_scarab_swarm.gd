@@ -119,3 +119,63 @@ func test_hits_knock_out_dead_beetles_and_it_dies_in_a_rain_of_them() -> void:
 	swarm.take_damage(kill)
 	assert_eq(destroyed.size(), 1)
 	assert_gt(Fx.chunk_count() - before, 12, "a rain of beetles and wing cases")
+
+
+# --- the stream along the walls (ecology) -----------------------------------------------
+
+func _seconds(time: float) -> void:
+	await physics_frames(roundi(time * Engine.physics_ticks_per_second))
+
+
+## A 10 x 10 m room of four walls round the origin.
+func _room() -> void:
+	for wall: Array in [[Vector3(5.5, 1.5, 0), Vector3(1, 3, 12)], [Vector3(-5.5, 1.5, 0), Vector3(1, 3, 12)],
+			[Vector3(0, 1.5, 5.5), Vector3(12, 3, 1)], [Vector3(0, 1.5, -5.5), Vector3(12, 3, 1)]]:
+		Greybox.box(self, wall[0], wall[1], Color.DIM_GRAY)
+
+
+func _nearest_wall(point: Vector3) -> float:
+	return minf(minf(absf(5.0 - absf(point.x)), absf(5.0 - absf(point.z))), 99.0)
+
+
+func test_a_disturbed_swarm_streams_along_the_walls_of_its_room() -> void:
+	_room()
+	var dummy := _dummy(Vector3(0, 0, 40))
+	_spawn(dummy, false)
+	await physics_frames(3)
+	var route := swarm.stream()
+	assert_gt(route.size(), 3, "a route round the room's walls (%d points)" % route.size())
+	for point in route:
+		assert_lt(_nearest_wall(point), 0.6, "hugging a wall: %s" % point)
+		assert_gt(_nearest_wall(point), 0.2, "not in it: %s" % point)
+	assert_eq(swarm.brain.state, EnemyBrain.State.DORMANT, "a heap until something disturbs it")
+	swarm.hear(Vector3(2, 0, 2))
+	await _seconds(1.0)
+	# (the point is 3 m off: a quick swarm may be there already, searching)
+	assert_true(swarm.brain.state == EnemyBrain.State.INVESTIGATE or swarm.brain.state == EnemyBrain.State.SEARCH, "it goes to look (%s)" % EnemyBrain.State.keys()[swarm.brain.state])
+	var frames := 0
+	while swarm.brain.state != EnemyBrain.State.PATROL and frames < 40 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		frames += 1
+	assert_eq(swarm.brain.state, EnemyBrain.State.PATROL, "disturbed once, it never heaps up again: it streams")
+	var start := swarm.global_position
+	await _seconds(4.0)
+	assert_gt(swarm.global_position.distance_to(start), 1.0, "on the move along the walls")
+	assert_gt(swarm.risen(), 0.9, "the cloud is up")
+
+
+func test_a_swarm_gathers_on_a_fallen_exhibit() -> void:
+	var dummy := _dummy(Vector3(0, 0, 40))
+	_spawn(dummy, false)
+	swarm.brain.rng.seed = 5
+	var fallen := WaxFigure.new()
+	fallen.position = Vector3(0, 0, 6)
+	fallen.target = dummy
+	add_child(fallen)
+	await physics_frames(3)
+	var info := DamageInfo.make(500.0, DamageInfo.Kind.BALLISTIC, dummy)
+	info.position = fallen.global_position + Vector3.UP
+	fallen.take_damage(info)
+	await _seconds(1.0)
+	assert_eq(swarm.brain.state, EnemyBrain.State.INVESTIGATE, "the beetles swarm the fallen")
+	assert_lt(swarm.brain.goal.distance_to(Vector3(0, 0, 6)), 0.5)

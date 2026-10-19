@@ -15,7 +15,9 @@ extends RefCounted
 ##   and tear out of a slab SLIDE metres along it (a shorter crack);
 ## - while it is in the wall it is the wall: no attacks, no steering, no
 ##   hits (hurtable()), its own model hidden while the slab's figure or the
-##   wall stands in for it (model_shown()).
+##   wall stands in for it (model_shown());
+## - home again and asleep (rest()) it sinks back into its slab, the carved
+##   figure whole in its pocket, to crack out of it anew when it wakes.
 ## It moves the body itself (global_position) while busy.
 
 const W := ReliefMoves.Wall
@@ -39,6 +41,8 @@ var _panels: Array[ReliefPanel] = []
 var _set_up := false
 ## Coming out again after sinking (a shorter crack).
 var _returning := false
+## Sinking into its own slab to rest (no travel, no crack: it stays in).
+var _homing := false
 
 
 func _init(owner: Enemy, panel_kind: ReliefPanel.Kind) -> void:
@@ -182,6 +186,20 @@ func sink(away_from: Vector3) -> bool:
 	return false
 
 
+## Asleep at its post again: it sinks back into its slab (a figure with a
+## slab on a wall; a stele, or one still busy, stays as it is).
+func rest() -> void:
+	if state != W.OUT or panel == null or stele or not is_instance_valid(panel):
+		return
+	_homing = true
+	_returning = false
+	_from = enemy.global_position
+	_to = panel.figure_point()
+	enemy.face(enemy.global_position + normal)
+	_begin(W.SINKING, ReliefMoves.SINK_TIME)
+	Sfx.play_at(&"relief_scrape", panel.figure_point() + Vector3.UP * 1.0, -6.0)
+
+
 ## One step of its wall business, moving the body while busy.
 func tick(delta: float) -> void:
 	if not _set_up or state == W.OUT or state == W.IN:
@@ -206,7 +224,14 @@ func tick(delta: float) -> void:
 		W.SINKING:
 			_glide(1.0 - _timer / ReliefMoves.SINK_TIME)
 			if _timer <= 0.0:
-				_begin(W.TRAVELLING, ReliefMoves.TRAVEL_TIME)
+				if _homing:
+					_homing = false
+					_put_in(panel)
+					panel.set_empty(false)
+					panel.crack(0.0)
+					state = W.IN
+				else:
+					_begin(W.TRAVELLING, ReliefMoves.TRAVEL_TIME)
 		W.TRAVELLING:
 			if _timer <= 0.0:
 				wall_point = _next_point

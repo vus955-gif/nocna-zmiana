@@ -1,5 +1,5 @@
 extends TestCase
-## The raptor skeleton: pack flanking, the 0.3 s crouch-and-hiss before a
+## The raptor skeleton: pack flanking, the 0.6 s crouch-and-hiss before a
 ## 4 m leap, the bite, fragility, bones, and the T-Rex summon factory.
 
 var target: TargetDummy
@@ -25,7 +25,7 @@ func test_numbers_follow_the_design() -> void:
 	assert_eq(raptor.move_speed, 7.5)
 	assert_eq(raptor.attack_damage, 8.0)
 	assert_eq(raptor.brain.attack_range, 4.0)
-	assert_eq(raptor.brain.windup, 0.3)
+	assert_eq(raptor.brain.windup, 0.6)
 	assert_eq(raptor.dust_value, 3)
 	assert_eq(raptor.material_kind, ExhibitMaterial.Kind.BONE)
 
@@ -53,18 +53,29 @@ func test_pack_members_alternate_sides() -> void:
 func test_pack_splits_to_the_guards_left_and_right() -> void:
 	var pack := RaptorPack.spawn(self, Vector3(0, 0, -22), 4, target, true)
 	await physics_frames(108)   # a 0.6 s suspicion, then about a second of the run
-	var right := 0.0
-	var left := 0.0
+	# the driver (the nearest) runs straight in; the flankers split, so the
+	# average of each side's flankers (not half the pack) is measured
+	var right: Array[float] = []
+	var left: Array[float] = []
 	for raptor in pack:
 		if raptor.flank_side > 0.0:
-			right += raptor.global_position.x * 0.5
-		else:
-			left += raptor.global_position.x * 0.5
+			right.append(raptor.global_position.x)
+		elif raptor.flank_side < 0.0:
+			left.append(raptor.global_position.x)
+	assert_false(right.is_empty() or left.is_empty(), "flankers on both sides: %s / %s" % [right, left])
+	var right_x: float = 0.0 if right.is_empty() else right.reduce(func(sum: float, x: float) -> float: return sum + x, 0.0) / right.size()
+	var left_x: float = 0.0 if left.is_empty() else left.reduce(func(sum: float, x: float) -> float: return sum + x, 0.0) / left.size()
 	# the target "faces" the pack (-Z): its right is +X
-	assert_gt(right, 1.5, "one half swings right: %.2f" % right)
-	assert_lt(left, -1.5, "the other half left: %.2f" % left)
+	assert_gt(right_x, 1.5, "the right flankers swing right: %.2f" % right_x)
+	assert_lt(left_x, -1.5, "the left flankers swing left: %.2f" % left_x)
+	var drivers := 0
 	for raptor in pack:
-		assert_true(raptor.flanking() or raptor.global_position.length() <= Raptor.FLANK_UNTIL + 0.5, "flanking while far")
+		if raptor.driver():
+			drivers += 1
+			assert_false(raptor.flanking(), "the driver goes straight in")
+		else:
+			assert_true(raptor.flanking() or raptor.global_position.length() <= Raptor.FLANK_UNTIL + 0.5, "flanking while far")
+	assert_eq(drivers, 1, "one driver, the rest flank")
 
 
 func test_close_in_they_go_straight_for_the_guard() -> void:
@@ -76,7 +87,7 @@ func test_close_in_they_go_straight_for_the_guard() -> void:
 	assert_false(raptor.flanking(), "inside 6 m: no more flanking")
 
 
-func test_the_leap_is_telegraphed_by_a_0_3_s_crouch() -> void:
+func test_the_leap_is_telegraphed_by_a_0_6_s_crouch() -> void:
 	var raptor := _raptor(Vector3(0, 0, -3.6))
 	var strikes := watch(raptor.brain.strike)
 	await physics_frames(2)
@@ -91,7 +102,7 @@ func test_the_leap_is_telegraphed_by_a_0_3_s_crouch() -> void:
 			assert_eq(target.hits.size(), 0, "no bite during the telegraph")
 		if not strikes.is_empty():
 			break
-	assert_almost_eq(windup_frames / 60.0, 0.3, 1.5 / 60.0, "0.3 s of crouch and hiss")
+	assert_almost_eq(windup_frames / 60.0, 0.6, 1.5 / 60.0, "0.6 s of crouch and hiss")
 	assert_gt(crouched, 0.8, "it visibly crouches")
 
 
@@ -99,7 +110,7 @@ func test_leaps_4_m_and_bites_for_8() -> void:
 	var raptor := _raptor(Vector3(0, 0, -4.0))
 	await physics_frames(2)
 	raptor.brain.wake()
-	await physics_frames(75)
+	await physics_frames(110)   # (a 0.6 s suspicion, a 0.6 s crouch, the leap)
 	assert_eq(target.hits.size(), 1, "one bite per leap")
 	if target.hits.size() == 1:
 		assert_eq(target.hits[0].amount, 8.0)
@@ -159,3 +170,60 @@ func test_only_the_big_bones_cast_shadows() -> void:
 	assert_eq(greybox.rig, null)
 	assert_gt(greybox.find_children("*", "MeshInstance3D", true, false).size(), 40, "a greybox of many little bones")
 	assert_lt(_shadow_casters(greybox), 9, "the greybox")
+
+
+func test_the_pack_picks_the_nearest_as_its_driver_and_replaces_a_fallen_one() -> void:
+	var pack := RaptorPack.spawn(self, Vector3(0, 0, -20), 4, target, false)
+	pack[2].position = Vector3(0, 0, -14)   # the nearest to the guard
+	await physics_frames(2)
+	for raptor in pack:
+		raptor.summoned = true
+	pack[0].brain.wake()
+	await physics_frames(60)   # the suspicion, the rally
+	assert_true(pack[2].driver(), "the nearest drives")
+	var sides: Array = pack.map(func(r: Raptor) -> float: return r.flank_side)
+	assert_eq(sides.count(0.0), 1, "one driver: %s" % [sides])
+	assert_true(sides.has(1.0) and sides.has(-1.0), "flankers on both sides: %s" % [sides])
+	var info := DamageInfo.make(500.0, DamageInfo.Kind.BALLISTIC, target)
+	info.position = pack[2].global_position + Vector3.UP
+	pack[2].take_damage(info)
+	var drivers: Array = []
+	for i in 360:   # the next rally (an attack's end, a mate's hunt) hands the part on
+		await get_tree().physics_frame
+		# (untyped: a freed raptor is no Raptor any more)
+		var left: Array = pack.filter(func(r: Variant) -> bool: return is_instance_valid(r) and not (r as Raptor).is_queued_for_deletion())
+		drivers = left.filter(func(r: Variant) -> bool: return (r as Raptor).driver())
+		if not drivers.is_empty():
+			break
+	assert_eq(drivers.size(), 1, "a new driver took over")
+
+
+## Review 19.10: the driver of one hunt kept its part for every hunt after
+## it (a living driver counted as "the pack has one"); every new hunt, with
+## nobody of the pack hunting yet, hands the parts out anew.
+func test_a_second_hunt_picks_its_driver_again() -> void:
+	var pack := RaptorPack.spawn(self, Vector3(0, 0, -20), 4, target, false)
+	pack[2].position = Vector3(0, 0, -14)   # the nearest to the guard
+	await physics_frames(2)
+	for raptor in pack:
+		raptor.summoned = true
+	pack[0].brain.wake()
+	await physics_frames(60)
+	assert_true(pack[2].driver(), "the first hunt: the nearest drives")
+	# the guard got away; the pack is at its posts again - and finds him again
+	# from the other side, a different raptor now the nearest
+	var posts: Array[Vector3] = [Vector3(6, 0, -22), Vector3(0, 0, -12), Vector3(-6, 0, -22), Vector3(0, 0, -26)]
+	for i in pack.size():
+		var raptor: Raptor = pack[i]
+		raptor.brain.state = EnemyBrain.State.DORMANT
+		raptor.global_position = posts[i]
+		raptor.velocity = Vector3.ZERO
+	target.position = Vector3.ZERO
+	await physics_frames(2)
+	pack[0].brain.wake()
+	await physics_frames(60)
+	assert_true(pack[1].driver(), "the second hunt: the raptor nearest him now drives")
+	assert_false(pack[2].driver(), "the old driver is a flanker again")
+	var sides: Array = pack.map(func(r: Raptor) -> float: return r.flank_side)
+	assert_eq(sides.count(0.0), 1, "still one driver: %s" % [sides])
+	assert_true(sides.has(1.0) and sides.has(-1.0), "flankers on both sides: %s" % [sides])

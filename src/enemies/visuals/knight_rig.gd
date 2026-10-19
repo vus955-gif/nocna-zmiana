@@ -3,8 +3,11 @@ extends ExhibitRig
 ## The empty suit of armour: a heavy, dipping walk with a counter-swinging
 ## sword arm; the shield (on the left arm) held up in front while it hunts,
 ## dropped to its side when stunned (the guard is open); the sword raised
-## overhead in the windup and brought down in a twisting cut. Hard hits
-## knock its six plates off as physical debris (shed_plate()).
+## overhead in the windup and brought down in a twisting cut. Woken
+## (suspicious) the empty suit comes to the ready: the shield lifts before
+## it, the sword is drawn back, the helm lifts, and the whole suit shivers
+## for RATTLE_TIME as if something just got into it. Hard hits knock its
+## six plates off as physical debris (shed_plate()).
 
 const PLATES: Array[String] = ["plate_pauldron_l", "plate_pauldron_r", "plate_tasset_l",
 		"plate_tasset_r", "plate_poleyn_l", "plate_poleyn_r"]
@@ -12,6 +15,14 @@ const PLATES: Array[String] = ["plate_pauldron_l", "plate_pauldron_r", "plate_ta
 const RAISED := 2.3
 const CUT := -0.75
 const CUT_TIME := 0.14
+## Suspicious: the ready stance (sword arm, shield arm, helm, rad) and the
+## shiver of the waking suit (s, rad of torso twist, rad/s).
+const READY_SWORD := 0.55
+const READY_GUARD := 0.32
+const READY_HEAD := -0.08
+const RATTLE_TIME := 0.5
+const RATTLE := 0.05
+const RATTLE_SPEED := 44.0
 
 var _sword := 0.0
 var _sword_out := 0.0
@@ -20,6 +31,8 @@ var _lean := 0.0
 var _guard := 0.0
 var _drop := 0.0
 var _head := 0.0
+## Seconds it has been suspicious (0 otherwise).
+var _alert_for := 0.0
 
 
 static func build(owner_enemy: Enemy) -> KnightRig:
@@ -73,6 +86,8 @@ func _pose(delta: float) -> void:
 	var w := brain.windup_progress()
 	var stunned := state == EnemyBrain.State.STUNNED
 	var dormant := state == EnemyBrain.State.DORMANT
+	var suspicious := state == EnemyBrain.State.SUSPICIOUS
+	_alert_for = _alert_for + delta if suspicious else 0.0
 	var walk := minf(gait, 1.2)
 	var s := sin(walk_phase)
 	var leg := s * 0.36 * walk
@@ -102,6 +117,11 @@ func _pose(delta: float) -> void:
 			rate = 38.0
 		else:
 			rate = 3.5   # heavy: the blade comes back slowly (the opening)
+	if suspicious:
+		sword = READY_SWORD
+		sword_out = 0.12
+		guard = READY_GUARD
+		head = READY_HEAD
 	if stunned:
 		sword = -0.45
 		sword_out = 0.2
@@ -123,7 +143,10 @@ func _pose(delta: float) -> void:
 	_head = ExhibitRig.ease_to(_head, head, 6.0, delta)
 	var bob := -absf(s) * 0.035 * walk
 	var roll := s * 0.035 * walk
-	pose_part("torso", Vector3(_lean, _twist, roll), Vector3(0.0, bob - 0.06 * _drop, 0.0))
+	var rattle := 0.0
+	if suspicious and _alert_for < RATTLE_TIME:
+		rattle = sin(_alert_for * RATTLE_SPEED) * RATTLE * (1.0 - _alert_for / RATTLE_TIME)
+	pose_part("torso", Vector3(_lean, _twist + rattle, roll), Vector3(0.0, bob - 0.06 * _drop, 0.0))
 	pose_part("arm_r", Vector3(_sword, 0.0, _sword_out))
 	# shield arm: up in front while it hunts, swung down and out when stunned
 	pose_part("arm_l", Vector3(_guard - 1.05 * _drop, 0.0, -0.3 * _drop), Vector3(0.0, -0.02 * absf(s) * walk, 0.0))

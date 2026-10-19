@@ -242,3 +242,54 @@ func test_asleep_its_spear_stands_upright_and_the_telegraph_draws_it_back() -> v
 	assert_not_null(glint)
 	if glint != null:
 		assert_true(glint.visible and glint.light_energy > 1.0, "the bronze tip glints")
+
+
+# --- the line goes to look together (ecology) --------------------------------------------
+
+func test_a_line_of_hoplites_investigates_together() -> void:
+	target.position = Vector3(0, 0, 50)   # out of sight
+	var line: Array[Hoplite] = []
+	for i in 3:
+		var man := Hoplite.new()
+		man.position = Vector3(-2 + 2 * i, 0, 0)
+		man.target = target
+		man.starts_awake = true
+		man.brain.rng.seed = 30 + i
+		add_child(man)
+		man.face(Vector3(-2 + 2 * i, 0, -5))
+		line.append(man)
+	await physics_frames(3)
+	for man in line:
+		assert_eq(man.brain.state, EnemyBrain.State.PATROL, "standing at its post")
+	PerceptionWorld.noise(Vector3(0, 0, -12), 18.0, &"pistol")
+	await physics_frames(60)
+	for man in line:
+		assert_eq(man.brain.state, EnemyBrain.State.INVESTIGATE, "the whole line goes to look")
+		assert_lt(man.brain.goal.distance_to(Vector3(0, 0, -12)), 0.5)
+		assert_false(man.brain.is_hunting())
+
+
+## Review 19.10: the line's followers took their own neighbours along in
+## turn, so a long row of hoplites all went to look at one noise. A line is
+## the one that heard it and the LINE_MAX nearest comrades - no more.
+func test_a_long_row_of_hoplites_sends_one_line_of_three() -> void:
+	target.position = Vector3(0, 0, 50)   # out of sight
+	var row: Array[Hoplite] = []
+	for i in 6:
+		var man := Hoplite.new()
+		man.position = Vector3(3.0 * i, 0, 0)
+		man.target = target
+		man.starts_awake = true
+		man.brain.rng.seed = 40 + i
+		add_child(man)
+		man.face(Vector3(3.0 * i, 0, -5))
+		row.append(man)
+	await physics_frames(3)
+	PerceptionWorld.noise(Vector3(-2, 0, 0), 4.0, &"pistol")   # only the first man hears it
+	assert_ne(row[0].brain.state, EnemyBrain.State.PATROL, "(it heard it)")
+	assert_eq(row[1].brain.state, EnemyBrain.State.SUSPICIOUS, "(a comrade of its line)")
+	for second in 4:
+		await physics_frames(60)
+		var going := row.filter(func(m: Hoplite) -> bool: return m.brain.state != EnemyBrain.State.PATROL).size()
+		assert_eq(going, 1 + Hoplite.LINE_MAX, "second %d: the one who heard it and its line of %d, not the whole row" % [second + 1, Hoplite.LINE_MAX])
+	assert_eq(row[5].brain.state, EnemyBrain.State.PATROL, "the far end of the row never moved")

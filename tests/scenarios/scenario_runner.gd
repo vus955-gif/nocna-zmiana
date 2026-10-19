@@ -3,7 +3,9 @@ extends Node
 ## sandbox, stages one moment, saves screenshots and a JSON state dump to
 ## tests/_out/. Usage: bash tools/run_scenario.sh <name>, where name is one
 ## of: overview, shotgun_gib, taser_finisher, knight_block, wolf_pounce, perf,
-## ui_2a. All but "perf" and "ui_2a" run in a 1280x720 window; "perf"
+## ui_2a, gun_feel (every weapon's shot, hit and kill on a wax figure, its
+## marks on wood, metal, carpet and stone, the sprint carry; plan
+## 2026-10-19-gun-feel). All but "perf" and "ui_2a" run in a 1280x720 window; "perf"
 ## maximizes the window and measures the average frame rate; "ui_2a" runs
 ## in 1600x900 and shoots the stage-2a screens into tests/_out/2a/ (main
 ## menu, options, HUD, terminal, pause, death screen, the hall at night).
@@ -51,6 +53,8 @@ func _ready() -> void:
 			await _wolf_pounce()
 		"perf":
 			await _perf()
+		"gun_feel":
+			await _gun_feel()
 		_:
 			print("Unknown scenario: ", _scenario)
 	_dump_state()
@@ -125,6 +129,101 @@ func _wolf_pounce() -> void:
 	for i in 6:
 		await _frames(10)
 		await _shot("t%02d" % ((i + 1) * 10))
+
+
+## Every weapon on a sturdy wax figure 4.5 m ahead: just after the shot
+## (flash, kick), the kick's peak (the view, the flinch), the settle, then a
+## killing shot; the marks of the pistol, shotgun and rifle on tagged
+## panels; the weapon carried for a sprint. The view's and the model's kick
+## peaks are printed per weapon.
+func _gun_feel() -> void:
+	var guard := sandbox.player
+	sandbox.hud.hide_help()
+	sandbox.clear_enemies()
+	for id in [&"gatling", &"flare", &"rifle_hunt", &"harpoon", &"hwacha"]:
+		guard.weapons.give(load("res://src/weapons/data/%s.tres" % id))
+	var start := guard.global_position
+	for id: StringName in [&"taser", &"pistol", &"shotgun", &"gatling", &"flare", &"rifle_hunt", &"harpoon", &"hwacha"]:
+		sandbox.clear_enemies()
+		Fx.clear()
+		guard.respawn(start, 0.0)
+		guard.head.rotation.x = deg_to_rad(-6.0)
+		var wax := sandbox.spawn(&"wax", start + Vector3(0.0, 0.0, -4.5), false)
+		wax.health.max_health = 600.0
+		wax.health.current = 600.0
+		wax.set_physics_process(false)   # it stands where it is hit (its flinch is its own)
+		for state in guard.weapons.owned:
+			state.reserve = state.data.max_reserve
+			state.magazine = state.data.magazine_size
+			state.battery = state.data.battery_max
+		guard.weapons.select_id(id)
+		await _frames(50)
+		if id == &"pistol" or id == &"shotgun":
+			await _shot("%s_0" % id)
+		var top := Vector3.ZERO
+		if id == &"gatling":
+			for i in 50:
+				guard.weapons.try_fire()
+				await _frames(1)
+			await _shot("%s_a" % id)
+			for i in 8:
+				guard.weapons.try_fire()
+				await _frames(1)
+			await _shot("%s_b" % id)
+		else:
+			guard.weapons.try_fire()
+			await _frames(1)
+			await _shot("%s_a" % id)
+			for i in 3:
+				await _frames(1)
+				top = top.max(Vector3(rad_to_deg(guard.camera.rotation.x), guard.weapons.view_kick()[0], guard.weapons.view_kick()[3]))
+			await _shot("%s_b" % id)
+			await _frames(10)
+			await _shot("%s_c" % id)
+		print("%s: view kick %.2f deg, model back %.3f m, climb %.1f deg, trauma %.2f" % [id, top.x, top.y, top.z, guard.camera.trauma.value])
+		await _frames(70)
+		if is_instance_valid(wax) and not wax.is_queued_for_deletion():
+			wax.health.current = 1.0
+			for state in guard.weapons.owned:
+				state.magazine = state.data.magazine_size
+			guard.weapons.try_fire()
+			await _frames(3)
+			await _shot("%s_kill" % id)
+			await _frames(12)
+			await _shot("%s_kill2" % id)
+		await _frames(30)
+	# marks: three panels side by side 2.5 m ahead, shot by the pistol, the shotgun and the rifle
+	sandbox.clear_enemies()
+	Fx.clear()
+	guard.respawn(start, 0.0)
+	var panels: Array[StaticBody3D] = []
+	for i in 3:
+		var panel := Greybox.box(sandbox, start + Vector3(-1.4 + 1.4 * i, 1.5, -2.5), Vector3(1.3, 2.4, 0.1), Color(0.5, 0.48, 0.45))
+		panel.set_meta(&"surface", [&"wood", &"steel", &"carpet"][i])
+		panels.append(panel)
+	await _frames(20)
+	for i in 3:
+		for id: StringName in [&"pistol", &"shotgun", &"rifle_hunt"]:
+			guard.weapons.select_id(id)
+			for state in guard.weapons.owned:
+				state.magazine = state.data.magazine_size
+			guard.head.rotation = Vector3(deg_to_rad([-10.0, 0.0, 10.0][[&"pistol", &"shotgun", &"rifle_hunt"].find(id)]), atan2(1.4 - 1.4 * i, 2.5), 0.0)
+			await _frames(30)
+			guard.weapons.try_fire()
+			await _frames(4)
+	guard.head.rotation = Vector3.ZERO
+	await _frames(40)
+	await _shot("marks")
+	for panel in panels:
+		panel.queue_free()
+	# the sprint carry
+	Input.action_press(&"move_forward")
+	Input.action_press(&"sprint")
+	guard.weapons.select_id(&"shotgun")
+	await _frames(45)
+	await _shot("sprint")
+	Input.action_release(&"move_forward")
+	Input.action_release(&"sprint")
 
 
 func _perf() -> void:

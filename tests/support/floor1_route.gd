@@ -58,7 +58,7 @@ const KIND_HP := {
 	&"wax": 60.0, &"wolf": 35.0, &"knight": 180.0, &"bust": 45.0, &"raptor": 25.0, &"portrait": 40.0,
 	&"mummy": 110.0, &"scarabs": 40.0, &"relief_warrior": 50.0, &"relief_lion": 35.0,
 	&"hoplite": 140.0, &"books": 90.0, &"fu_dog": 160.0, &"samurai": 180.0, &"samurai_armor": 180.0,
-	&"totem": 120.0, &"jaguar": 35.0,
+	&"totem": 120.0, &"jaguar": 70.0,
 }
 const DEFAULT_HP := 60.0
 

@@ -61,7 +61,11 @@ func test_the_dressed_zones_wear_the_kit_and_the_rest_stays_greybox() -> void:
 	for key: String in greybox:
 		var kit := StringName(key.get_slice("@", 0))
 		assert_true(GREYBOX_ALLOWED.has(kit), "%s still wears the greybox" % key)
-	assert_gt(elsewhere, 100, "the zones of stage P3 stay greybox")
+	var all_dressed := Floor1Plan.ZONES.all(func(zone: StringName) -> bool: return MuseumFloorLevel.ART_ZONES.has(zone))
+	if all_dressed:
+		assert_eq(elsewhere, 0, "every zone is dressed: nothing of the floor stays greybox")
+	else:
+		assert_gt(elsewhere, 100, "the zones not dressed yet stay greybox")
 	assert_not_null(level.structure.get_node_or_null(^"Dressing/Floor1Heroes"), "the hero pieces are there")
 
 
@@ -85,10 +89,21 @@ func test_every_model_placed_is_registered_and_on_disk() -> void:
 
 
 func test_collisions_are_the_greyboxes() -> void:
-	var dressed := _shapes(level)
+	# (but the pieces whose collision is drawn from their look: QA Q7,
+	# Floor1Art.FIT_COLLISION / HERO_FIT - each of those listed there)
+	var fitted := {}
+	for node in level.find_children("*", "StaticBody3D", true, false):
+		if node.get_meta(&"kit_fitted", false):
+			var spec := PieceSpec.new()
+			spec.kit = node.get_meta(&"kit", &"")
+			spec.room = node.get_meta(&"kit_room", &"")
+			assert_true(Floor1Art.fits_collision(spec) or Floor1Art.HERO_FIT.has("%s@%s" % [spec.kit, spec.room]), "%s in %s fitted only when listed" % [spec.kit, spec.room])
+			fitted[(node as Node3D).global_position.snapped(Vector3.ONE * 0.001)] = String(spec.kit)
+	assert_gt(fitted.size(), 40, "the fitted pieces")
+	var dressed := _shapes(level, fitted)
 	level.free()
 	level = _floor(false)
-	var plain := _shapes(level)
+	var plain := _shapes(level, fitted)
 	assert_eq(dressed.size(), plain.size(), "as many colliders")
 	var differ := 0
 	for i in mini(dressed.size(), plain.size()):
@@ -99,10 +114,13 @@ func test_collisions_are_the_greyboxes() -> void:
 	assert_eq(differ, 0)
 
 
-func _shapes(root: Node) -> Array:
+func _shapes(root: Node, fitted: Dictionary = {}) -> Array:
 	var out: Array = []
 	for node in root.find_children("*", "CollisionShape3D", true, false):
 		var shape := node as CollisionShape3D
+		var owner_body := shape.get_parent() as Node3D
+		if owner_body != null and fitted.get(owner_body.global_position.snapped(Vector3.ONE * 0.001), "") == String(owner_body.get_meta(&"kit", &"")):
+			continue
 		var at := shape.global_position.snapped(Vector3.ONE * 0.001)
 		var extent := shape.shape.get_debug_mesh().get_aabb().size.snapped(Vector3.ONE * 0.001)
 		out.append("%s %s %s" % [shape.get_parent().get_meta(&"kit", shape.get_parent().name), at, extent])
@@ -113,7 +131,13 @@ func _shapes(root: Node) -> Array:
 func test_the_hero_pieces_are_all_there() -> void:
 	var counts := {}
 	var heroes := level.structure.get_node(^"Dressing/Floor1Heroes")
-	for node in heroes.find_children("*", "Node3D", true, false):
+	var placed := heroes.find_children("*", "Node3D", true, false)
+	# (the drum's bookcases and the card catalogue's arcs are the looks of
+	# their shelf and catalogue pieces: their collision is drawn from them)
+	for node in level.find_children("*", "StaticBody3D", true, false):
+		if node.get_meta(&"kit_room", &"") == &"court_reading" and node.get_meta(&"kit", &"") in [&"shelf", &"catalogue"]:
+			placed.append_array(node.find_children("*", "Node3D", true, false))
+	for node in placed:
 		var path := String(node.scene_file_path)
 		if path.begins_with("res://assets/models/"):
 			var id := path.get_file().trim_suffix(".glb")

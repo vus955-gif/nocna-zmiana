@@ -128,6 +128,8 @@ func _build() -> void:
 	_add(list, OptionRow.slider(&"mouse_sensitivity", "OPT_SENSITIVITY", SettingsData.SENSITIVITY_MIN, SettingsData.SENSITIVITY_MAX, 0.05, func(v: float) -> String: return "%.2f" % v))
 	_add(list, OptionRow.toggle(&"invert_y", "OPT_INVERT_Y"))
 	_add(list, OptionRow.slider(&"fov", "OPT_FOV", SettingsData.FOV_MIN, SettingsData.FOV_MAX, 1.0, func(v: float) -> String: return "%d°" % roundi(v)))
+	_add(list, OptionRow.slider(&"screen_shake", "OPT_SCREEN_SHAKE", 0.0, 1.0, 0.05, _percent))
+	_add(list, OptionRow.slider(&"head_bob", "OPT_HEAD_BOB", 0.0, 1.0, 0.05, _percent))
 	_section(list, "OPT_SECTION_VIDEO")
 	_add(list, OptionRow.choice(&"window_mode", "OPT_WINDOW_MODE", [
 		[SettingsData.WindowMode.WINDOWED, "OPT_WINDOW_WINDOWED"],

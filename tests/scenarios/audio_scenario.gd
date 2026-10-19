@@ -56,10 +56,11 @@ func _ready() -> void:
 	var steps := museum.player.get_node_or_null(^"Footsteps") as Footsteps
 	_check(steps != null, "the guard has his footsteps")
 	await _sample("night 1: security room", 6.0)
-	var walk := Music.players[&"explore"] as AudioStreamPlayer
-	var tension := Music.players[&"explore_tension"] as AudioStreamPlayer
-	_line("  stems in sync: explore %.4f s, tension %.4f s (difference %.1f ms)" % [walk.get_playback_position(),
-		tension.get_playback_position(), absf(walk.get_playback_position() - tension.get_playback_position()) * 1000.0])
+	var walk := Music.player_of(&"explore")
+	_check(walk != null and Music.player_of(&"explore_tension") == walk, "the walk's stems share one synchronized player")
+	if walk != null:
+		_line("  walk at %.4f s of %.1f s, %d stems sample-locked" % [walk.get_playback_position(), walk.stream.get_length(),
+			(walk.stream as AudioStreamSynchronized).stream_count])
 	for room: StringName in [&"hall", &"balcony", &"gallery", &"armory", &"corridor_w", &"diorama", &"security"]:
 		museum.player.respawn(ROOMS[room], 0.0)
 		await _sample("room: " + String(room), 2.5)

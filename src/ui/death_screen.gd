@@ -101,9 +101,11 @@ func _build() -> void:
 	column.add_child(_note)
 
 
+## A digit of the alarm clock: the guard's own modern clock keeps the
+## security equipment's sans (UiTheme.device_font), glowing red.
 static func _digit(text: String) -> Label:
 	var settings := LabelSettings.new()
-	settings.font = UiTheme.strong_font()
+	settings.font = UiTheme.device_font()
 	settings.font_size = 200
 	settings.font_color = CLOCK_COLOR
 	settings.shadow_color = Color(CLOCK_COLOR, 0.45)

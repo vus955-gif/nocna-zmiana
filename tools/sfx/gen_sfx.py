@@ -385,6 +385,31 @@ def locker():
     creak = delay(mul(lowpass(sweep(length, 380, 520, "saw"), 1500), mul(flutter(length, 23.0, 0.6), env_hump(length, 0.4))), 0.15)
     bang = delay(clang(0.4, [240, 610, 1180], 0.09), 0.5)
     return mix((turn, 0.7), (creak, 0.5), (bang, 1.0))
+
+
+# --- the court café (plan 2026-10-10-kawiarnia-zmeczenie) ---------------------
+
+def cafe_flap():
+    """The counter flap: the hinge creaks as the slab lifts, the panel knocks,
+    then the marble clacks down."""
+    length = n(0.4)
+    creak = mul(lowpass(sweep(length, 300, 430, "saw"), 1400), mul(flutter(length, 19.0, 0.55), env_hump(length, 0.35)))
+    knock = delay(thump(0.14, 150, 70, 0.03), 0.3)
+    clack = delay(mix((clang(0.09, [2600, 4100], 0.02), 1.0), (crack(0.02, 3000, 0.004), 0.6)), 0.5)
+    return mix((creak, 0.6), (knock, 0.7), (clack, 1.0))
+
+
+def espresso():
+    """A coffee poured: the pump hums, steam hisses out of the group head,
+    the cup fills drip by drip, the cup is set down with a clink."""
+    length = n(1.6)
+    hiss = mul(bandpass(noise(length), 1800, 6500), env_hump(length, 0.35))
+    pump = mul(lowpass(sweep(length, 48, 54, "saw"), 200), env_hump(length, 0.3))
+    drips = delay(grains(0.7, 9, lambda: mix((blip(0.015, rng.uniform(1900, 2600)), 1.0), (crack(0.01, 2500, 0.003), 0.4))), 0.75)
+    clink = delay(clang(0.08, [3900, 5300], 0.02), 1.45)
+    return mix((hiss, 0.9), (pump, 0.5), (drips, 0.5), (clink, 0.6))
+
+
 # --- the night in the lobby: fuses, the grate, the crystal, the clock --------
 
 def relay():
@@ -865,6 +890,8 @@ SOUNDS = {
     "cctv_switch": cctv_switch,
     "drawer": drawer,
     "locker": locker,
+    "cafe_flap": cafe_flap,
+    "espresso": espresso,
     # content: gatling, flare gun, raptor, portrait, upgrades
     "gatling_crank": gatling_crank,
     "gatling_spin": gatling_spin,
@@ -954,6 +981,8 @@ LEVELS = {
     "cctv_switch": -10.0,
     "drawer": -6.0,
     "locker": -5.0,
+    "cafe_flap": -6.0,
+    "espresso": -9.0,
     "gatling_spin": -12.0,
     "gatling_crank": -5.0,
     "gatling_stop": -7.0,

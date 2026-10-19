@@ -6,7 +6,9 @@
 #     assets/ambience/ with Blender's bundled audio module (+ .import files),
 #  3. reimports, decodes every loop through Godot around its loop point and
 #     compares it with the intermediate (length, alignment, clicks).
-#   bash tools/build_audio.sh           everything (about 10 minutes)
+#   bash tools/build_audio.sh           everything (about an hour: the nine Floor I
+#                                       zones take 4-8 min each; gen_music.py
+#                                       zone_<z> / guardian_<w> in parallel is faster)
 #   bash tools/build_audio.sh encode    steps 2-3 (intermediates exist)
 #   bash tools/build_audio.sh check     step 3 only
 cd "$(dirname "$0")/.." || exit 1

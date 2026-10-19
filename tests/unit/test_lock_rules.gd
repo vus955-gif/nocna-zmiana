@@ -104,3 +104,15 @@ func test_blows_count_up() -> void:
 	assert_eq(wall.need_strikes, 3, "three close flares")
 	assert_eq(wall.need_sum, 40.0)
 	assert_eq(wall.window, 0.3)
+
+
+func test_a_lock_breaking_round_snaps_chains_and_boards_from_anywhere() -> void:
+	var round := _hit(&"rifle_hunt", 85.0, 40.0)
+	round.lock_breaker = true
+	assert_eq(LockRules.verdict(K.CHAIN, round), V.OPEN)
+	assert_eq(LockRules.verdict(K.BOARDS, round), V.OPEN)
+	assert_eq(LockRules.verdict(K.ROPE, round), V.OPEN, "the rifle cuts ropes anyway")
+	assert_eq(LockRules.verdict(K.CRACKED, round), V.WRONG, "a wall has no link")
+	assert_eq(LockRules.verdict(K.HOOK, round), V.WRONG)
+	assert_eq(LockRules.verdict(K.BOLT, round), V.WRONG)
+	assert_eq(LockRules.verdict(K.CHAIN, _hit(&"rifle_hunt", 85.0, 40.0)), V.WRONG, "a plain rifle round")

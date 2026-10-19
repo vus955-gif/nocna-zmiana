@@ -40,6 +40,11 @@ enum State { DORMANT, FIGHT, DEFEATED }
 const GRAVITY := 15.0
 ## The guard out of the arena this long calms the guardian (s).
 const LEASH_TIME := 6.0
+## A guardian this far (m) under its post has fallen out of the world (a
+## physics glitch): it gives the fight up as if the guard had fled - back on
+## its post, the arena open - rather than leave him shut in with nothing to
+## fight (QA #50).
+const LOST_DROP := 8.0
 ## Every attack is announced at least this long before it lands (design
 ## 7.4: "każdy atak ma zapowiedź >= 0,6 s").
 const MIN_TELEGRAPH := 0.6
@@ -114,6 +119,9 @@ func _physics_process(delta: float) -> void:
 			if _should_wake():
 				wake()
 		State.FIGHT:
+			if global_position.y < home.origin.y - LOST_DROP:
+				reset_fight()
+				return
 			if guard_in_arena() or not guard_alive():
 				_away = 0.0
 			else:

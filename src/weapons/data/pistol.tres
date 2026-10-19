@@ -18,6 +18,4 @@ magazine_size = 12
 reload_time = 1.1
 start_reserve = 36
 max_reserve = 150
-shake = 0.12
-kick = 0.06
 sound = &"pistol"

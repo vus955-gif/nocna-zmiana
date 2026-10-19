@@ -13,7 +13,8 @@ extends Node3D
 ##   pack, pickups, the flare round) are made first, so theirs are in too;
 ## - Fx's own effects (a plain and a glowing particle burst, a debris
 ##   chunk, a tracer, a bullet hole, a light flash), the weapons' (the
-##   flare's sparks and trail, the gatling's smoke, a speck of Dust) and
+##   flare's sparks and trail, the gatling's smoke, the muzzles' flashes,
+##   smoke and casings: MuzzleFx, a speck of Dust) and
 ##   the wing guardians' (GuardianLooks: beams, sinews of light, marks).
 ## It removes itself after FRAMES frames. The camera sees it for that long:
 ## call it only while the screen is black.
@@ -34,7 +35,7 @@ const FIRST_ROW := -12
 ## once here, so their materials exist and get warmed.
 const LATER_MODELS: Array[StringName] = [&"wax_figure", &"wolf", &"knight", &"bust_enemy", &"raptor"]
 const LATER_PICKUPS: Array[StringName] = [&"ammo_pistol", &"ammo_shells", &"ammo_rifle", &"ammo_flares", &"medkit",
-	&"fuse", &"crystal_loose"]
+	&"fuse", &"crystal_loose", &"ammo_rifle_hunt", &"ammo_harpoon", &"ammo_hwacha"]
 
 var _left: int = FRAMES
 var _count: int = 0
@@ -143,8 +144,15 @@ func _warm_effects() -> void:
 		_add(pair[0], pair[1])
 	for material in GuardianLooks.warm_set():
 		_add(_box, material)
-	# decals: a bullet hole, a paint puddle (each texture joins the atlas)
-	for texture: Texture2D in [null, PaintPuddle._splat_texture()]:
+	# the weapons' muzzles: a fire star per flash colour, smoke, casings
+	for node in MuzzleFx.warm_set():
+		_place(node)
+	# decals: a bullet hole, a paint puddle, every surface's mark and a
+	# scorch (each texture joins the atlas)
+	var textures: Array = [null, PaintPuddle._splat_texture(), Fx.mark_texture(Fx.SCORCH)]
+	for surface in Surface.ALL:
+		textures.append(Fx.mark_texture(surface))
+	for texture: Texture2D in textures:
 		var decal := Fx.hole_decal()
 		if texture != null:
 			decal.texture_albedo = texture

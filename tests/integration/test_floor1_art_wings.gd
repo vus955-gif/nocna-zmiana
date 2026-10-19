@@ -308,3 +308,39 @@ func _bounds(node: Node) -> AABB:
 		out = box if first else out.merge(box)
 		first = false
 	return out
+
+
+## (The night's QA, 19.10: the exit sign over the court's doorway hung in the
+## middle of the KING'S LIBRARY plate.) Both read: the plate over the sign.
+func test_the_kings_library_plate_clears_the_doorways_exit_sign() -> void:
+	var plates: Array = []
+	for node: Node3D in _models(level).get("lib_sign", []):
+		if node.global_basis.get_scale().x > 1.5:
+			plates.append(node)
+	assert_eq(plates.size(), 1, "one big KING'S LIBRARY plate")
+	var signs: Array = []
+	for node: Node3D in _models(level).get("exit_sign", []):
+		if absf(node.global_position.x - Floor1ArtEnlightenment.WEST) < 0.6 and absf(node.global_position.z) < 1.0:
+			signs.append(node)
+	assert_eq(signs.size(), 1, "the exit sign over the court's doorway, inside")
+	if plates.is_empty() or signs.is_empty():
+		return
+	var plate := _box(plates[0])
+	var sign := _box(signs[0])
+	assert_gt(plate.position.y, sign.end.y + 0.05, "the plate's foot %.2f over the sign's top %.2f" % [plate.position.y, sign.end.y])
+	# (and the System's loudspeaker over the arch hangs beside it, not on it)
+	for id: StringName in level.layout.markers:
+		if String(id).begins_with("loudspeaker_"):
+			var at: Vector3 = (level.layout.markers[id] as Transform3D).origin
+			assert_false(plate.grow(0.25).has_point(at), "%s at %s clear of the plate %s" % [id, at, plate])
+
+
+func _box(node: Node3D) -> AABB:
+	var out := AABB()
+	var first := true
+	for child in node.find_children("*", "MeshInstance3D", true, false):
+		var view := child as MeshInstance3D
+		var box := view.global_transform * view.get_aabb()
+		out = box if first else out.merge(box)
+		first = false
+	return out

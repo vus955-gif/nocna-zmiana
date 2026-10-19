@@ -25,9 +25,18 @@ extends RefCounted
 ## - fuses: one of the two points of each wing,
 ## - portraits: 2-4 of the painting spots hold a portrait that wakes (drawn
 ##   last, so the draws above stay as they were),
+## - watchers (backlog #8, #25): a room whose draw holds at least
+##   WATCHER_ROOM exhibits (5 on night 1: watcher_room()) and none awake gets
+##   one of them awake - a tank, a flanker or a melee kind of a plain set
+##   (never an ambush's slot, never
+##   a pack or a flock, never a kind whose sleep is its display: a mummy in
+##   its tomb, a relief in its slab) - to walk a beat or a round while the
+##   rest sleep and stir. Drawn on a generator of its own (seed and night),
+##   so the rest of the night is as it was without them,
 ## - a gentle first night (pietro-1-projekt 7.2): on night 1 the rooms on
 ##   the way from the first start haven to the boss room hold no wolves nor
-##   raptors (wax figures instead) and at most GENTLE_AWAKE awake exhibits;
+##   raptors (wax figures instead), no watchers, and at most GENTLE_AWAKE
+##   awake exhibits;
 ##   applied after every draw, so the rest of the night stays the same. For
 ##   its first GENTLE_TIME seconds the sleepers there sleep soundly (the
 ##   Museum sets Enemy.sound_asleep): only the patrols are combat training.
@@ -55,6 +64,18 @@ const GENTLE_SWAP: Array[StringName] = [&"wolf", &"raptor"]
 const GENTLE_AWAKE := 2
 ## ...and the sleepers there sleep soundly for the night's first seconds.
 const GENTLE_TIME := 180.0
+## A room with this many drawn exhibits (and none awake) gets a watcher -
+## from night 2; night 1 waits for WATCHER_ROOM_FIRST_NIGHT (measured on
+## Floor I: three nearly doubled the first night's exhibits on their feet).
+const WATCHER_ROOM := 3
+const WATCHER_ROOM_FIRST_NIGHT := 5
+## Roles a watcher may have (EnemyRoles.Role): on its feet it reads as a
+## guard or a prowler, not as support left standing.
+const WATCHER_ROLES: Array = [EnemyRoles.Role.TANK, EnemyRoles.Role.FLANKER, EnemyRoles.Role.MELEE_PRESSURE]
+## Kinds never woken for a watch: their sleep is their display and their
+## waking its moment (EnemyRoles.Sleep: a mummy in its tomb, a relief in
+## its slab, books on their shelf).
+const NEVER_WATCH: Array = [EnemyRoles.Sleep.TOMB, EnemyRoles.Sleep.SLAB, EnemyRoles.Sleep.SHELF]
 
 ## Warnings given so far (each once per run of the game: every night draws
 ## on a fresh description of the same level, so a warning kept on the
@@ -77,6 +98,7 @@ static func plan(night_seed: int, night: int, level: LevelDescription, weakened_
 	_encounters(rng, level, config)
 	if not weakened_zones.is_empty():
 		_weaken(rng, level, config, weakened_zones)
+	watchers(level, config)
 	_loot(rng, level, config)
 	var wings: Array[StringName] = []
 	wings.assign(level.fuse_points.keys())
@@ -109,8 +131,9 @@ static func first_way(level: LevelDescription) -> Array[StringName]:
 	return rooms
 
 
-## Night 1's first rooms: wax for wolves and raptors, at most GENTLE_AWAKE
-## awake exhibits (the rest sleep).
+## Night 1's first rooms: wax for wolves and raptors, no watchers (only the
+## level's own patrols are the combat training there), at most
+## GENTLE_AWAKE awake exhibits (the rest sleep).
 static func gentle_first_night(level: LevelDescription, config: NightConfig) -> void:
 	var rooms := first_way(level)
 	var awake := 0
@@ -119,11 +142,48 @@ static func gentle_first_night(level: LevelDescription, config: NightConfig) -> 
 			continue
 		if GENTLE_SWAP.has(spawn.kind):
 			spawn.kind = &"wax"
+		if spawn.watcher:
+			spawn.watcher = false
+			spawn.dormant = true
 		if not spawn.dormant:
 			if awake < GENTLE_AWAKE:
 				awake += 1
 			else:
 				spawn.dormant = true
+
+
+## How many drawn exhibits make a room worth a watcher on [param night].
+static func watcher_room(night: int) -> int:
+	return WATCHER_ROOM_FIRST_NIGHT if night <= 1 else WATCHER_ROOM
+
+
+## One watcher per well-filled sleeping room (see the class notes): drawn
+## on its own generator, so nothing else in the night moves.
+static func watchers(level: LevelDescription, config: NightConfig) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = config.night_seed * 53 + config.night * 17
+	var by_room := {}
+	for spawn in config.spawns:
+		if spawn.slot < 0 or spawn.slot >= level.spawn_slots.size():
+			continue
+		var room := level.spawn_slots[spawn.slot].room
+		if not by_room.has(room):
+			by_room[room] = []
+		(by_room[room] as Array).append(spawn)
+	var rooms: Array = by_room.keys()
+	rooms.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	for room: StringName in rooms:
+		var here: Array = by_room[room]
+		if here.size() < watcher_room(config.night) or here.any(func(s: NightConfig.Spawn) -> bool: return not s.dormant):
+			continue
+		var candidates: Array = here.filter(func(s: NightConfig.Spawn) -> bool:
+			return level.spawn_slots[s.slot].set_id != SpawnSlot.ALWAYS_SET and not NEVER_WATCH.has(EnemyRoles.sleep(s.kind)) \
+					and WATCHER_ROLES.has(EnemyRoles.role(s.kind)) and s.kind != NightSpawner.PACK and s.kind != NightSpawner.FLOCK)
+		if candidates.is_empty():
+			continue
+		var chosen: NightConfig.Spawn = candidates[rng.randi_range(0, candidates.size() - 1)]
+		chosen.dormant = false
+		chosen.watcher = true
 
 
 static func _portraits(rng: RandomNumberGenerator, level: LevelDescription, config: NightConfig) -> void:

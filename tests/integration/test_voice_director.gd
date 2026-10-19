@@ -195,30 +195,37 @@ func test_a_cut_radio_line_does_not_play_under_the_guide() -> void:
 	assert_eq(VoiceDirector.current_line(), &"VO_GUIDE_ROSETTA_A")
 
 
-func test_a_death_is_commented_by_turns_with_injected_lines() -> void:
-	_inject(&"VO_TEST_DEATH_H", {"speaker": "heniek", "event": "death"})
-	_inject(&"VO_TEST_DEATH_S", {"speaker": "system", "event": "death"})
+## A death comment of [param speaker] waits in the queue (or is on air).
+func _death_queued(speaker: String) -> bool:
+	for key in VoiceDirector.catalog.keys_for_event(&"death"):
+		if String(VoiceDirector.catalog.speaker_of(key)) == speaker and VoiceDirector.queue.has(key):
+			return true
+	return false
+
+
+func test_a_death_is_commented_by_turns_once_a_night() -> void:
 	Events.player_died.emit()
 	Events.night_started.emit(2, &"")
-	assert_true(VoiceDirector.queue.has(&"VO_TEST_DEATH_H"), "Heniek's turn first")
+	assert_true(_death_queued("heniek"), "Heniek's turn first")
+	assert_false(_death_queued("system"))
 	assert_eq(GameState.voice_state.get("death_turn"), "system")
 	assert_eq(GameState.voice_state.get("death_night"), 2)
 	Events.player_died.emit()
 	Events.night_started.emit(2, &"")
-	assert_false(VoiceDirector.queue.has(&"VO_TEST_DEATH_S"), "at most one comment per night")
+	assert_false(_death_queued("system"), "at most one comment per night")
 	Events.player_died.emit()
 	Events.night_started.emit(3, &"")
-	assert_true(VoiceDirector.queue.has(&"VO_TEST_DEATH_S"), "the System's turn")
+	assert_true(_death_queued("system"), "the System's turn")
 	assert_eq(GameState.voice_state.get("death_turn"), "heniek")
 
 
 func test_a_speaker_out_of_death_lines_passes_the_turn() -> void:
-	_inject(&"VO_TEST_DEATH_H", {"speaker": "heniek", "event": "death"})
-	_inject(&"VO_TEST_DEATH_S", {"speaker": "system", "event": "death"})
-	GameState.mark_voice_heard(&"VO_TEST_DEATH_H")
+	for key in VoiceDirector.catalog.keys_for_event(&"death"):
+		if String(VoiceDirector.catalog.speaker_of(key)) == "heniek":
+			GameState.mark_voice_heard(key)
 	Events.player_died.emit()
 	Events.night_started.emit(2, &"")
-	assert_true(VoiceDirector.queue.has(&"VO_TEST_DEATH_S"), "Heniek has nothing left: the System speaks")
+	assert_true(_death_queued("system"), "Heniek has nothing left: the System speaks")
 	assert_eq(GameState.voice_state.get("death_turn"), "heniek")
 
 
@@ -268,7 +275,151 @@ func test_room_and_guardian_payloads_select_the_lines() -> void:
 	assert_true(VoiceDirector.queue.has(&"VO_TEST_COLOSSUS"))
 
 
+func test_the_cafe_events_queue_their_lines() -> void:
+	_inject(&"VO_TEST_CAFE_IN", {"speaker": "heniek", "event": "cafe_entered"})
+	_inject(&"VO_TEST_CAFE_WILD", {"speaker": "heniek", "event": "cafe_haywire"})
+	Events.cafe_entered.emit()
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_CAFE_IN"), "stepping behind the counter")
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_CAFE_WILD"))
+	Events.cafe_haywire.emit()
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_CAFE_WILD"), "the machine gone haywire")
+
+
+func test_a_coffee_line_waits_for_its_kind() -> void:
+	_inject(&"VO_TEST_ESPRESSO", {"speaker": "heniek", "event": "coffee_drunk", "kind": "espresso"})
+	_inject(&"VO_TEST_LARGE", {"speaker": "heniek", "event": "coffee_drunk", "kind": "large"})
+	_inject(&"VO_TEST_ANY_COFFEE", {"speaker": "heniek", "event": "coffee_drunk"})
+	Events.coffee_drunk.emit(&"large")
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_LARGE"))
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_ANY_COFFEE"), "a rule without a kind fits every cup")
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_ESPRESSO"), "the espresso line stays out")
+	VoiceDirector.queue.clear()
+	Events.coffee_drunk.emit(&"espresso")
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_ESPRESSO"))
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_LARGE"))
+	VoiceDirector.queue.clear()
+	Events.coffee_drunk.emit(&"special")
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_ESPRESSO"))
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_LARGE"))
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_ANY_COFFEE"))
+
+
 func test_injected_lines_do_not_outlive_a_reset() -> void:
 	_inject(&"VO_TEST_GONE", {"speaker": "heniek", "event": "power_cut"})
 	VoiceDirector.reset()
 	assert_false(VoiceDirector.catalog.lines.has("VO_TEST_GONE"))
+
+
+# --- G2: the payloads of the new events (plan 2026-10-19-glos-g2-kwestie) -------
+
+func test_the_nights_modifier_selects_its_line() -> void:
+	_inject(&"VO_TEST_MOON", {"speaker": "heniek", "event": "night_started", "modifier": "full_moon"})
+	Events.night_started.emit(2, &"blackout")
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_MOON"))
+	Events.night_started.emit(2, &"full_moon")
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_MOON"))
+
+
+func test_a_room_and_a_haven_select_their_lines() -> void:
+	_inject(&"VO_TEST_READING", {"speaker": "heniek", "event": "room_entered", "room": "court_reading"})
+	_inject(&"VO_TEST_HAVEN", {"speaker": "heniek", "event": "room_entered", "kind": "haven"})
+	Events.room_entered.emit(&"court_south", &"court", true)
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_READING"))
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_HAVEN"))
+	Events.room_entered.emit(&"court_reading", &"court", true)
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_READING"))
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_HAVEN"))
+	Events.room_entered.emit(&"egypt_conservator", &"egypt", true)
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_HAVEN"), "the conservator's room is a haven")
+
+
+func test_a_gate_selects_its_line() -> void:
+	_inject(&"VO_TEST_GATE", {"speaker": "system", "event": "gate_opened", "gate": "seal_khorsabad"})
+	Events.gate_opened.emit(&"bolt_greece_entrance")
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_GATE"))
+	Events.gate_opened.emit(&"seal_khorsabad")
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_GATE"))
+
+
+func test_a_secret_is_told_by_its_tier_and_its_count() -> void:
+	_inject(&"VO_TEST_GREAT", {"speaker": "system", "event": "secret_found", "kind": "great"})
+	_inject(&"VO_TEST_FIRST", {"speaker": "heniek", "event": "secret_found", "count": 1})
+	Events.secret_found.emit(&"secret_court_1", SecretRewards.Tier.SMALL, 1)
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_FIRST"))
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_GREAT"))
+	VoiceDirector.queue.clear()
+	Events.secret_found.emit(&"secret_egypt_3", SecretRewards.Tier.GREAT, 2)
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_GREAT"))
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_FIRST"))
+
+
+func test_tiredness_and_the_hour_select_their_lines() -> void:
+	_inject(&"VO_TEST_TIRED", {"speaker": "heniek", "event": "fatigue_rose", "count": 1})
+	_inject(&"VO_TEST_FOUR", {"speaker": "system", "event": "hour_struck", "hour": 4})
+	Events.fatigue_rose.emit(2)
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_TIRED"))
+	Events.fatigue_rose.emit(1)
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_TIRED"))
+	Events.hour_struck.emit(1)
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_FOUR"))
+	Events.hour_struck.emit(4)
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_FOUR"))
+
+
+func test_standing_still_is_noticed_once_a_night() -> void:
+	_inject(&"VO_TEST_IDLE", {"speaker": "system", "event": "idle", "once": false})
+	var started := watch(VoiceDirector.line_started)
+	# queued or already said (the injected line has no recording: 1.5 s on air)
+	var noticed := func() -> int:
+		var said := started.filter(func(e: Array) -> bool: return e[0] == &"VO_TEST_IDLE").size()
+		return said + (1 if VoiceDirector.queue.has(&"VO_TEST_IDLE") and said == 0 else 0)
+	Events.night_started.emit(1, &"")
+	_advance(VoiceDirector.IDLE_TIME - 5.0)
+	camera.global_position = Vector3(3, 0, 0)   # a few steps: the count starts again
+	_advance(VoiceDirector.IDLE_TIME - 5.0)
+	assert_eq(noticed.call(), 0, "he moved in between")
+	_advance(10.0)
+	assert_eq(noticed.call(), 1, "two minutes on one spot")
+	_advance(VoiceDirector.IDLE_TIME + 30.0)
+	assert_eq(noticed.call(), 1, "once a night")
+
+
+func test_standing_still_in_a_haven_is_not_noticed() -> void:
+	_inject(&"VO_TEST_IDLE", {"speaker": "system", "event": "idle", "once": false})
+	var started := watch(VoiceDirector.line_started)
+	var noticed := func() -> int:
+		var said := started.filter(func(e: Array) -> bool: return e[0] == &"VO_TEST_IDLE").size()
+		return said + (1 if VoiceDirector.queue.has(&"VO_TEST_IDLE") and said == 0 else 0)
+	var haven := Haven.make(&"booth", AABB(Vector3(-2, -1, -2), Vector3(4, 3, 4)))
+	add_child(haven)   # the camera stands inside it, at the origin
+	Events.night_started.emit(1, &"")
+	_advance(VoiceDirector.IDLE_TIME + 30.0)
+	assert_eq(noticed.call(), 0, "two minutes in a refuge are not noticed")
+	haven.set_active(false)   # out of the refuge: the count starts now
+	_advance(VoiceDirector.IDLE_TIME - 5.0)
+	assert_eq(noticed.call(), 0, "the count starts outside")
+	_advance(10.0)
+	assert_eq(noticed.call(), 1, "two minutes outside")
+
+
+func test_dawn_speaks_at_once_over_what_was_on_air() -> void:
+	_inject(&"VO_TEST_DAWN", {"speaker": "heniek", "event": "dawn_broke", "priority": 2})
+	Events.night_started.emit(1, &"")
+	_advance(5.0)
+	assert_eq(VoiceDirector.current_line(), &"VO_HENIEK_NIGHT_1")
+	Events.dawn_broke.emit()
+	_advance(0.2)
+	var now := VoiceDirector.current_line()
+	assert_eq(VoiceDirector.catalog.line(now).get("event", ""), "dawn_broke", "no wait for calm or a gap: %s" % now)
+	assert_false(GameState.voice_heard.has(&"VO_HENIEK_NIGHT_1"), "the cut line stays unheard")
+
+
+func test_a_stray_hit_after_dawn_does_not_hold_the_dawn_line_back() -> void:
+	_inject(&"VO_TEST_DAWN", {"speaker": "heniek", "event": "dawn_broke", "priority": 2})
+	Events.night_started.emit(1, &"")
+	_advance(5.0)
+	Events.dawn_broke.emit()
+	Events.player_damaged.emit(10.0, Vector3.ZERO)
+	_advance(0.2)
+	var now := VoiceDirector.current_line()
+	assert_eq(VoiceDirector.catalog.line(now).get("event", ""), "dawn_broke", "still on air at once, no calm to wait for: %s" % now)

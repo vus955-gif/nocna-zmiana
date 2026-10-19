@@ -65,6 +65,10 @@ var _zone: Hurtbox
 var _shake: float = 0.0
 ## The Blender display (null: greybox).
 var _model: Node3D = null
+## The plinth's body and what of the model its collision was drawn from
+## ([gun shown, chain shown]).
+var _plinth: StaticBody3D = null
+var _plinth_fit: Array = []
 var _chain_rest := Vector3.ZERO
 
 
@@ -175,6 +179,7 @@ func _set_state(next: State) -> void:
 	state = next
 	_chain.visible = next == State.LOCKED
 	_gun.visible = next != State.EMPTY
+	_fit_plinth()
 	_zone.collision_layer = Layers.HURTBOX if next == State.LOCKED else 0
 	prompt_key = "PROMPT_TAKE_GATLING" if next == State.OPEN else "LOCK_CHAIN_PROMPT"
 
@@ -212,6 +217,8 @@ func _build_model() -> void:
 	collider.shape = _shape(MODEL_BLOCK)
 	collider.position = Vector3(0.0, MODEL_BLOCK.y * 0.5, 0.0)
 	body.add_child(collider)
+	_plinth = body
+	_fit_plinth()
 	var lamp := OmniLight3D.new()
 	lamp.light_color = Color(1.0, 0.86, 0.66)
 	lamp.light_energy = 0.9
@@ -221,6 +228,18 @@ func _build_model() -> void:
 	add_child(lamp)
 	_zone = Hurtbox.make(self, _shape(MODEL_ZONE), MODEL_ZONE_CENTER)
 	add_child(_zone)
+
+
+## The model's stand (and the gun and chain while they are on it) is the
+## plinth's collision: its tapering stand, not a block round it (QA Q7).
+func _fit_plinth() -> void:
+	if _plinth == null or _model == null:
+		return
+	var shown := [_gun.visible, _chain.visible]
+	if shown == _plinth_fit:
+		return
+	_plinth_fit = shown
+	CollisionFit.fit_framed(_plinth, _model, _model.transform, MODEL_BLOCK.y)
 
 
 ## The model's chain falls off the gun in pieces of itself.

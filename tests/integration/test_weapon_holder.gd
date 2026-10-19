@@ -177,3 +177,91 @@ func test_disabled_holder_does_not_attack() -> void:
 	assert_false(holder.try_fire())
 	assert_false(holder.try_punch())
 	assert_eq(dummy.hits.size(), 0)
+
+
+# --- fatigue's sway (plan 2026-10-10-kawiarnia-zmeczenie) ---------------------
+
+func _frames(count: int) -> void:
+	for i in count:
+		await get_tree().process_frame
+
+
+## A real guard on a floor with a pistol in hand (the holder reads his fatigue).
+func _guard() -> Player:
+	Greybox.box(self, Vector3(0, -0.5, 20), Vector3(40, 1, 80), Color.GRAY)
+	var guard := Player.new()
+	guard.position = Vector3(0, 0.05, 20)
+	add_child(guard)
+	guard.weapons.give(_weapon(&"pistol"))
+	return guard
+
+
+## The widest the view strays from its rest sideways while walking [param frames] frames.
+func _walking_amplitude(guard: Player, frames: int) -> float:
+	var view := guard.weapons.view_of(&"pistol")
+	var widest := 0.0
+	Input.action_press(&"move_forward")
+	for i in frames:
+		await get_tree().physics_frame
+		widest = maxf(widest, absf(view.position.x - WeaponHolder.REST.x))
+	Input.action_release(&"move_forward")
+	await physics_frames(20)
+	return widest
+
+
+func test_tired_hands_bob_more_and_drift_at_rest() -> void:
+	var guard := _guard()
+	await physics_frames(5)
+	await _frames(20)
+	var view := guard.weapons.view_of(&"pistol")
+	assert_lt((view.position - WeaponHolder.REST).length(), 0.0005, "fresh and still: the view rests")
+	var fresh := await _walking_amplitude(guard, 60)
+	assert_gt(fresh, 0.003, "the walking bob")
+	guard.fatigue.level = 1.0
+	await physics_frames(2)
+	await _frames(30)
+	var drift := (view.position - WeaponHolder.REST).length()
+	assert_gt(drift, 0.001, "tired hands drift even at rest")
+	assert_lt(drift, 0.012, "but only a little")
+	var tired := await _walking_amplitude(guard, 60)
+	assert_gt(tired, fresh * 1.6, "twice the bob at the worst of the night (%.4f vs %.4f)" % [tired, fresh])
+
+
+## Frame to frame over [param frames] frames (process frames): the widest jump
+## of the view (m) and how often its sideways motion turns round.
+func _tremor(view: Node3D, frames: int) -> Dictionary:
+	var last := view.position
+	var widest := 0.0
+	var turns := 0
+	var heading := 0.0
+	for i in frames:
+		await get_tree().process_frame
+		widest = maxf(widest, (view.position - last).length())
+		var step := view.position.x - last.x
+		if absf(step) > 0.00005:
+			if heading != 0.0 and signf(step) != heading:
+				turns += 1
+			heading = signf(step)
+		last = view.position
+	return {"widest": widest, "turns": turns}
+
+
+func test_the_witching_special_shakes_the_hands_for_a_moment() -> void:
+	var guard := _guard()
+	await physics_frames(5)
+	await _frames(40)
+	var view := guard.weapons.view_of(&"pistol")
+	# a guard who drank nothing: the view stands still once the switch has settled
+	var calm := await _tremor(view, 60)
+	assert_lt(calm["widest"], 0.0002, "fresh hands rest (%.5f)" % calm["widest"])
+	guard.fatigue.drink(&"special")
+	await physics_frames(1)
+	await _frames(40)
+	var shaking := await _tremor(view, 60)
+	assert_gt(shaking["widest"], 0.0008, "the view jumps frame to frame (%.5f)" % shaking["widest"])
+	assert_gt(shaking["widest"], calm["widest"] * 4.0, "and not like a guard who drank nothing")
+	# a tremor of some 10 Hz, not a slow wander: it turns round many times a second
+	assert_gt(shaking["turns"], 8, "a fast tremor (%d turns in a second)" % shaking["turns"])
+	await physics_frames(roundi(Fatigue.JITTER_TIME * 60.0) + 30)
+	var steady := await _tremor(view, 20)
+	assert_lt(steady["widest"], 0.0002, "12 s later the hands are steady")

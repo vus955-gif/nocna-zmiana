@@ -33,7 +33,7 @@ const ROLES := {
 	&"wall": &"wall", &"false_panel": &"wall", &"painting_panel": &"wall", &"vent_grille": &"wall",
 	&"ceiling": &"ceiling", &"lintel": &"ceiling", &"skylight": &"ceiling",
 	&"column": &"structure", &"balcony_post": &"structure", &"railing": &"structure", &"stairs": &"structure",
-	&"stair_ramp": &"structure", &"pedestal": &"structure", &"landing": &"structure",
+	&"stair_ramp": &"structure", &"pedestal": &"structure", &"landing": &"structure", &"dais": &"structure",
 	&"door_frame": &"trim", &"door": &"door", &"door_leaf": &"door", &"grate": &"door",
 	&"sconce": &"fixture", &"column_lamp": &"fixture", &"ceiling_lamp": &"fixture", &"tube_lamp": &"fixture",
 	&"bulb": &"fixture", &"desk_lamp": &"fixture", &"exit_sign": &"fixture", &"emergency_lamp": &"fixture",
@@ -55,6 +55,16 @@ const FIXTURE_SIZES := {
 const DEFAULT_RISE := 0.2
 ## Bars of a 3 m grate leaf (the kit model's, one collider each).
 const GRATE_BARS := 16
+## A rock's collision: an octagon cut this share back from its box's
+## corners, its top this share of its base.
+const ROCK_CUT := 0.35
+const ROCK_TOP := 0.75
+## The round dais (the astrolabe's): this many equal steps, the top one
+## this share of the lowest one's radius; its ramp drawn as a polygon of
+## DAIS_SIDES sides.
+const DAIS_STEPS := 3
+const DAIS_TOP := 1.3 / 2.2
+const DAIS_SIDES := 24
 
 static var _glow: Dictionary = {}
 static var _glass: StandardMaterial3D = null
@@ -111,7 +121,8 @@ static func role(kit: StringName) -> StringName:
 ## their paint and lose only the emission of the materials that glow. A
 ## node with metadata "lit_targets" (an array of nodes) switches those too:
 ## the glowing parts of pieces that live elsewhere in the level (a stair
-## newel's lamp, the ticket booth's lamp) on the same circuit.
+## newel's lamp, the ticket booth's lamp) on the same circuit, and the embers
+## and smoke over a fire (a [GPUParticles3D] target: see [method set_burning]).
 static func set_lit(fixture: Node, lit: bool) -> void:
 	var views: Array[Node] = fixture.find_children("*", "MeshInstance3D", true, false)
 	for target: Variant in fixture.get_meta(&"lit_targets", []):
@@ -119,6 +130,8 @@ static func set_lit(fixture: Node, lit: bool) -> void:
 			views.append_array((target as Node).find_children("*", "MeshInstance3D", true, false))
 			if target is MeshInstance3D:
 				views.append(target)
+			elif target is GPUParticles3D:
+				set_burning(target, lit)
 	for node in views:
 		var view := node as MeshInstance3D
 		if view.material_override != null or view.has_meta(&"lit_material"):
@@ -127,12 +140,29 @@ static func set_lit(fixture: Node, lit: bool) -> void:
 			_set_surfaces_lit(view, lit)
 
 
+## The embers or smoke of a fire ([param fire]) with its flame: out, they
+## stop (what is in the air dies out of itself), lit, they start again - unless
+## the graphics preset has hidden the particles. The meta "extinguished" is
+## what the preset and the room culling (GraphicsQuality, RoomCuller) go by when
+## they switch the emission themselves, so neither lights a fire that is out.
+static func set_burning(fire: GPUParticles3D, burning: bool) -> void:
+	fire.set_meta(&"extinguished", not burning)
+	fire.emitting = burning and fire.visible
+
+
+## True while [param fire] is not put out (set_burning).
+static func is_burning(fire: GPUParticles3D) -> bool:
+	return not fire.get_meta(&"extinguished", false)
+
+
 ## True while something of [param fixture] (or of its "lit_targets")
-## glows.
+## glows, or burns.
 static func is_lit(fixture: Node) -> bool:
 	var views: Array[Node] = fixture.find_children("*", "MeshInstance3D", true, false)
 	for target: Variant in fixture.get_meta(&"lit_targets", []):
 		if is_instance_valid(target):
+			if target is GPUParticles3D and is_burning(target):
+				return true
 			views.append_array((target as Node).find_children("*", "MeshInstance3D", true, false))
 	for node in views:
 		var view := node as MeshInstance3D
@@ -193,10 +223,34 @@ static func _unlit_kit(glowing: BaseMaterial3D) -> BaseMaterial3D:
 	return _dark[key]
 
 
+## The café counter (court_props.py cafe_counter under Floor1Art's stretch):
+## the front counter from CAFE_FRONT_FROM of the half depth to the front
+## face (+Z, the court), the back bar from the back face to CAFE_BACK_TO,
+## the barista's aisle free between them.
+const CAFE_FRONT_FROM := 0.33
+const CAFE_BACK_TO := -0.55
+const CAFE_BACK_BAR_HEIGHT := 2.9
+
+
+## The barista's aisle of a cafe_counter piece of [param size], in the
+## piece's frame (the floor to a head's height): the haven's zone.
+static func cafe_aisle(size: Vector3) -> AABB:
+	var h := size.z * 0.5
+	return AABB(Vector3(-size.x * 0.5, 0.0, CAFE_BACK_TO * h), Vector3(size.x, 2.4, (CAFE_FRONT_FROM - CAFE_BACK_TO) * h))
+
+
 ## Collision of a piece, relative to its base centre.
 static func collision_shapes(kit: StringName, size: Vector3) -> Array[CollisionShape3D]:
 	var shapes: Array[CollisionShape3D] = []
 	match kit:
+		&"cafe_counter":
+			# the front counter and the back bar (up to its shelves); the
+			# barista's aisle between them stays free
+			var h := size.z * 0.5
+			var front := (1.0 - CAFE_FRONT_FROM) * h
+			var back := (1.0 + CAFE_BACK_TO) * h
+			shapes.append(_box_shape(Vector3(size.x, size.y, front), Vector3(0, size.y * 0.5, h - front * 0.5)))
+			shapes.append(_box_shape(Vector3(size.x, CAFE_BACK_BAR_HEIGHT, back), Vector3(0, CAFE_BACK_BAR_HEIGHT * 0.5, -h + back * 0.5)))
 		&"column":
 			# the drawn shaft, its base and its capital
 			var cylinder := CylinderShape3D.new()
@@ -224,6 +278,36 @@ static func collision_shapes(kit: StringName, size: Vector3) -> Array[CollisionS
 				shapes.append(_box_shape(Vector3(0.06, size.y, 0.06), Vector3(-size.x * 0.5 + i * size.x / bars, size.y * 0.5, 0)))
 			for y in [0.15, size.y * 0.5, size.y - 0.15]:
 				shapes.append(_box_shape(Vector3(size.x, 0.1, 0.1), Vector3(0, y, 0)))
+		&"rock":
+			# a boulder, not a box: its corners cut back and its top drawn in
+			# (the box's corners stood solid where no rock is drawn, QA #49)
+			var hull := PackedVector3Array()
+			for level in 2:
+				var y := size.y * level
+				var shrink := 1.0 if level == 0 else ROCK_TOP
+				var half := Vector2(size.x, size.z) * 0.5 * shrink
+				for corner: Vector2 in [Vector2(1, 1), Vector2(-1, 1), Vector2(-1, -1), Vector2(1, -1)]:
+					hull.append(Vector3(corner.x * half.x, y, corner.y * half.y * (1.0 - ROCK_CUT)))
+					hull.append(Vector3(corner.x * half.x * (1.0 - ROCK_CUT), y, corner.y * half.y))
+			var boulder := ConvexPolygonShape3D.new()
+			boulder.points = hull
+			shapes.append(_shape(boulder, Vector3.ZERO))
+		&"dais":
+			# a round dais of DAIS_STEPS equal steps (x = the lowest step's
+			# diameter, y = its full height): like a flight, walked on an
+			# invisible ramp through the step nosings, its foot one tread out
+			var bottom := size.x * 0.5
+			var top := bottom * DAIS_TOP
+			var tread := (bottom - top) / (DAIS_STEPS - 1)
+			var hull := PackedVector3Array()
+			for k in DAIS_SIDES:
+				var angle := TAU * k / DAIS_SIDES
+				var way := Vector3(cos(angle), 0.0, sin(angle))
+				hull.append(way * (bottom + tread))
+				hull.append(way * top + Vector3.UP * size.y)
+			var cone := ConvexPolygonShape3D.new()
+			cone.points = hull
+			shapes.append(_shape(cone, Vector3.ZERO))
 		&"dead_tree":
 			# only the trunk stops anybody; the crown hangs over the grass
 			shapes.append(_box_shape(Vector3(0.5, size.y * 0.55, 0.5), Vector3(0, size.y * 0.275, 0)))
@@ -268,11 +352,24 @@ static func visual(kit: StringName, size: Vector3, tint: Color, params: Dictiona
 		&"railing":
 			look.box(Vector3(size.x, h - 0.1, size.z), Vector3(0, (h - 0.1) * 0.5, 0), flat(tint.lightened(0.05)))
 			look.box(Vector3(size.x + 0.04, 0.1, size.z + 0.14), Vector3(0, h - 0.05, 0), flat(tint.darkened(0.2)))
+		&"cafe_counter":
+			# the front counter and the tall back bar, the aisle between (as the collision)
+			var hz := size.z * 0.5
+			var front := (1.0 - CAFE_FRONT_FROM) * hz
+			var back := (1.0 + CAFE_BACK_TO) * hz
+			look.box(Vector3(size.x, h, front), Vector3(0, h * 0.5, hz - front * 0.5), flat(tint))
+			look.box(Vector3(size.x, CAFE_BACK_BAR_HEIGHT, back), Vector3(0, CAFE_BACK_BAR_HEIGHT * 0.5, -hz + back * 0.5), flat(tint.lightened(0.08)))
 		&"stairs":
 			var steps := int(params.get("steps", maxi(int(round(size.y / DEFAULT_RISE)), 1)))
 			_stairs(look, size, flat(tint.darkened(0.15)), steps)
 		&"stair_ramp":
 			pass
+		&"dais":
+			var radius := size.x * 0.5
+			for k in DAIS_STEPS:
+				var r := radius * lerpf(1.0, DAIS_TOP, float(k) / (DAIS_STEPS - 1))
+				var top := h * (k + 1) / DAIS_STEPS
+				look.cylinder(r, top, Vector3(0, top * 0.5, 0), flat(tint.darkened(0.2 - 0.05 * k)))
 		&"pedestal":
 			look.box(Vector3(size.x, h - 0.15, size.z), Vector3(0, (h - 0.15) * 0.5, 0), flat(tint.darkened(0.25)))
 			look.box(Vector3(size.x + 0.2, 0.15, size.z + 0.2), Vector3(0, h - 0.075, 0), flat(MARBLE))

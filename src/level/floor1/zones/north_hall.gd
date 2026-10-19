@@ -40,6 +40,7 @@ static func build(layout: LevelLayout) -> void:
 	_crypt(layout)
 	_encounters(layout)
 	_lights(layout)
+	_voice(layout)
 
 
 static func _rooms(layout: LevelLayout) -> void:
@@ -152,3 +153,9 @@ static func _lights(layout: LevelLayout) -> void:
 	# tombs, nothing further down
 	Hub.lamp(layout, red, Vector3(2.8, 3.2, -39.6), Hub.RED, 1.0, 6.0, &"north_hall_crypt", &"emergency_lamp", PI)
 	Hub.lamp(layout, main, Vector3(0, CRYPT_Y + 2.4, -69.4), Hub.WARM, 0.6, 5.0, &"north_hall_crypt_vault", &"bulb")
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## The System in the corridor: on the court side, over the west portrait.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_north_hall_1", Vector3(-12.5, 4.0, -31.15), &"north_hall", 0.0)

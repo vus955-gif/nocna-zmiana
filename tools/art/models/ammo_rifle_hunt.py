@@ -1,8 +1,10 @@
 """Pickup: rounds for the expedition rifle (vm_rifle_hunt). An old box of
-9,3 x 62 big-game cartridges: faded green cardboard, rubbed pale on the
-edges, a cream paper label "9,3 x 62" on the front and on the lid (real
-letters, artlib/pixelfont.py). The lid is folded open behind, its tuck
-flap bent forward. Inside, a cardboard partition holds two rows of
+9,3 x 62 big-game cartridges: hunter-green cardboard (the rifle's colour in
+the HUD and on the floor, _pickup_palette.py), rubbed pale on the edges, a
+cream paper label "9,3 x 62" on the front and a cream panel with the slot
+digit "6" on the lid, the digit again on both ends (real letters,
+artlib/pixelfont.py); the green and the digits glow faintly in the dark.
+The lid is folded open behind, its tuck flap bent forward. Inside, a cardboard partition holds two rows of
 cartridges standing bullets up (copper jackets, lead soft points); the
 three empty holes at the right end are where the clip was filled. In
 front of the box lies one loaded steel stripper clip of five. Larger than
@@ -23,7 +25,10 @@ from artlib.geo import Part
 from artlib.kit import R, T
 from artlib.model import Model
 from artlib.painter import Surface
+from models import _pickup_palette as PP
 from models import _rifle_parts as RP
+
+NAME = "ammo_rifle_hunt"
 
 S = 1.3                                   # cartridges larger than life
 W, D, H = 0.18, 0.056, 0.07               # box outside
@@ -56,7 +61,7 @@ def _join(words, gaps):
 
 
 CALIBRE = _join(["9,", "3", "x", "62"], (1, 3, 3))    # 43 x 8 px: 0.134 m at 320 px/m
-WORD = pixelfont.trim(pixelfont.render("NABOJE", bold=True))
+DIGIT = PP.digit(NAME)
 
 
 def hole_xy(row, col):
@@ -73,9 +78,8 @@ def _lid_matrix():
 # --------------------------------------------------------------------------
 
 RAMPS = {
-    # faded green card of an old ammunition box
-    "card_green": M.hexramp("#10150f", "#182016", "#212c1e", "#2b3927", "#364631", "#42543b", "#4f6246",
-                            "#5d7152", "#6c8160", "#7d916f"),
+    # hunter-green card of an old ammunition box (the rifle's palette colour, darkened)
+    "card_green": PP.ramp(NAME, steps=10, lo=0.08, hi=0.82, lift=0.1),
     # the label: yellowed cream paper, dark green ink
     "label": M.hexramp("#4d4433", "#655b47", "#7e735c", "#978c72", "#aea389", "#c2b89d", "#d3cab0"),
     "ink": M.hexramp("#0b0f0b", "#131a13", "#1c261b", "#263425"),
@@ -113,6 +117,12 @@ def card(ctx, seed=611):
     raw = _inward(ctx)
     sub = _card(ctx, RAMPS["card_raw"], 3.8, seed + 9)
     s.merge(M._select(sub, raw), raw)
+    green = (s.ramp_id == 0) & ~raw
+    PP.glow(s, green)
+    # the slot digit on both ends
+    ends = (np.abs(ctx.n[:, 0]) > 0.7) & ~raw & pixelfont.stamp(ctx, DIGIT, 0.0, 0.0, scale=2)         & (ctx.rand(seed + 12) > 0.04)
+    s.use_ramp(RAMPS["label"], mask=ends, shade=np.full(ctx.N, 5.4) + M._dither(ctx, 0.6, seed + 13))
+    PP.white(s, ends)
     return s
 
 
@@ -128,16 +138,21 @@ def lid(ctx, seed=613):
     inside = ctx.n @ out_n < -0.7
     sub = _card(ctx, RAMPS["card_raw"], 3.9, seed + 9)
     s.merge(M._select(sub, inside), inside)
+    PP.glow(s, outside)
     # printed label on the outside (its box-projected UVs are u = -x, v = z:
-    # readable from behind, the top toward the lid's free edge)
+    # readable from behind, the top toward the lid's free edge): a cream
+    # panel with the big slot digit
     c = m @ Vector((0.0, -D / 2, 0.0))
-    _print_label(ctx, s, outside, ctx.uvm[:, 0], ctx.uvm[:, 1], 0.0, c.z, seed + 11, printed=True, text=WORD)
+    _print_label(ctx, s, outside, ctx.uvm[:, 0], ctx.uvm[:, 1], 0.0, c.z, seed + 11, printed=True, text=DIGIT,
+                 scale=2, rule=False)
     return s
 
 
-def _print_label(ctx, s, face, u, v, cu, cv, seed, printed=False, text=None):
+def _print_label(ctx, s, face, u, v, cu, cv, seed, printed=False, text=None, scale=1, rule=True):
     """A cream label (LABEL_W x LABEL_H) centred on (cu, cv) of ``face``:
-    a ruled border round ``text`` (bold "9,3 x 62" by default)."""
+    a ruled border (``rule``) round ``text`` (bold "9,3 x 62" by default) at
+    ``scale`` texels per font pixel. The panel glows faintly, the ink in the
+    rifle's green a little more."""
     du, dv = u - cu, v - cv
     t = ctx.texel
     area = face & (np.abs(du) < LABEL_W / 2) & (np.abs(dv) < LABEL_H / 2)
@@ -146,12 +161,14 @@ def _print_label(ctx, s, face, u, v, cu, cv, seed, printed=False, text=None):
         s.use_ramp(RAMPS["label"], mask=area, shade=np.full(ctx.N, 4.6) + ctx.fbm(12.0, 2, seed) * 0.5
                    + M._dither(ctx, 0.6, seed + 1) - (1.0 - ctx.ao) * 2.5)
         s.rough = np.where(area, 0.85, s.rough)
-    rule = area & ((np.abs(np.abs(du) - (LABEL_W / 2 - 2.5 * t)) < 0.5 * t) & (np.abs(dv) < LABEL_H / 2 - 2.0 * t)
-                   | (np.abs(np.abs(dv) - (LABEL_H / 2 - 2.5 * t)) < 0.5 * t) & (np.abs(du) < LABEL_W / 2 - 2.0 * t))
-    big = area & pixelfont.stamp(ctx, CALIBRE if text is None else text, cu, cv, u=u, v=v)
-    ink = (rule | big) & (ctx.rand(seed + 2) > 0.04)
+    lines = area & ((np.abs(np.abs(du) - (LABEL_W / 2 - 2.5 * t)) < 0.5 * t) & (np.abs(dv) < LABEL_H / 2 - 2.0 * t)
+                    | (np.abs(np.abs(dv) - (LABEL_H / 2 - 2.5 * t)) < 0.5 * t) & (np.abs(du) < LABEL_W / 2 - 2.0 * t))
+    big = area & pixelfont.stamp(ctx, CALIBRE if text is None else text, cu, cv, scale=scale, u=u, v=v)
+    ink = ((lines if rule else np.zeros(ctx.N, dtype=bool)) | big) & (ctx.rand(seed + 2) > 0.04)
     s.use_ramp(RAMPS["ink"], mask=ink, shade=np.full(ctx.N, 1.6) + M._dither(ctx, 0.8, seed + 3))
     s.height = s.height - ink * 0.00005
+    PP.white(s, area & ~ink, 0.15)
+    PP.accent(s, ink, NAME, 0.45)
     return s
 
 
@@ -264,9 +281,9 @@ def clip(p):
 
 
 def build():
-    p = Part("ammo_rifle_hunt")
+    p = Part(NAME)
     box(p)
     clip(p)
-    return Model("ammo_rifle_hunt", [p], FNS, ppm=320, ground=None, ao_dist=0.05, ao_rays=12, ao_stride=1,
+    return Model(NAME, [p], FNS, ppm=320, ground=None, ao_dist=0.05, ao_rays=12, ao_stride=1,
                  preview_elevation=22.0,
                  preview_extra=[("label", (0.0, -0.05, 0.0), 0.11, -20.0, 18.0)])

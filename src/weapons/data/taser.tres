@@ -16,6 +16,4 @@ battery_max = 100.0
 battery_cost = 33.0
 battery_recharge_per_sec = 22.0
 battery_recharge_delay = 0.8
-shake = 0.1
-kick = 0.03
 sound = &"taser"

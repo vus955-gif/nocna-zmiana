@@ -62,6 +62,20 @@ static func burst(parent: Node, at: Vector3, values: Array[int], collector: Node
 	return motes
 
 
+## One mote worth [param worth] hanging still at [param at] (world), ready
+## to fly to [param collector] at once: Dust that lay there when the night
+## was saved, laid again when it is continued (QA Q10).
+static func hang(parent: Node, at: Vector3, worth: int, collector: Node3D) -> DustMote:
+	var mote := DustMote.new()
+	mote.value = worth
+	mote.target = collector
+	mote._age = MAGNET_DELAY
+	var space := parent as Node3D
+	mote.position = space.global_transform.affine_inverse() * at if space != null and space.is_inside_tree() else at
+	parent.add_child(mote)
+	return mote
+
+
 func _ready() -> void:
 	_bob_phase = randf() * TAU
 	_view = _make_sprite()

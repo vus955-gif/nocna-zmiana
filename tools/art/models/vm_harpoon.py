@@ -32,6 +32,9 @@ reel_crank      (0.1195, 0.0, -0.024)      (0.1195, -0.024, 0)       upg_reel   
                                                                                  (spin: rotate about local X)
 hand_r          (0, -0.262, -0.046)        (0, -0.046, 0.262)        harpoon     right hand on the stock wrist
 hand_l          (0, 0.19, -0.04)           (0, -0.04, -0.19)         harpoon     left hand under the fore-stock
+sleeve_r/_l     the wrist of its hand                                harpoon     the sleeves (the game turns them toward
+                                                                                 the elbows; markers Wrist_*, Grip_*,
+                                                                                 Elbow_*: artlib/hands.py arm())
 Muzzle          (0, 0.432, 0)              (0, 0, -0.432)            root        barrel mouth on the bore axis
 LineAnchor      (-0.0144, 0.4654, 0)       (-0.0144, 0, -0.4654)     root        where the flying line leaves the gun
                                                                                  (the loaded line ring)
@@ -465,21 +468,25 @@ def build():
     _crank(crank)
     # right hand on the stock wrist
     rc = Vector((0.0, -0.262, -0.046))
+    # the forearm continues the straight stock wrist's line (cant 70), the
+    # sleeve back along it and a little down; it sits below the frame
     right = Part("hand_r", origin=tuple(rc), parent="harpoon")
     m = hands.hand_matrix(rc, (0, 0.95, 0.3), (1.0, 0.0, 0.6), sx=1)
-    wrist = hands.add_hand(right, m, sx=1, tris=1000)
-    hands.add_sleeve(right, wrist, (0.3, -0.8, -0.8), length=0.22, sx=1)
-    # left hand under the fore-stock, between the bands
+    sleeve_r, markers_r = hands.arm("r", right, m, 1, math.radians(70.0), (0.0, -0.95, -0.3), 0.22,
+                                    parent="harpoon")
+    # left hand under the fore-stock, between the bands (cant 35); the
+    # forearm down and left to an elbow under the gun
     lc = Vector((0.0, 0.19, -0.04))
     left = Part("hand_l", origin=tuple(lc), parent="harpoon")
     m = hands.hand_matrix(lc, (0, 1, 0), (0.7, 0.0, -0.7), sx=-1)
-    wrist = hands.add_hand(left, m, sx=-1, tris=1000)
-    hands.add_sleeve(left, wrist, (-0.55, -0.8, -0.55), length=0.36, watch=True, sx=-1)
+    sleeve_l, markers_l = hands.arm("l", left, m, -1, math.radians(35.0), (-0.50, -0.62, -0.60), 0.36, watch=True,
+                                    parent="harpoon")
     anchor = ring_tie()
-    return Model("vm_harpoon", [gun, head, barbs, rope, reel, crank, right, left], FNS, ppm=512,
-                 organic=("hand_r", "hand_l"), ao_dist=0.03, ao_rays=12, ao_stride=1, front=1,
+    return Model("vm_harpoon", [gun, head, barbs, rope, reel, crank, right, left, sleeve_r, sleeve_l], FNS, ppm=512,
+                 organic=("hand_r", "hand_l", "sleeve_r", "sleeve_l"), ao_dist=0.03, ao_rays=12, ao_stride=1, front=1,
                  markers=[("Muzzle", (0.0, MUZZLE_Y + 0.002, 0.0), None),
-                          ("LineAnchor", (round(anchor.x, 4), round(anchor.y, 4), 0.0), None)],
+                          ("LineAnchor", (round(anchor.x, 4), round(anchor.y, 4), 0.0), None)]
+                 + markers_r + markers_l,
                  variants={"vm_harpoon_master": MASTER},
                  preview_yaws=(-60.0, 40.0, 110.0, 250.0), preview_elevation=16.0,
                  preview_fp=(CAM, LOOK),

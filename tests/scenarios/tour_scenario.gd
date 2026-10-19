@@ -1,8 +1,9 @@
 extends Node
 ## "Wycieczka" (design 12): the dressed hub and Egypt of Floor I in the real
 ## game (stage P2), the Greek and Enlightenment wings and the basement
-## (stage P3), viewpoint by viewpoint, at night, in a blackout and during
-## the Colossus and T-Rex fights. Not part of the headless suite.
+## (stage P3), the Assyrian and Asian wings (stage P4), the Americas and
+## the roof (stage P5), viewpoint by viewpoint, at night, in a blackout and during the Colossus and T-Rex
+## fights. Not part of the headless suite.
 ##   bash tools/run_tour.sh shots [--preset=high] [--only=a,b]
 ##       1920x1080 screenshots -> tests/_out/tour/<view>[_preset].png and
 ##       metrics_<preset>.json: per shot the mean luminance (Rec. 709 on the
@@ -10,7 +11,7 @@ extends Node
 ##       DARK when the mean is under DARK_MEAN or the near-black share over
 ##       DARK_SHARE
 ##   bash tools/run_tour.sh perf [--preset=high]
-##       frame rate at the twelve heaviest views -> perf_<preset>.json
+##       frame rate at the fifteen heaviest views -> perf_<preset>.json
 ##   bash tools/run_tour.sh dry
 ##       headless: builds the floor, checks every viewpoint (in a room, not
 ##       in a wall, its subject in sight), counts the lamps, shadows and
@@ -21,6 +22,9 @@ const OUT_DIR := "res://tests/_out/tour/"
 const WATCHDOG_SECONDS := 600.0
 const PRESETS := {"low": GraphicsQuality.Quality.LOW, "medium": GraphicsQuality.Quality.MEDIUM,
 	"high": GraphicsQuality.Quality.HIGH, "ultra": GraphicsQuality.Quality.ULTRA}
+## A viewpoint nearer than this (m, across) to a sleeping exhibit before it
+## has the exhibit filling its frame (dry: a problem).
+const SLOT_CLEARANCE := 1.2
 ## Brightness alarm: a shot darker than this on average, or with more of
 ## its pixels near black, is reported DARK.
 const DARK_MEAN := 0.06
@@ -31,7 +35,7 @@ const VIEWS := {
 	"court_from_entrance": [Vector3(0.0, 1.7, 34.0), Vector3(0.0, 6.0, 5.0)],
 	"court_wide_sw": [Vector3(-26.0, 1.7, 27.0), Vector3(8.0, 9.0, -6.0)],
 	"court_roof_up": [Vector3(-14.0, 1.6, 18.0), Vector3(-20.0, 21.0, 24.0)],
-	"court_balcony": [Vector3(-15.5, 8.7, -2.0), Vector3(6.0, 5.0, -18.0)],
+	"court_balcony": [Vector3(-14.8, 8.7, -4.4), Vector3(6.0, 5.0, -18.0)],
 	"court_trex": [Vector3(9.0, 1.7, -14.0), Vector3(0.0, 3.5, -23.0)],
 	"court_totem": [Vector3(12.0, 1.7, -12.0), Vector3(24.0, 6.0, -24.0)],
 	"court_cafe": [Vector3(-12.0, 1.7, -12.0), Vector3(-24.0, 1.5, -24.0)],
@@ -53,6 +57,7 @@ const VIEWS := {
 	"egypt_colossus_hall": [Vector3(-42.5, 1.7, -15.5), Vector3(-42.5, 6.0, -32.0)],
 	"egypt_tombs": [Vector3(-52.0, 1.6, 9.0), Vector3(-61.0, 1.0, 11.0)],
 	"egypt_tomb_hall": [Vector3(-52.0, 1.6, 28.0), Vector3(-57.0, 0.8, 19.0)],
+	"egypt_tomb_passage": [Vector3(-51.8, 1.6, -0.8), Vector3(-54.4, 1.1, -6.6)],
 	"egypt_conservator": [Vector3(-57.6, 1.6, 6.4), Vector3(-61.5, 1.0, 1.5)],
 	# the basement (stage P3; y = -6, eye 1.7 m over the floor)
 	"basement_ring_north": [Vector3(-27.0, -4.3, -36.25), Vector3(27.0, -4.3, -36.25)],
@@ -80,9 +85,9 @@ const VIEWS := {
 	# stage P3: the Enlightenment (warm green lamps, long shadows, book dust)
 	"library_from_court": [Vector3(32.0, 1.7, 0.0), Vector3(38.0, 3.0, -30.0)],
 	"library_axis": [Vector3(38.0, 1.7, -20.5), Vector3(38.0, 3.0, 30.0)],
-	"library_gallery_walk": [Vector3(32.6, 5.7, 12.0), Vector3(33.5, 5.5, -25.0)],
+	"library_gallery_walk": [Vector3(32.6, 5.7, 10.4), Vector3(33.5, 5.5, -25.0)],
 	"library_aisle": [Vector3(32.4, 1.7, 22.0), Vector3(32.4, 1.5, -20.0)],
-	"library_wall": [Vector3(36.5, 1.7, -14.0), Vector3(31.0, 2.5, -19.0)],
+	"library_wall": [Vector3(34.8, 1.7, -15.5), Vector3(31.0, 2.5, -19.0)],
 	"library_up": [Vector3(38.0, 1.6, -1.0), Vector3(38.0, 10.0, 0.0)],
 	"library_stairs": [Vector3(38.0, 1.7, 15.5), Vector3(38.0, 3.0, 30.0)],
 	"library_rifle": [Vector3(56.0, 1.7, 0.0), Vector3(64.5, 1.3, 0.0)],
@@ -92,24 +97,118 @@ const VIEWS := {
 	"librarian": [Vector3(46.5, 1.6, -3.5), Vector3(50.4, 0.9, -7.0)],
 	"planetarium": [Vector3(47.0, 1.7, -19.0), Vector3(55.25, 5.0, -26.5)],
 	"planetarium_observers": [Vector3(51.5, 11.77, -17.3), Vector3(55.25, 6.0, -26.5)],
+	# stage P4: Assyria (alabaster and torches, the moon over the courtyard)
+	"assyria_gate_hall": [Vector3(-55.0, 1.7, -50.0), Vector3(-51.0, 5.0, -40.0)],
+	"assyria_gate_lamassu": [Vector3(-50.5, 1.7, -46.0), Vector3(-48.7, 3.5, -41.5)],
+	"assyria_axis_obelisk": [Vector3(-51.0, 1.7, -53.0), Vector3(-51.0, 3.0, -76.5)],
+	"assyria_balawat_doors": [Vector3(-58.0, 1.7, -66.0), Vector3(-47.0, 2.5, -64.0)],
+	"assyria_courtyard_moon": [Vector3(-79.0, 1.7, -56.0), Vector3(-78.75, 3.0, -74.0)],
+	"assyria_courtyard_wide": [Vector3(-66.0, 1.7, -56.0), Vector3(-85.0, 6.0, -74.0)],
+	"assyria_courtyard_up": [Vector3(-78.0, 1.6, -66.0), Vector3(-82.0, 15.5, -62.0)],
+	"assyria_nimrud_long": [Vector3(-65.0, 1.7, -43.5), Vector3(-99.0, 2.5, -44.0)],
+	"assyria_nimrud_reliefs": [Vector3(-85.0, 1.7, -43.0), Vector3(-95.0, 1.8, -52.4)],
+	"assyria_scaffold": [Vector3(-92.0, 1.7, -45.0), Vector3(-99.0, 1.5, -46.0)],
+	"assyria_lions_gallery": [Vector3(-94.5, 1.7, -36.5), Vector3(-84.0, -1.0, -12.0)],
+	# (at the pit's south end between the slots: not on a relief warrior's slot)
+	"assyria_lions_pit": [Vector3(-88.0, -1.3, -35.2), Vector3(-86.5, -1.5, -12.0)],
+	"assyria_library": [Vector3(-77.5, 1.7, -30.5), Vector3(-59.5, 1.4, -30.5)],
+	"assyria_freight": [Vector3(-57.0, -4.3, -35.5), Vector3(-76.0, -3.0, -36.25)],
+	# stage P4: Asia (lanterns, lacquer, the moon over the garden)
+	"asia_china_buddha": [Vector3(13.5, 1.7, -41.0), Vector3(13.5, 6.0, -57.0)],
+	"asia_china_columns": [Vector3(6.0, 1.7, -41.0), Vector3(19.5, 7.0, -53.0)],
+	"asia_porcelain": [Vector3(25.5, 1.7, -59.5), Vector3(33.0, 1.5, -50.0)],
+	"asia_korea_hwacha": [Vector3(38.5, 1.7, -48.0), Vector3(47.4, 1.2, -51.0)],
+	"asia_korea_bell": [Vector3(41.0, 1.7, -52.0), Vector3(52.0, 3.0, -57.5)],
+	"asia_armor_rows": [Vector3(32.0, 1.7, -65.0), Vector3(45.0, 1.8, -80.0)],
+	"asia_armor_shoji": [Vector3(47.0, 1.7, -70.0), Vector3(55.9, 1.5, -69.0)],
+	"asia_garden_entry": [Vector3(8.0, 1.7, -64.5), Vector3(17.5, 2.0, -75.0)],
+	"asia_garden_teahouse": [Vector3(22.0, 1.7, -70.0), Vector3(12.5, 3.0, -80.0)],
+	"asia_garden_cherry": [Vector3(14.0, 1.7, -72.0), Vector3(23.0, 5.0, -76.5)],
+	"asia_garden_pond": [Vector3(11.0, 1.7, -67.0), Vector3(8.5, 0.5, -73.0)],
+	"asia_garden_up": [Vector3(18.0, 1.6, -74.0), Vector3(18.0, 15.0, -70.0)],
+	# the garden's walls: the tsuiji, the court front over it, the pines and the bamboo
+	"asia_garden_south": [Vector3(19.0, 1.7, -80.0), Vector3(17.0, 6.0, -62.5)],
+	"asia_garden_east": [Vector3(16.0, 1.7, -70.0), Vector3(30.0, 5.5, -72.5)],
+	"asia_garden_north": [Vector3(17.0, 1.7, -68.0), Vector3(19.5, 5.0, -86.0)],
+	"asia_teahouse": [Vector3(10.5, 1.6, -80.0), Vector3(5.0, 1.2, -83.0)],
+	"asia_service": [Vector3(26.0, 1.7, -41.0), Vector3(26.0, 0.0, -51.0)],
+	# stage P5: the Americas (fire from below, smoke, the temple's moon)
+	"americas_north_shutter": [Vector3(-17.0, 1.7, -40.5), Vector3(-8.0, 3.0, -53.0)],
+	"americas_north_bison": [Vector3(-16.5, 1.7, -46.0), Vector3(-13.0, 1.5, -50.0)],
+	"americas_totems_long": [Vector3(-26.5, 1.7, -54.5), Vector3(-30.0, 6.0, -71.5)],
+	"americas_totems_up": [Vector3(-31.5, 1.6, -60.0), Vector3(-29.75, 10.0, -69.5)],
+	"americas_moai_head": [Vector3(-40.5, 1.7, -64.0), Vector3(-40.5, 4.1, -57.0)],
+	"americas_moai_mosaic": [Vector3(-38.5, 1.7, -67.5), Vector3(-35.8, 1.4, -70.5)],
+	"americas_moai_ring": [Vector3(-44.5, 1.7, -54.0), Vector3(-40.5, 1.9, -55.4)],
+	"americas_moai_wide": [Vector3(-40.0, 1.7, -71.0), Vector3(-40.5, 3.0, -56.6)],
+	"americas_pacific_whaling": [Vector3(-38.0, 1.7, -76.0), Vector3(-40.5, 1.6, -84.5)],
+	"americas_pacific_canoe": [Vector3(-40.0, 1.7, -77.0), Vector3(-27.75, 6.0, -79.0)],
+	"americas_pit_floor": [Vector3(-29.5, -4.3, -81.5), Vector3(-27.75, 5.6, -79.0)],
+	"americas_temple_entry": [Vector3(-22.5, 1.7, -79.0), Vector3(-14.25, 3.0, -72.25)],
+	"americas_temple_disc": [Vector3(-9.0, 1.7, -82.0), Vector3(-4.6, 4.75, -78.0)],
+	"americas_temple_shrine": [Vector3(-14.25, 1.7, -85.0), Vector3(-12.0, 4.0, -72.25)],
+	"americas_temple_t1": [Vector3(-19.0, 3.2, -77.0), Vector3(-9.5, 2.5, -68.0)],
+	"americas_temple_up": [Vector3(-15.7, 4.6, -73.0), Vector3(-14.5, 11.5, -72.25)],
+	"americas_temple_wide": [Vector3(-6.0, 1.7, -60.0), Vector3(-16.0, 4.0, -78.0)],
+	"americas_tower": [Vector3(-27.5, -4.3, -40.5), Vector3(-25.5, -1.0, -50.0)],
+	# stage P5: the roof (the moon on the lead, the court's glow through the glass)
+	"roof_tower_top": [Vector3(35.5, 24.2, 48.0), Vector3(35.5, 23.8, 44.0)],
+	"roof_plant_deck": [Vector3(33.5, 24.2, 42.0), Vector3(24.0, 25.0, 38.0)],
+	"roof_bridge": [Vector3(26.5, 24.2, 34.0), Vector3(8.0, 26.0, 12.0)],
+	"roof_dome": [Vector3(0.0, 24.2, -20.0), Vector3(0.0, 27.0, 0.0)],
+	"roof_north_glass": [Vector3(-0.8, 24.2, -21.0), Vector3(-8.0, 20.0, -23.0)],
+	"roof_gutter_east": [Vector3(28.25, 24.2, 20.0), Vector3(28.25, 23.5, -20.0)],
+	"roof_shed": [Vector3(-25.8, 24.1, -25.8), Vector3(-29.0, 23.2, -28.5)],
+	"roof_loft": [Vector3(21.0, 24.1, 40.25), Vector3(19.5, 23.2, 36.6)],
+	"roof_night_wide": [Vector3(-26.0, 24.2, 26.0), Vector3(10.0, 25.5, -10.0)],
+	# the voice (plan 2026-10-19-glos-g2-kwestie): the System's loudspeakers, the audio-guide stands
+	"voice_court_south": [Vector3(-14.0, 1.7, 21.0), Vector3(-14.0, 3.6, 29.85)],
+	"voice_court_north": [Vector3(14.0, 1.7, -21.0), Vector3(14.0, 3.6, -29.85)],
+	"voice_entrance": [Vector3(-8.0, 1.7, 39.0), Vector3(-8.0, 3.6, 31.15)],
+	"voice_north_hall": [Vector3(-12.5, 1.7, -36.5), Vector3(-12.5, 3.5, -31.15)],
+	"voice_assyria_gate": [Vector3(-60.5, 1.7, -50.0), Vector3(-56.5, 2.2, -40.0)],
+	"voice_greece_nereid": [Vector3(-72.0, 1.7, 6.0), Vector3(-64.15, 3.5, 6.0)],
+	"voice_library": [Vector3(40.0, 1.7, 0.0), Vector3(31.15, 7.5, 0.0)],
+	"voice_asia_shutter": [Vector3(10.0, 1.7, -45.6), Vector3(8.0, 3.5, -39.15)],
+	"voice_americas_shutter": [Vector3(-12.0, 1.7, -48.0), Vector3(-10.0, 3.3, -39.15)],
+	"voice_stand_rosetta": [Vector3(-37.6, 1.6, 23.0), Vector3(-41.0, 0.8, 24.3)],
+	"voice_stand_ramesses": [Vector3(-40.5, 1.6, 17.5), Vector3(-37.5, 0.8, 12.5)],
+	"voice_stand_lamassu": [Vector3(-60.0, 1.6, -42.0), Vector3(-55.0, 0.8, -41.0)],
+	"voice_stand_flood": [Vector3(-58.8, 1.6, -36.5), Vector3(-58.5, 0.8, -31.5)],
+	"voice_stand_metopes": [Vector3(-81.2, 1.6, 30.0), Vector3(-83.0, 1.2, 38.0)],
+	"voice_stand_clocks": [Vector3(60.5, 1.6, -2.6), Vector3(61.2, 0.8, -7.5)],
+	"voice_stand_buddha": [Vector3(18.8, 1.6, -47.0), Vector3(16.0, 1.5, -55.0)],
+	"voice_stand_armour": [Vector3(40.5, 1.6, -66.0), Vector3(40.5, 0.8, -73.0)],
+	"voice_stand_totems": [Vector3(-25.0, 1.6, -54.0), Vector3(-26.5, 0.8, -58.8)],
+	"voice_stand_moai": [Vector3(-38.5, 1.6, -65.5), Vector3(-39.5, 1.5, -58.0)],
+	"voice_stand_astrolabe": [Vector3(0.0, 1.6, -9.0), Vector3(0.0, 0.8, -2.0)],
+	"voice_stand_trex": [Vector3(1.2, 8.6, -13.2), Vector3(4.6, 7.6, -14.5)],
 }
 ## Views shot again in a blackout (the guard's flashlight on).
 const BLACKOUT_VIEWS := {
 	"blackout_court": [Vector3(0.0, 1.7, 25.0), Vector3(0.0, 6.0, 0.0)],
 	"blackout_gallery": [Vector3(-42.0, 1.7, 18.0), Vector3(-42.0, 3.0, -8.0)],
-	"blackout_parthenon": [Vector3(-60.0, 1.7, 43.0), Vector3(-30.0, 3.0, 43.0)],
+	# (from the Metope room through the arena's mouth: in the arena the guard wakes the Centaur)
+	"blackout_parthenon": [Vector3(-66.0, 1.7, 43.0), Vector3(-30.0, 3.0, 43.0)],
 	"blackout_library": [Vector3(35.0, 1.7, 30.0), Vector3(38.0, 2.0, 0.0)],
+	"blackout_courtyard": [Vector3(-66.0, 1.7, -56.0), Vector3(-85.0, 6.0, -74.0)],
+	"blackout_china": [Vector3(13.5, 1.7, -41.0), Vector3(13.5, 6.0, -57.0)],
+	"blackout_temple": [Vector3(-6.0, 1.7, -60.0), Vector3(-16.0, 4.0, -78.0)],
 }
 ## The heaviest views (perf).
 const PERF_VIEWS: Array[String] = ["court_from_entrance", "court_wide_sw", "court_balcony", "reading_door",
 	"egypt_gallery_long", "egypt_colossi_row", "egypt_colossus_hall", "entrance_from_staff",
-	"greece_parthenon_long", "greece_nereid_entry", "library_from_court", "library_gallery_walk"]
+	"greece_parthenon_long", "greece_nereid_entry", "library_from_court", "library_gallery_walk",
+	"assyria_nimrud_long", "asia_china_buddha", "asia_garden_entry", "americas_temple_entry", "roof_dome"]
 
 var museum: Museum
 var camera: Camera3D
 var _mode := "shots"
 var _preset := "high"
 var _only: PackedStringArray = []
+## Views of this run only (--view=label@x,y,z@tx,ty,tz, repeatable): a
+## close look at one spot (QA: the collision overlay) without a table entry.
+var _extra := {}
 var _metrics: Array = []
 var _build_ms: int = 0
 var _failures: int = 0
@@ -124,6 +223,16 @@ func _ready() -> void:
 			_preset = arg.trim_prefix("--preset=")
 		elif arg.begins_with("--only="):
 			_only = arg.trim_prefix("--only=").split(",", false)
+		elif arg.begins_with("--view="):
+			var bits := arg.trim_prefix("--view=").split("@")
+			if bits.size() == 3:
+				var at := bits[1].split_floats(",")
+				var to := bits[2].split_floats(",")
+				if at.size() == 3 and to.size() == 3:
+					_extra[bits[0]] = [Vector3(at[0], at[1], at[2]), Vector3(to[0], to[1], to[2])]
+					_only.append(bits[0])
+		elif arg == "--washes=off":
+			Floor1LightRecipe.washes_enabled = false   # (the light pass's floor washes off: perf before / after)
 	Museum.level_id = &"floor1"
 	MuseumFloorLevel.dress_default = true
 	GameInput.capture_allowed = false
@@ -186,6 +295,8 @@ func _shots() -> void:
 	for label: String in VIEWS:
 		if _wanted(label):
 			await _shot(label, VIEWS[label][0], VIEWS[label][1], 45)
+	for label: String in _extra:
+		await _shot(label, _extra[label][0], _extra[label][1], 45)
 	if _wanted("colossus_awake"):
 		await _colossus()
 	if _wanted("trex_awake"):
@@ -305,6 +416,27 @@ func _dry() -> void:
 		var clear := from.distance_to(at) if hit.is_empty() else from.distance_to(hit["position"])
 		if clear < minf(3.0, from.distance_to(at) * 0.5):
 			problems.append("subject hidden %.1f m ahead" % clear)
+		# not right before a sleeping exhibit's slot (any night's: it would
+		# fill the frame)
+		var ahead := Vector2(at.x - from.x, at.z - from.z).normalized()
+		for slot in level.layout.spawn_slots:
+			if not slot.dormant or slot.patrol != &"" or slot.room != room:
+				continue
+			var flat := Vector2(slot.position.x - from.x, slot.position.z - from.z)
+			var across := flat.length()
+			if across < SLOT_CLEARANCE and flat.dot(ahead) > 0.0 and absf(slot.position.y + 1.0 - from.y) < 2.0:
+				problems.append("%.1f m before an exhibit's slot at %s (%s)" % [across, slot.position, slot.kinds])
+				break
+		# the guard of a blackout view wakes no guardian (Guardian._should_wake)
+		if BLACKOUT_VIEWS.has(label):
+			for guardian in _guardians():
+				if guardian.arena_room != room or guardian.state != Guardian.State.DORMANT:
+					continue
+				var feet := Vector2(from.x, from.z)
+				var post := Vector2(guardian.global_position.x, guardian.global_position.z)
+				var line := Vector2(guardian.wake_point.x, guardian.wake_point.z)
+				if guardian.wake_point == Vector3.INF or feet.distance_to(line) <= Guardian.WAKE_REACH or feet.distance_to(post) <= line.distance_to(post):
+					problems.append("the guard here wakes %s" % guardian.guardian_id)
 		var near := level.culler.update_from(from) if level.culler != null else {}
 		var lamps := 0
 		var shadows := 0
@@ -338,19 +470,40 @@ func _place(from: Vector3, at: Vector3) -> void:
 func _shot(label: String, from: Vector3, at: Vector3, settle: int = 30) -> void:
 	_place(from, at)
 	museum.hud.visible = false
+	museum.player.weapons.visible = false   # (his first-person gun would float in this camera's view)
 	await _frames(settle)
 	await _capture(label)
 	museum.hud.visible = true
+	museum.player.weapons.visible = true
 
 
+## The guard's own view (his flashlight on) without the HUD (a guardian
+## woken earlier in the tour would hang its bar over every later shot); a
+## guardian he woke after all goes back to sleep.
 func _guard_shot(label: String, from: Vector3, at: Vector3) -> void:
 	museum.player.global_position = from
 	var eye := from + Vector3.UP * museum.player.eye_height
 	var aim := at - eye
 	museum.player.head.rotation = Vector3(atan2(aim.y, Vector2(aim.x, aim.z).length()), atan2(-aim.x, -aim.z), 0.0)
 	museum.player.camera.current = true
+	museum.hud.visible = false
 	await _frames(40)
 	await _capture(label)
+	museum.hud.visible = true
+	for guardian: Guardian in _guardians():
+		if guardian.is_fighting():
+			guardian.reset_fight()
+
+
+## The wing guardians standing in the floor.
+func _guardians() -> Array[Guardian]:
+	var out: Array[Guardian] = []
+	if museum.floor_game == null or museum.floor_game.guardians == null:
+		return out
+	for guardian: Variant in museum.floor_game.guardians.guardians.values():
+		if is_instance_valid(guardian):
+			out.append(guardian as Guardian)
+	return out
 
 
 func _capture(label: String) -> void:

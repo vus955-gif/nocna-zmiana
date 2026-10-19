@@ -26,8 +26,11 @@ model space -> Godot, both relative to the model origin):
     clip           rifle   (0, -0.0925, 0.0165)         (0, 0.0165, 0.0925)
     hand_r         rifle   (0, -0.186, -0.070)          (0, -0.070, 0.186)
     hand_l         rifle   (0, 0.205, -0.038)           (0, -0.038, -0.205)
+    sleeve_r/_l    rifle   the wrist of its hand (the game turns it toward the elbow)
     marker Muzzle  root    (0, 0.622, 0)                (0, 0, -0.622)
     marker BoltKnob bolt   KNOB_C                       (0.0503, -0.0308, 0.1360)
+    markers Wrist_r/_l, Grip_r/_l (children of the hands, with a basis) and
+    Elbow_r/_l (children of rifle): the arm rig, see artlib/hands.py arm().
 
 bolt: pivot ON THE BORE AXIS at the rear face of the receiver bridge.
   Lift the handle: rotate about the bore axis = Blender local Y = Godot
@@ -59,7 +62,10 @@ clip: steel stripper clip with five 9,3 x 62 cartridges standing in the
   0.02 m (the cartridges then sit in the magazine), then hide it.
 hand_r: right hand round the pistol grip (pivot on the grip axis);
   BoltKnob is where it reaches while cycling.
-hand_l: left hand under the fore-end, with the wristwatch.
+hand_l: left hand under the fore-end, with the wristwatch on sleeve_l. In
+  the reload the game moves it (by its Grip_l marker) down out of the frame,
+  up to the open action with the clip hanging from the fist (bullets
+  forward), presses the clip in, flicks it away and brings the hand back.
 Texture sets: vm_rifle_hunt (field finish) and vm_rifle_hunt_master (the
 mastery finish: polished deep bluing with bright edges, fine scrollwork
 on the receiver, bridge, shroud, floorplate and guard, gold inlay bands,
@@ -624,18 +630,22 @@ def build():
     build_fittings(fit)
     clip = Part("clip", origin=tuple(CLIP_BOTTOM), parent="rifle")
     RP.stripper_clip(clip, CLIP_BOTTOM, (0, 0, 1), (0, 1, 0), n=5, s=1.0, segs=8)
+    # right hand on the raked pistol grip (held diagonally: cant 45), its
+    # sleeve back toward the eye and down; it sits just under the frame
     right = Part("hand_r", origin=tuple(GRIP_C), parent="rifle")
     m = hands.hand_matrix(GRIP_C, -GRIP_AX, (1.0, 0.0, 0.25), sx=1)
-    wrist = hands.add_hand(right, m, sx=1, tris=1000)
-    hands.add_sleeve(right, wrist, (0.35, -0.8, -0.55), length=0.26, sx=1)
+    sleeve_r, markers_r = hands.arm("r", right, m, 1, math.radians(45.0), (0.25, -0.9, -0.36), 0.26, parent="rifle")
+    # left hand under the fore-end (cant 35), the forearm down and left to an
+    # elbow under the rifle, a little back toward the eye
     left = Part("hand_l", origin=tuple(HAND_L_PIVOT), parent="rifle")
     m = hands.hand_matrix(FORE_C, (0, 1, 0), (0.55, 0.0, -0.85), sx=-1)
-    wrist = hands.add_hand(left, m, sx=-1, tris=1000)
-    hands.add_sleeve(left, wrist, (-0.55, -0.8, -0.55), length=0.36, watch=True, sx=-1)
-    parts = [gun, bolt, kn, bb, fit, clip, right, left]
-    return Model("vm_rifle_hunt", parts, FNS, ppm=512, organic=("hand_r", "hand_l"), ao_dist=0.03, ao_rays=12,
-                 ao_stride=1, front=1, variants={"vm_rifle_hunt_master": MASTER_FNS},
-                 markers=[("Muzzle", (0.0, MUZZLE_Y + 0.002, 0.0), None), ("BoltKnob", tuple(KNOB_C), "bolt")],
+    sleeve_l, markers_l = hands.arm("l", left, m, -1, math.radians(35.0), (-0.50, -0.62, -0.60), 0.36, watch=True,
+                                    parent="rifle")
+    parts = [gun, bolt, kn, bb, fit, clip, right, left, sleeve_r, sleeve_l]
+    return Model("vm_rifle_hunt", parts, FNS, ppm=512, organic=("hand_r", "hand_l", "sleeve_r", "sleeve_l"),
+                 ao_dist=0.03, ao_rays=12, ao_stride=1, front=1, variants={"vm_rifle_hunt_master": MASTER_FNS},
+                 markers=[("Muzzle", (0.0, MUZZLE_Y + 0.002, 0.0), None), ("BoltKnob", tuple(KNOB_C), "bolt")]
+                 + markers_r + markers_l,
                  preview_yaws=(-60.0, 40.0, 110.0, 250.0), preview_elevation=16.0, preview_fp=(CAM, LOOK),
                  preview_extra=[("action", (0.012, -0.06, 0.0), 0.10, 62.0, 22.0),
                                 ("action_l", (-0.01, -0.05, 0.0), 0.10, -55.0, 25.0),

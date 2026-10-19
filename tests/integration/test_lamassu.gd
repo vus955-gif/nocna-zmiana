@@ -392,6 +392,33 @@ func test_the_stomps_ring_hurts_who_stands_and_not_who_jumps() -> void:
 # --- phases 2 and 3 -------------------------------------------------------------------
 
 ## Hits it through its face down to [param fraction] of its health.
+## Its plinth is in the exhibits' navigation (QA Q4): no navmesh runs
+## through the stone at the court's floor, so the relief warriors it calls
+## walk round it, not into it.
+func test_its_plinth_is_a_stone_the_exhibits_walk_round() -> void:
+	GameState.new_game()
+	_museum()
+	await physics_frames(4)
+	var level := museum.floor_level
+	while level.navigation.is_baking():
+		await get_tree().physics_frame
+	await physics_frames(2)
+	var plinth := _lamassu().plinth
+	var map := level.walk_region.get_navigation_map()
+	var half := LamassuPlinth.SIZE * 0.5 - Vector3(0.2, 0.0, 0.2)
+	var inside := 0
+	for ix in 5:
+		for iz in 9:
+			var local := Vector3(lerpf(-half.x, half.x, ix / 4.0), 0.05, lerpf(-half.z, half.z, iz / 8.0))
+			var at := plinth.to_global(local)
+			var near := NavigationServer3D.map_get_closest_point(map, at)
+			var on_floor := near.y < plinth.global_position.y + 0.3
+			var under := plinth.to_local(near)
+			if on_floor and absf(under.x) < LamassuPlinth.SIZE.x * 0.5 and absf(under.z) < LamassuPlinth.SIZE.z * 0.5:
+				inside += 1
+	assert_eq(inside, 0, "no navmesh on the court's floor under the plinth")
+
+
 func _wound(lamassu: Lamassu, fraction: float) -> void:
 	var amount := (lamassu.health.current - lamassu.max_health * fraction + 1.0) / Lamassu.FACE
 	_hit(lamassu, &"face", amount)

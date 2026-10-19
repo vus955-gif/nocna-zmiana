@@ -35,6 +35,9 @@ const ART_LEAVES := {
 	&"seal_sun": ["egypt_seal_door_l", "egypt_seal_door_r", Vector2(3.0, 7.5), PI],
 	&"seal_owl": ["door_grand_leaf_l", "door_grand_leaf_r", Vector2(2.0, 4.5), 0.0],
 	&"star_key": ["door_grand_leaf_l", "door_grand_leaf_r", Vector2(2.0, 4.5), 0.0],
+	# the Balawat Gates (Pieczęć Skrzydła): cedar leaves with bronze bands,
+	# their decorated face +Z toward the Assyrian room
+	&"seal_wing": ["asy_balawat_leaf_l", "asy_balawat_leaf_r", Vector2(2.26, 5.17), 0.0],
 }
 
 var gate_id: StringName = &""

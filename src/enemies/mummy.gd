@@ -18,8 +18,12 @@ extends Enemy
 ## its head turns to the noise first and its eyes light up (EyeGlow).
 ## An [member entombed] mummy (an ambush) sleeps in a coffin (or a
 ## sarcophagus the level put by its post): waking, the lid falls or slides
-## off and it climbs out (MummyMoves.rise_phases), then hunts. The model
-## (ArtLibrary "mummy") moves through a MummyRig; without it a greybox.
+## off and it climbs out (MummyMoves.rise_phases), then hunts. Its hunt
+## over, it shuffles back and lies down in its open tomb to rest
+## (backlog #8): asleep there it mends REGAIN_PER_SECOND of health a second,
+## sees like any sleeper (the lid is off), and climbs out again when
+## something wakes it. The model (ArtLibrary "mummy") moves through a
+## MummyRig; without it a greybox.
 
 const KIND := &"mummy"
 ## The body's hit zone (capsule) and the head's (weak point; the model's
@@ -36,6 +40,8 @@ const SUSPICIOUS_TURN := 0.3
 const TOMB_REACH := 2.5
 ## In its closed tomb it only feels the guard this close (m).
 const TOMB_SENSE := 1.5
+## Resting in its tomb it mends this much health a second.
+const REGAIN_PER_SECOND := 2.5
 ## Where the bandage leaves the hand at rest (the model's whip_1 pivot) and
 ## where the lash aims on the guard (over his feet).
 const WRIST_AT := Vector3(0.21, 0.84, -0.05)
@@ -193,6 +199,8 @@ func _physics_process(delta: float) -> void:
 	_scrap_wait = maxf(_scrap_wait - delta, 0.0)
 	if rising():
 		_advance_rise(delta)
+	elif brain.state == EnemyBrain.State.DORMANT and in_tomb() and health.current < health.max_health:
+		health.heal(REGAIN_PER_SECOND * delta)   # resting in its tomb it mends
 	super(delta)
 	if brain.state == EnemyBrain.State.DESTROYED:
 		return
@@ -221,9 +229,10 @@ func _may_attack() -> bool:
 	return not rising() and not moves.panicking() and not in_tomb()
 
 
-## Asleep in its closed tomb it only feels a guard right next to it.
+## Asleep in its closed tomb it only feels a guard right next to it (the
+## lid off, resting after a hunt, it sees like any sleeper).
 func _can_see_target() -> bool:
-	if in_tomb() and not rising():
+	if in_tomb() and not rising() and not tomb.is_open():
 		return global_position.distance_to(target.global_position) <= TOMB_SENSE
 	return super()
 
@@ -257,6 +266,8 @@ func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
 			lash_aim = target.global_position if _target_alive() else global_position - global_basis.z * 3.0
 	if from == EnemyBrain.State.DORMANT and to != EnemyBrain.State.DESTROYED and in_tomb() and _rise_time < 0.0:
 		_begin_rise()
+	elif to == EnemyBrain.State.DORMANT and tomb != null and _risen:
+		_lie_down()
 
 
 func _on_strike() -> void:
@@ -386,8 +397,21 @@ func _begin_rise() -> void:
 	EnemyCrowd.release(self)
 
 
+## Home again after a hunt: it settles into its open tomb to rest (the rig
+## poses it lying or standing in it); the next waking climbs out anew.
+func _lie_down() -> void:
+	_risen = false
+	_rise_time = -1.0
+	EnemyCrowd.release(self)
+	var front := tomb.front()
+	global_position = tomb.rest_position()
+	_set_world_yaw(atan2(-front.x, -front.z))
+	velocity = Vector3.ZERO
+	reset_physics_interpolation()
+
+
 ## Moves the body out over the last phase; done, it stands at the exit
-## (its post stays in the tomb: back home it sleeps standing in it).
+## (its post stays in the tomb: back home it sleeps in it).
 func _advance_rise(delta: float) -> void:
 	_rise_time += delta
 	var phases := MummyMoves.rise_phases(tomb.style, _rise_time)

@@ -20,8 +20,17 @@ extends CharacterBody3D
 ##   neighbours in its room (in sight, within [member wake_radius]); they
 ##   come to look, quietly,
 ## - EnemyBrain decides, the body walks where the state says.
+## Hits land by their weight (HitFeel, plan 2026-10-19-gun-feel): the body
+## flinches along the shot ([member reaction], the node its visual hangs
+## from), a heavy hit knocks chips off it, a staggering one stops its legs
+## for a moment and lets it start no attack; a kill crumbles or is blown
+## back and apart by the weight of the weapon that dealt it.
 
 const GRAVITY := 15.0
+## Group of what an exhibit leaves standing about the rooms when it walks off
+## or falls (a Fu dog's ball on its plinth): the night's dawn greys these
+## with the exhibits (turn_to_stone()).
+const PROP_GROUP := &"exhibit_props"
 ## How fast knockback and leaps die down on the ground (m/s per second).
 const GROUND_FRICTION := 30.0
 ## Seconds between sight checks (spread over the exhibits); a sleeping
@@ -65,6 +74,33 @@ const RING_CALM := 3.5
 ## Exhibits whose attack range is at most this fight in melee and take a
 ## place on the ring around their target (EnemyCrowd).
 const RING_MAX_RANGE := 2.5
+## Routines (backlog #8): the calm tick (_routine_tick) comes every
+## ROUTINE_INTERVAL seconds (spread over the exhibits) and only while the
+## guard is within ROUTINE_RANGE and its room is near his
+## (PerceptionWorld.rooms_near_guard): far from him nothing stirs (LOD).
+const ROUTINE_INTERVAL := 0.5
+const ROUTINE_RANGE := 36.0
+## Stirring in its sleep (kinds of EnemyRoles.Sleep.STIR): with the guard
+## between STIR_RANGE.x and .y away and not looking its way (within
+## WATCH_HALF_ARC of where he looks - for the guard's camera: its whole
+## picture and WATCH_MARGIN more - it freezes), each tick it turns toward
+## him by up to STIR_TURN (rad) and, unless it stirs in place, shuffles
+## STIR_STEP metres his way, never more than STIR_REACH from its post.
+## Uncanny, not an attack: asleep it still sees only at DORMANT_SCALE, and
+## it stirs only while the guard is beyond what it could see of him (its
+## sleeping sight_reach and STIR_SIGHT_MARGIN): turning his way never lets
+## it see him round the back of its head - closer in it holds still.
+const STIR_RANGE := Vector2(4.0, 20.0)
+const STIR_SIGHT_MARGIN := 1.0
+const STIR_TURN := 0.35
+const STIR_STEP := 0.25
+const STIR_REACH := 1.5
+const WATCH_HALF_ARC := 40.0
+const WATCH_MARGIN := 10.0
+## A guard on a beat (EnemyRoles.Role.TANK: a knight, a samurai, a Fu dog)
+## holds each post of its route this long (s), facing its post's way (its
+## home: the way it stood; another point: away from home).
+const POST_DWELL := Vector2(6.0, 10.0)
 
 @export var max_health: float = 60.0
 @export var move_speed: float = 2.5
@@ -107,6 +143,8 @@ var target: Node3D = null
 var visual: Node3D
 ## The animated model under [member visual] (null = greybox meshes).
 var rig: ExhibitRig = null
+## The body's flinch: [member visual] hangs from it.
+var reaction: HitReaction
 var nav: NavigationAgent3D
 ## Where this exhibit appeared (its post) and which way it faced there.
 var home := Vector3.ZERO
@@ -167,6 +205,16 @@ var _nav_iteration: int = -1
 var _nav_has_regions := false
 ## Dawn turned it to stone: it neither moves nor takes hits.
 var _frozen := false
+var _kind: StringName = &""
+var _kind_known := false
+var _routine_timer: float = 0.0
+## Routine ticks taken (tests: the LOD).
+var routine_ticks: int = 0
+## Stirs made in its sleep (tests).
+var stirs: int = 0
+## A stagger's seconds left, and how long until it can be staggered again.
+var _stagger_left: float = 0.0
+var _stagger_cooldown: float = 0.0
 
 ## The grey of an exhibit frozen at dawn.
 static var _stone: StandardMaterial3D = null
@@ -193,8 +241,10 @@ func _ready() -> void:
 	# its wing) would stop half way
 	nav.path_search_max_polygons = LevelNavigation.AGENT_SEARCH_POLYGONS
 	add_child(nav)
+	reaction = HitReaction.new()
+	add_child(reaction)
 	visual = Node3D.new()
-	add_child(visual)
+	reaction.add_child(visual)
 	_build_body()
 	_stun_marker = _make_stun_marker()
 	add_child(_stun_marker)
@@ -204,6 +254,7 @@ func _ready() -> void:
 		target = get_tree().get_first_node_in_group(&"player") as Node3D
 	# spread the periodic checks of a group over different frames
 	_sight_timer = randf() * SIGHT_INTERVAL
+	_routine_timer = randf() * ROUTINE_INTERVAL
 	_repath_interval = REPATH_INTERVAL * randf_range(0.8, 1.2)
 	_repath_timer = randf() * _repath_interval
 	_detour_side = 1.0 if randf() < 0.5 else -1.0
@@ -211,6 +262,11 @@ func _ready() -> void:
 	home_yaw = _world_yaw()
 	brain.home = home
 	brain.patrol = patrol_route
+	# without a route a wandering kind (a wolf, a jaguar) roams round its post
+	if brain.patrol.size() < 2 and brain.roam_radius <= 0.0:
+		brain.roam_radius = EnemyRoles.roam(kind())
+	brain.roam_filter = _roam_filter
+	_setup_beat()
 	if summoned:
 		brain.relentless = true
 	if starts_awake:
@@ -248,6 +304,18 @@ func _blocks(_info: DamageInfo) -> bool:
 	return false
 
 
+## Subclass hook: how much the whole body flinches from hits (0 = not at
+## all: a portrait on its wall, a pole that sways its own way).
+func _reaction_scale() -> float:
+	return 1.0
+
+
+## Subclass hook: false for exhibits that knock their own pieces off on a
+## heavy hit (plates, carved chips); the others shed chips of their material.
+func _chips_on_hits() -> bool:
+	return true
+
+
 ## Subclass hook: true for exhibits that attack from afar (a bust): they
 ## may strike at a target the navmesh cannot bring them to.
 func _attacks_from_range() -> bool:
@@ -259,6 +327,118 @@ func _attacks_from_range() -> bool:
 ## in reach.
 func _may_attack() -> bool:
 	return true
+
+
+## Subclass hook: its calm routine, every ROUTINE_INTERVAL while the guard
+## is near (routine_active). The base stirs a sleeper of a stirring kind;
+## subclasses add their own (a wolf sniffs the trail, a bust calls).
+func _routine_tick() -> void:
+	if brain.state == EnemyBrain.State.DORMANT and EnemyRoles.sleep(kind()) == EnemyRoles.Sleep.STIR:
+		_stir()
+
+
+## Subclass hook: a stirring sleeper turns but never shuffles (a bust on
+## its plinth).
+func _stirs_in_place() -> bool:
+	return false
+
+
+## Its routine runs: alive, not frozen, the guard within ROUTINE_RANGE and
+## its room no more than PerceptionWorld.ROUTINE_HOPS passages from his.
+func routine_active() -> bool:
+	if _frozen or brain.state == EnemyBrain.State.DESTROYED or not _target_alive():
+		return false
+	if global_position.distance_squared_to(target.global_position) > ROUTINE_RANGE * ROUTINE_RANGE:
+		return false
+	var near := PerceptionWorld.rooms_near_guard(target)
+	if near.is_empty():
+		return true
+	var room := current_room()
+	return room == &"" or near.has(room)
+
+
+## A sleeper's stir: with the guard in STIR_RANGE and looking elsewhere it
+## turns his way and (unless it stirs in place) shuffles a step toward him,
+## never beyond STIR_REACH of its post, never off the floor. Soundly asleep
+## (the gentle start) it lies still, and so it does while the guard is in a
+## haven (out of reach: nothing creeps up on its door).
+func _stir() -> void:
+	if sound_asleep > 0.0 or Haven.shelters(target.global_position):
+		return
+	var to := target.global_position - global_position
+	var flat := Vector3(to.x, 0.0, to.z)
+	var distance := flat.length()
+	if distance < maxf(STIR_RANGE.x, sight_reach() + STIR_SIGHT_MARGIN) or distance > STIR_RANGE.y or guard_watching():
+		return
+	_set_world_yaw(rotate_toward(_world_yaw(), atan2(-flat.x, -flat.z), STIR_TURN))
+	stirs += 1
+	if _stirs_in_place():
+		return
+	var from_home := Vector2(global_position.x - home.x, global_position.z - home.z).length()
+	if from_home + STIR_STEP > STIR_REACH:
+		return
+	var spot: Variant = _safe_detour(global_position + flat / distance * STIR_STEP)
+	if spot != null:
+		global_position = Vector3((spot as Vector3).x, global_position.y, (spot as Vector3).z)
+
+
+## A tank's route is a beat: every point a post held POST_DWELL seconds,
+## faced its way (unless the route came with its own dwells).
+func _setup_beat() -> void:
+	if brain.patrol.size() < 2 or not brain.patrol_dwell.is_empty() or EnemyRoles.role(kind()) != EnemyRoles.Role.TANK:
+		return
+	for i in brain.patrol.size():
+		brain.patrol_dwell.append(brain.rng.randf_range(POST_DWELL.x, POST_DWELL.y))
+		var point := brain.patrol[i]
+		var out := Vector3(point.x - home.x, 0.0, point.z - home.z)
+		brain.patrol_yaw.append(home_yaw if out.length() < 0.5 else atan2(-out.x, -out.z))
+
+
+## A place to wander to (EnemyBrain.roam_filter): [param point] put onto
+## the walkable floor (null when no floor is near it), and only in its home
+## room.
+func _roam_filter(point: Vector3) -> Variant:
+	var spot := point
+	if _map_has_regions():
+		var snapped := _walk_closest_point(point)
+		if Vector2(snapped.x - point.x, snapped.z - point.z).length() > 0.6 or absf(snapped.y - point.y) > 1.0:
+			return null
+		spot = snapped
+	_refresh_bounds()
+	if home_room != &"" and PerceptionWorld.has_rooms() and PerceptionWorld.room_at(spot) != home_room:
+		return null
+	return spot
+
+
+## True while the guard has this exhibit in view: within his camera's
+## picture and WATCH_MARGIN degrees round it (watch_half_arc; any other
+## target: WATCH_HALF_ARC of its front). Walls do not count: it freezes
+## whenever he looks its way, so nobody ever sees one shuffle.
+func guard_watching() -> bool:
+	if not _target_alive():
+		return false
+	var eye := target.global_position + Vector3.UP * 1.5
+	var view := -target.global_basis.z
+	var half_arc := WATCH_HALF_ARC
+	var guard := target as Player
+	if guard != null and guard.camera != null:
+		eye = guard.camera.global_position
+		view = -guard.camera.global_basis.z
+		half_arc = watch_half_arc(guard.camera)
+	return PerceptionRules.in_view(eye, view, global_position + Vector3.UP * eye_height * 0.7, half_arc)
+
+
+## The half angle (degrees) round where [param camera] looks inside which
+## an exhibit counts as watched: the wider half of its picture (with the
+## viewport's aspect: a wide screen sees further to the sides) and
+## WATCH_MARGIN, never under WATCH_HALF_ARC.
+static func watch_half_arc(camera: Camera3D) -> float:
+	var size := camera.get_viewport().get_visible_rect().size if camera.is_inside_tree() else Vector2(16.0, 9.0)
+	var aspect := size.x / maxf(size.y, 1.0)
+	var half := deg_to_rad(camera.fov) * 0.5
+	var wide := rad_to_deg(atan(tan(half) * aspect)) if camera.keep_aspect == Camera3D.KEEP_HEIGHT else rad_to_deg(half)
+	var tall := rad_to_deg(half) if camera.keep_aspect == Camera3D.KEEP_HEIGHT else rad_to_deg(atan(tan(half) / maxf(aspect, 0.01)))
+	return maxf(WATCH_HALF_ARC, maxf(wide, tall) + WATCH_MARGIN)
 
 
 ## Subclass hook: vertical motion. Walkers fall (never faster than
@@ -290,20 +470,65 @@ func take_damage(info: DamageInfo) -> void:
 	var overkill := maxf(amount - health.current, 0.0)
 	health.apply_damage(amount)
 	_external += _push(info)
+	# a heavy hit throws more off it and sounds deeper and louder
+	var weight := HitFeel.weight(info)
 	if info.effects:
-		Fx.impact(info.position, info.normal, material_kind, clampf(info.amount / 15.0, 0.5, 3.0))
+		Fx.impact(info.position, info.normal, material_kind, clampf(info.amount / 15.0 * (0.7 + 0.6 * weight), 0.5, 3.0))
 	if not info.periodic:
-		Sfx.play_at(ExhibitMaterial.hit_sound(material_kind), info.position)
+		Sfx.play_at(ExhibitMaterial.hit_sound(material_kind), info.position, lerpf(-3.0, 2.0, weight), 0.1, lerpf(1.06, 0.88, weight))
 	_on_damaged(info)
 	if health.is_dead():
 		_destroy(info, finisher, overkill)
 		return
+	if not info.periodic:
+		_react_to_hit(info, weight)
 	if info.stun_time > 0.0:
 		brain.stun(info.stun_time)
 	else:
 		_alarm(info)
 	if not info.periodic:
 		Events.hit_landed.emit(self, info, false)
+
+
+## The body's answer to a hit of [param weight] (HitFeel): the flinch along
+## the shot, chips off a heavy hit, a stagger and a moment of hitstop off a
+## staggering one (the guard's).
+func _react_to_hit(info: DamageInfo, weight: float) -> void:
+	var direction := global_basis.inverse() * info.direction
+	var body_share := _reaction_scale()
+	if body_share > 0.0:
+		# hit off its middle, it twists toward that side
+		var local_hit := global_transform.affine_inverse() * info.position
+		var flat := Vector3(direction.x, 0.0, direction.z)
+		var off_middle := 0.0
+		if flat.length() > 0.01:
+			off_middle = flat.normalized().cross(Vector3(local_hit.x, 0.0, local_hit.z)).y
+		var twist := clampf(off_middle * 2.5, -1.0, 1.0) * HitFeel.TWIST * weight
+		reaction.hit(direction, HitFeel.tilt(weight, knockback_resist) * body_share, twist * body_share)
+	var chips := weight >= HitFeel.HEAVY_WEIGHT and info.effects and info.amount >= HitFeel.CHIP_DAMAGE
+	if chips and _chips_on_hits() and ExhibitMaterial.chips(material_kind):
+		_shed_chips(info, weight)
+	if HitFeel.staggers(weight, knockback_resist) and _stagger_cooldown <= 0.0:
+		_stagger_left = HitFeel.STAGGER_TIME
+		_stagger_cooldown = HitFeel.STAGGER_COOLDOWN
+	var stop := HitFeel.hit_hitstop(weight)
+	if stop > 0.0 and info.source is Player:
+		Fx.hitstop(stop)
+
+
+## Chips of its material fly off where a heavy hit landed, along the shot.
+func _shed_chips(info: DamageInfo, weight: float) -> void:
+	var flat := Vector3(info.direction.x, 0.0, info.direction.z)
+	flat = flat.normalized() if flat.length() > 0.01 else Vector3.ZERO
+	var color := ExhibitMaterial.color(material_kind)
+	for i in 1 + int(weight >= HitFeel.STAGGER_WEIGHT):
+		var fling := flat * randf_range(1.5, 3.0) + Vector3(randf_range(-1.0, 1.0), randf_range(1.5, 3.0), randf_range(-1.0, 1.0))
+		Fx.chunk(info.position, color, randf_range(0.05, 0.08) * (0.7 + 0.5 * weight), fling)
+
+
+## True for the moment a staggering hit holds it (no steps, no attack starts).
+func staggered() -> bool:
+	return _stagger_left > 0.0
 
 
 ## Dawn: stops dead mid-step and greys over like stone (for good).
@@ -317,16 +542,25 @@ func freeze() -> void:
 	velocity = Vector3.ZERO
 	_stun_marker.visible = false
 	EnemyCrowd.release(self)
-	if _stone == null:
-		_stone = StandardMaterial3D.new()
-		_stone.albedo_color = Color(0.46, 0.46, 0.47)
-		_stone.roughness = 0.95
-	for node in visual.find_children("*", "GeometryInstance3D", true, false):
-		(node as GeometryInstance3D).material_override = _stone
+	turn_to_stone(visual)
 
 
 func is_frozen() -> bool:
 	return _frozen
+
+
+## Greys [param root] and everything under it like the stone of a frozen
+## exhibit (the dawn's, for good).
+static func turn_to_stone(root: Node) -> void:
+	if _stone == null:
+		_stone = StandardMaterial3D.new()
+		_stone.albedo_color = Color(0.46, 0.46, 0.47)
+		_stone.roughness = 0.95
+	var views := root.find_children("*", "GeometryInstance3D", true, false)
+	if root is GeometryInstance3D:
+		views.append(root)
+	for node in views:
+		(node as GeometryInstance3D).material_override = _stone
 
 
 ## Instantly turns to face a point (used when spawning: it becomes the way
@@ -354,11 +588,45 @@ func _alarm(info: DamageInfo) -> void:
 ## it turns, and goes to look when the point lies within its bounds.
 ## True when it is awake now (it reacted).
 func hear(point: Vector3, point_room: StringName = &"") -> bool:
+	return react(point, point_room, ReactionRules.Reaction.INVESTIGATE)
+
+
+## Its answer to a noise at [param point] (in [param point_room]), as
+## PerceptionWorld decided it (ReactionRules): LOOK turns its head, quietly
+## (no call-out, it rouses nobody); INVESTIGATE sends it to look (within its
+## bounds; else it only turns); FLEE sends it running from the point.
+## [param source] names the noise (a weapon id, ReactionRules.SOURCE_*:
+## subclasses read it). True when it is awake now.
+func react(point: Vector3, point_room: StringName, reaction: ReactionRules.Reaction, _source: StringName = &"") -> bool:
 	if brain.state == EnemyBrain.State.DESTROYED or _frozen:
 		return false
 	_refresh_bounds()
-	brain.hear(point, _within_bounds(point, point_room))
+	match reaction:
+		ReactionRules.Reaction.LOOK:
+			var resting_before := brain.state == EnemyBrain.State.DORMANT or brain.state == EnemyBrain.State.PATROL
+			if resting_before:
+				brain.quiet = true
+			brain.hear(point, false)
+			if resting_before and brain.state != EnemyBrain.State.SUSPICIOUS:
+				brain.quiet = false
+		ReactionRules.Reaction.INVESTIGATE:
+			brain.hear(point, _within_bounds(point, point_room))
+		ReactionRules.Reaction.FLEE:
+			brain.flee(point)
 	return brain.state != EnemyBrain.State.DORMANT
+
+
+## Its kind (EnemyRoles.kind_of; &"" for an exhibit of no known kind).
+func kind() -> StringName:
+	if not _kind_known:
+		_kind_known = true
+		_kind = EnemyRoles.kind_of(self)
+	return _kind
+
+
+## Its role and temperament (EnemyRoles.profile).
+func profile() -> Dictionary:
+	return EnemyRoles.profile(kind())
 
 
 ## A neighbour woke up next to it: it comes to look at [param point],
@@ -422,11 +690,20 @@ func _physics_process(delta: float) -> void:
 		return
 	if sound_asleep > 0.0:
 		sound_asleep -= delta
+	_stagger_left = maxf(_stagger_left - delta, 0.0)
+	_stagger_cooldown = maxf(_stagger_cooldown - delta, 0.0)
 	_sight_timer -= delta
 	if _sight_timer <= 0.0:
 		_sight_timer = _sight_interval()
 		_look()
 	var has_target := _target_alive()
+	PerceptionWorld.track(target if has_target else null, delta)
+	_routine_timer -= delta
+	if _routine_timer <= 0.0:
+		_routine_timer = ROUTINE_INTERVAL * randf_range(0.8, 1.2)
+		if routine_active():
+			routine_ticks += 1
+			_routine_tick()
 	# a guard inside a haven is out of reach: no sight, no attacks
 	var sheltered := has_target and Haven.shelters(target.global_position)
 	_sees_target = _sees_target and has_target and not sheltered
@@ -434,11 +711,13 @@ func _physics_process(delta: float) -> void:
 	var distance := global_position.distance_to(target.global_position) if _sees_target else INF
 	if not _target_reachable and distance > attack_reach and not _attacks_from_range():
 		distance = INF   # no leaping at a guard the navmesh cannot reach (a ledge)
-	if not _may_attack():
-		distance = INF   # busy (climbing out of its tomb, panicking): no attack starts
+	if not _may_attack() or staggered():
+		distance = INF   # busy (climbing out of its tomb, panicking, reeling): no attack starts
 	_brief_brain(has_target, sheltered)
 	brain.update(delta, _sees_target, distance)
 	var move := _steer(delta, has_target)
+	if staggered():
+		move *= HitFeel.STAGGER_MOVE   # a staggering hit stops its legs
 	_apply_gravity(delta)
 	velocity.x = move.x + _external.x
 	velocity.z = move.z + _external.z
@@ -482,13 +761,16 @@ func _steer(delta: float, has_target: bool) -> Vector3:
 				_face_towards(target.global_position, delta)
 			else:
 				move = _walk_to(delta, brain.last_known, 1.0)
-		EnemyBrain.State.INVESTIGATE, EnemyBrain.State.SEARCH, EnemyBrain.State.RETURN, EnemyBrain.State.PATROL:
+		EnemyBrain.State.INVESTIGATE, EnemyBrain.State.SEARCH, EnemyBrain.State.RETURN, EnemyBrain.State.PATROL, EnemyBrain.State.FLEE:
 			if brain.walking():
 				move = _walk_to(delta, brain.goal, brain.pace())
 			else:
 				_ring_goal = false
 				EnemyCrowd.release(self)
-				if brain.settling() or (brain.state == EnemyBrain.State.PATROL and brain.patrol.size() < 2):
+				var post := brain.post_yaw()
+				if not is_nan(post):
+					_turn_to_yaw(post, delta)   # holding a post of its beat, facing its way
+				elif brain.settling() or (brain.state == EnemyBrain.State.PATROL and brain.patrol.size() < 2 and brain.roam_radius <= 0.0):
 					_turn_to_yaw(home_yaw, delta)   # back at its post, the way it stood
 				elif brain.state == EnemyBrain.State.INVESTIGATE:
 					_face_towards(brain.last_known, delta)   # waiting at the edge, watching him
@@ -614,18 +896,29 @@ func _rouse_neighbours() -> void:
 			woken += 1
 
 
+## Its end: it breaks apart by the weight of the killing blow (a fist
+## finisher counts as the heaviest) - a light one crumbles it, a heavy one
+## blows it back and apart (GibPlanner) with a moment of hitstop, a shake
+## and a deeper crunch under the break.
 func _destroy(info: DamageInfo, finisher: bool, overkill: float) -> void:
 	brain.destroy()
-	var plan := GibPlanner.plan(material_kind, overkill, max_health, finisher)
+	var force := 1.0 if finisher else HitFeel.weight(info)
+	var plan := GibPlanner.plan(material_kind, overkill, max_health, finisher, force)
 	var center := global_position + Vector3.UP * (eye_height * 0.6)
 	if rig != null:
 		rig.shatter(center, plan, info.direction)   # the model's own parts fly
 	else:
 		Fx.shatter(center, material_kind, plan, info.direction)
-	Sfx.play_at(ExhibitMaterial.break_sound(material_kind), center)
-	if plan.gibbed:
-		Fx.hitstop(0.06)
-		Events.shake_requested.emit(0.25)
+	var crunch := ExhibitMaterial.break_sound(material_kind)
+	Sfx.play_at(crunch, center)
+	if force >= HitFeel.STAGGER_WEIGHT:
+		Sfx.play_at(crunch, center, 1.0, 0.05, 0.78)
+	var stop := HitFeel.kill_hitstop(force, plan.gibbed)
+	if stop > 0.0:
+		Fx.hitstop(stop)
+	var shake := HitFeel.kill_shake(force, plan.gibbed)
+	if shake > 0.0:
+		Events.shake_requested.emit(shake)
 	Events.hit_landed.emit(self, info, true)
 	Events.enemy_destroyed.emit(self, info, finisher)
 	queue_free()

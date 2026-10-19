@@ -206,7 +206,8 @@ static func _apply_atmosphere(motes: Array[Node], probes: Array[Node]) -> void:
 			continue
 		particles.amount_ratio = clampf(share, 0.0, 1.0)
 		particles.visible = share > 0.0
-		particles.emitting = share > 0.0
+		# (a fire put out stays out: LevelKit.set_burning)
+		particles.emitting = share > 0.0 and not particles.get_meta(&"extinguished", false)
 	for node in probes:
 		(node as Node3D).visible = bool(p.get("probes", true))
 

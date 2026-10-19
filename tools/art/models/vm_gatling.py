@@ -22,11 +22,14 @@ space, Blender axes):
                                        left side (jiggle it, or scroll it while firing)
     hand_r    (0.145, 0.03, -0.155)    right hand on the crank knob, pivot = knob
     hand_l    (0, 0.515, -0.2)         left hand on the foregrip
+    sleeve_r, sleeve_l                 the sleeves, pivot = the wrist of each hand
 Markers: Muzzle (0, 0.788, -0.028) at the end of the top barrel (the firing
 position; direct child of the root, it does not spin), CrankKnob (child of
 crank, at the knob): to crank by hand, move hand_r with the knob every
 frame (hand_r.position = its rest position + knob offset from its rest
-position), without rotating it.
+position), without rotating it; the arm markers Wrist_*/Grip_* (on the
+hands) and Elbow_* (artlib/hands.py arm(): the game turns each sleeve from
+the wrist toward the elbow, so the cranking hand keeps its forearm).
 gatling_display.py puts the same gun (build_gun) on a museum tripod.
 
 Upgrade parts (viewmodel only, never in build_gun: the display gun stays
@@ -447,15 +450,16 @@ def build():
     blt = Part("belt", origin=tuple(HOPPER_MOUTH + s))
     build_gun({"body": gun, "barrels": bar, "crank": crk, "belt": blt}, place=T(*s))
     knob = KNOB_C + s
+    # right hand over the crank knob (cant 35), the sleeve back, right and
+    # down; it rides the knob, so the game keeps its sleeve on the elbow
     right = Part("hand_r", origin=tuple(knob))
     m = hands.hand_matrix(knob + Vector((0.012, 0, 0)), (-1, 0, 0), (0.0, -0.3, 1.0), sx=1)
-    wrist = hands.add_hand(right, m, sx=1, tris=1000)
-    hands.add_sleeve(right, wrist, (0.35, -0.75, -0.55), length=0.3, sx=1)
+    sleeve_r, markers_r = hands.arm("r", right, m, 1, math.radians(35.0), (0.45, -0.75, -0.45), 0.3)
     grip = GRIP_C + s
+    # left hand on the foregrip (cant 35), the forearm back toward the eye and down
     left = Part("hand_l", origin=tuple(grip))
     m = hands.hand_matrix(grip, (0, 0.12, 1.0), (-1.0, -0.2, 0.0), sx=-1)
-    wrist = hands.add_hand(left, m, sx=-1, tris=1000)
-    hands.add_sleeve(left, wrist, (-0.45, -0.8, -0.4), length=0.36, watch=True, sx=-1)
+    sleeve_l, markers_l = hands.arm("l", left, m, -1, math.radians(35.0), (-0.2, -0.85, -0.5), 0.36, watch=True)
     top = (0.0, MUZZLE_Y + 0.003 + s.y, RC + s.z)
     KNOB = tuple(knob)
     # upgrades: viewmodel only (build_gun, shared with gatling_display, stays untouched)
@@ -468,9 +472,9 @@ def build():
     from models import _upgrade_bits_a as hb
     base = {k: hb.ao_without(f, ("upg_",), rays=12, dist=0.04) for k, f in FNS.items()}
     fns = dict(base, **UPG_FNS)
-    return Model("vm_gatling", [gun, bar, crk, blt, right, left, ucr, udr], fns, ppm=384,
-                 organic=("hand_r", "hand_l"), ao_dist=0.04, ao_rays=12, ao_stride=1, front=1,
-                 markers=[("Muzzle", top, None), ("CrankKnob", KNOB, "crank")],
+    return Model("vm_gatling", [gun, bar, crk, blt, right, left, sleeve_r, sleeve_l, ucr, udr], fns, ppm=384,
+                 organic=("hand_r", "hand_l", "sleeve_r", "sleeve_l"), ao_dist=0.04, ao_rays=12, ao_stride=1, front=1,
+                 markers=[("Muzzle", top, None), ("CrankKnob", KNOB, "crank")] + markers_r + markers_l,
                  variants={"vm_gatling_master": MASTER_FNS},
                  preview_yaws=(-60.0, 40.0, 110.0, 250.0), preview_elevation=16.0,
                  preview_fp=(CAM, LOOK),

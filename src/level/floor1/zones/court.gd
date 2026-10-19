@@ -36,8 +36,10 @@ const SEGMENT := 4.877
 ## segment).
 const PORTAL_WIDTH := 3.0
 const PORTAL_HEIGHT := 4.5
-## Bookcases inside (two storeys of shelves, art plan: 0..9.2 m).
-const SHELF_DEPTH := 0.9
+## Bookcases inside (two storeys of shelves, art plan: 0..9.2 m), as deep
+## as the drawn bookcase's lower storey (rr_bookcase: 0.55 m off the drum's
+## inner face; the box stood 0.35 m proud of it, QA Q7).
+const SHELF_DEPTH := 0.55
 const SHELF_HEIGHT := 9.2
 ## The balcony ring: from the drum's face out to this apothem.
 const BALCONY_OUT := 16.5
@@ -53,8 +55,27 @@ const PEDESTAL_SIZE := Vector3(12, 1.2, 6)
 ## Radial desks of the Reading Room (bearings) and the steam exhibition.
 const DESKS: Array[float] = [22.5, 67.5, 112.5, 247.5, 292.5, 337.5]
 const GATLING := Vector3(0, 0, 8.6)
-## The café's counter (its middle; the back bar against the north wall).
-const CAFE_Z := -28.75
+## The café (plan 2026-10-10-kawiarnia-zmeczenie): the counter in the
+## north-west corner, its west end by the west wall and its back bar against
+## the north wall, so the barista's aisle behind it (LevelKit.cafe_aisle: the
+## kit splits the collision) has one way in, from the east, shut by the
+## counter flap (CafeCorner lifts it). 2.6 m deep: the model's aisle grows
+## to 1.14 m (Floor1Art._cafe_counter stretches it x1.14, within its limit).
+const CAFE_AT := Vector3(-27.4, 0, -28.7)
+const CAFE_SIZE := Vector3(5.1, 1.1, 2.6)
+## The flap closing the aisle's east end, its front to the court.
+const CAFE_FLAP_AT := Vector3(-24.6, 0, -28.84)
+const CAFE_FLAP_SIZE := Vector3(1.14, 1.1, 0.5)
+## On the counter's top: the espresso machine (its levers to the barista,
+## -Z) and the chalk slate (to the court); on the back bar's top: the
+## coffee urn (to the aisle). From the model's geometry (court_props.py
+## cafe_counter, mirrored in x by the import and turned by Floor1Art: the
+## cake case by the west wall, the machine at x -26.6, the till by the
+## flap; the counter's top z -28.29..-27.41, the back bar's top z -29.99..
+## -29.37 at 0.94); test_art_court checks them against the mesh.
+const CAFE_MACHINE := Vector3(-26.58, 1.03, -28.0)
+const CAFE_SLATE := Vector3(-27.05, 1.03, -27.74)
+const CAFE_URN := Vector3(-26.4, 0.94, -29.55)
 ## Lamp posts on the court floor (warm pools of light).
 const LAMP_POSTS: Array[Vector2] = [
 	Vector2(-7, 27), Vector2(7, 27), Vector2(-26, 17.5), Vector2(26, -6),
@@ -81,6 +102,7 @@ static func build(layout: LevelLayout) -> void:
 	_markers(layout)
 	_encounters(layout)
 	_lights(layout)
+	_voice(layout)
 
 
 # --- rooms ----------------------------------------------------------------
@@ -188,15 +210,15 @@ static func _reading_room(layout: LevelLayout) -> void:
 		layout.add_piece(&"desk", Hub.at_bearing(6.5, bearing), Vector3(1.4, 0.78, 4.0), room, Hub.yaw_out(bearing))
 	for bearing in [45.0, 135.0, 225.0, 315.0]:
 		layout.add_piece(&"catalogue", Hub.at_bearing(3.2, bearing), Vector3(2.6, 1.1, 0.7), room, Hub.yaw_in(bearing))
-	# the astrolabe's stepped base (art: steps of radius 2.2 / 1.75 / 1.3 m):
-	# the collision covers the upper two
-	layout.add_piece(&"pedestal", Vector3.ZERO, Vector3(3.5, 0.3, 3.5), room)
+	# the astrolabe's stepped base (art: three round steps of radius 2.2 /
+	# 1.75 / 1.3 m, 0.16 m each): walked up on a ramp through their nosings
+	layout.add_piece(&"dais", Vector3.ZERO, Vector3(4.4, 0.48, 4.4), room)
 	layout.add_marker(&"astrolabe", Vector3(0, 0.3, 0), room)
 	# "The Age of Steam and Steel": the chained gatling on the south axis,
 	# seen from the north door past the astrolabe; the engine, a case
 	layout.add_marker(&"gatling_case", GATLING, room)
 	layout.add_piece(&"steam_engine", Hub.at_bearing(6.0, 220.0), Vector3(2.2, 2.6, 3.0), room, Hub.yaw_in(220.0))
-	layout.add_piece(&"steam_banner", Vector3(0, 4.6, DRUM_IN - SHELF_DEPTH - 0.06), Vector3(6, 1.5, 0.1), room, 0.0, false)
+	layout.add_piece(&"steam_banner", Vector3(0, 4.6, DRUM_IN - 0.96), Vector3(6, 1.5, 0.1), room, 0.0, false)
 	var case_at := Hub.at_bearing(9.2, 150.0)
 	layout.add_piece(&"case", case_at, Vector3(1.4, 1.6, 1.0), room, Hub.yaw_in(150.0))
 	layout.add_loot(case_at + Vector3.UP, room, true)
@@ -249,10 +271,10 @@ static func _court_floor(layout: LevelLayout) -> void:
 		layout.add_piece(&"bench", Vector3(x, 0, 24), Vector3(3, 0.5, 0.7), room)
 	for x in [-21.0, 21.0]:
 		layout.add_piece(&"bench", Vector3(x, 0, 13), Vector3(3, 0.5, 0.7), room)
-	# the café in the north-west corner: counter and tables (cover)
-	# (stage P2: the counter with its back bar against the north wall, the
-	# art's cafe_counter 5.1 x 2.3 m)
-	layout.add_piece(&"cafe_counter", Vector3(-22, 0, CAFE_Z), Vector3(5.1, 1.1, 2.3), room)
+	# the café in the north-west corner: the counter in the corner with the
+	# barista's aisle behind it and the flap shutting the aisle; tables (cover)
+	layout.add_piece(&"cafe_counter", CAFE_AT, CAFE_SIZE, room)
+	layout.add_piece(&"cafe_flap", CAFE_FLAP_AT, CAFE_FLAP_SIZE, room, -PI * 0.5)
 	for at in [Vector2(-25, -22), Vector2(-21.5, -22), Vector2(-25, -18.5), Vector2(-21.5, -18.5)]:
 		layout.add_piece(&"cafe_table", Vector3(at.x, 0, at.y), Vector3(1.0, 0.75, 1.0), room)
 	# the museum shop (closed: a grate over its window) in the south-east,
@@ -271,7 +293,8 @@ static func _court_floor(layout: LevelLayout) -> void:
 	layout.add_piece(&"court_map_board", Vector3(-8.5, 0, 25.5), Vector3(2.2, 2.4, 0.3), room, PI)
 	for x in [-12.5, 12.5]:
 		layout.add_piece(&"signpost", Vector3(x, 0, 28.5), Vector3(0.3, 2.8, 0.3), room)
-	for spot in [Vector3(-22.6, 1.1, CAFE_Z + 0.6), Vector3(28, 0, 28), Vector3(-13.6, 0, 8), Vector3(13.6, 0, 8),
+	# (the café's box of loot stands on the back bar: a reason to go behind the counter)
+	for spot in [Vector3(-25.9, 0.94, -29.42), Vector3(28, 0, 28), Vector3(-13.6, 0, 8), Vector3(13.6, 0, 8),
 			Vector3(0, 0, -14.2), Vector3(-26, 0, -26), Vector3(26.5, 0, -27.5), Vector3(-28, 0, 28)]:
 		layout.add_loot(spot, room)
 
@@ -334,7 +357,12 @@ static func _markers(layout: LevelLayout) -> void:
 	# the System's loudspeakers: high on the long walls, one at each end of the court
 	layout.add_marker(&"loudspeaker_court_1", Vector3(-29.85, 3.2, 12.0), room, -PI * 0.5)
 	layout.add_marker(&"loudspeaker_court_2", Vector3(29.85, 3.2, -12.0), room, PI * 0.5)
-	layout.add_marker(&"note_court_1", Vector3(-21, 1.1, CAFE_Z + 0.6), room)
+	# the café: a note on the counter's free top (between the machine and the
+	# cake case), the machine, the slate and the urn (CafeCorner)
+	layout.add_marker(&"note_court_1", Vector3(-27.6, 1.1, -27.85), room)
+	layout.add_marker(&"cafe_machine", CAFE_MACHINE, room)
+	layout.add_marker(&"cafe_slate", CAFE_SLATE, room, PI)
+	layout.add_marker(&"cafe_urn", CAFE_URN, room, PI)
 	# a hidden drawer under the information desk's counter (staff side)
 	layout.add_marker(&"secret_court_1", Vector3(0, 0.3, 19.75), room)
 	Hub.look_marker(layout, &"cctv_court_1", Vector3(29.4, 12, 29.4), Vector3(-6, 0, 4), room)
@@ -441,3 +469,15 @@ static func _lights(layout: LevelLayout) -> void:
 	Hub.spot(layout, main, Vector3(0, 8.0, 5.5), GATLING + Vector3.UP, Hub.WARM, 2.6, 8.5, 20.0, reading)
 	Hub.spot(layout, Hub.MOON_GROUP, Vector3(0, 19.5, 0), Vector3.ZERO, Hub.MOON, 1.6, 21.0, 10.0, reading)
 	Hub.lamp(layout, red, Vector3(0, 5.2, -10.2), Hub.RED, 0.9, 3.5, reading, &"emergency_lamp")
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## Two more loudspeakers on the court's south and north walls (beside the
+## arches, over the floor's reach), stop 11 before the astrolabe (off the
+## line from the door, between the catalogues and the desks) and stop 12 on
+## the balcony, the T-Rex below it to the north.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_court_3", Vector3(-14.0, 3.6, 29.85), &"court", 0.0)
+	layout.add_marker(&"loudspeaker_court_4", Vector3(14.0, 3.6, -29.85), &"court", PI)
+	layout.add_marker(&"audioguide_astrolabe", Vector3(0.0, 0.0, -4.0), &"court_reading", 0.0)
+	layout.add_marker(&"audioguide_trex", Vector3(4.6, BALCONY_Y, -14.5), &"court_balcony", 2.834)   # 1.2 m in from the railing, facing the drum

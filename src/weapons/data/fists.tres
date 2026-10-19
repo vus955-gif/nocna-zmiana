@@ -14,6 +14,4 @@ knockback = 6.0
 can_finish = true
 melee_radius = 0.7
 ammo_mode = 0
-shake = 0.12
-kick = 0.0
 sound = &"punch"

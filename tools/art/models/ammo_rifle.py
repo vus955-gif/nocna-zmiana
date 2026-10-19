@@ -1,10 +1,13 @@
 """Pickup: a box of belted rifle cartridges for the Gatling. An olive-
 painted wooden ammunition box with black iron corners and rope handles,
-"NABOJE" stencilled on the front (real letters, artlib/pixelfont.py), lid
-open behind. Inside, the top fold of a khaki canvas belt with two rows of
-brass cartridges standing tips-up; the belt's end spills over the left end
-of the box and hangs down it with cartridges across it. Larger than life
-(cartridges x1.3) so it reads across a room: box 0.26 x 0.15 x 0.12 m.
+"NABOJE" stencilled on the front (real letters, artlib/pixelfont.py) and
+the slot digit "4" on both ends and on the lid, all in the gatling's lit
+olive yellow-green (_pickup_palette.py: the HUD slot's colour, the rim's),
+the stencils glowing faintly in the dark; lid open behind. Inside, the top
+fold of a khaki canvas belt with two rows of brass cartridges standing
+tips-up; the belt's end spills over the left end of the box and hangs down
+it with cartridges across it. Larger than life (cartridges x1.3) so it
+reads across a room: box 0.26 x 0.15 x 0.12 m, the biggest ammo pickup.
 
 Origin at the box centre (the game spins and bobs pickups); faces -Y.
 Part: ammo_rifle.
@@ -17,18 +20,32 @@ from artlib import materials as M
 from artlib.geo import Part
 from artlib.kit import R, T
 from artlib.model import Model
+from models import _pickup_palette as PP
 
+NAME = "ammo_rifle"
 W, D, H = 0.26, 0.15, 0.12
 CASE_R, CASE_L = 0.0078, 0.056
 STENCIL = pixelfont.trim(pixelfont.render("NABOJE", bold=True))
+DIGIT = PP.digit(NAME)
+LID_T = 0.014
+LID_M = T(0, D / 2, H / 2) @ R('X', -18) @ T(0, 0.007, D / 2)
+LID_N = np.array((LID_M.to_3x3() @ Vector((0, 1, 0))).normalized())
+LID_C = PP.face_uv(LID_M @ Vector((0, LID_T / 2, 0)), LID_N)
 
 
 def wood(ctx):
     s = M.paint(ctx, "paint_olive", 4.4, seed=561, chip=1.0, under="wood_oak", gloss=0.7)
+    z = ctx.p[:, 2]
     front = ctx.n[:, 1] < -0.7
-    txt = front & pixelfont.stamp(ctx, STENCIL, 0.0, 0.004) & (ctx.rand(563) > 0.06)
-    s.use_ramp(M.P["cloth_white"], mask=txt & (s.ramp_id == 0),
-               shade=np.full(ctx.N, 6.0) + ctx.fbm(25.0, 2, 565) * 0.8 + M._dither(ctx, 0.8, 567))
+    txt = front & pixelfont.stamp(ctx, STENCIL, 0.0, 0.004)
+    # the digit on both ends, under the rope handle and between the corner
+    # brackets, and on the lid's outside
+    ends = (np.abs(ctx.n[:, 0]) > 0.7) & (z < H / 2) & pixelfont.stamp(ctx, DIGIT, 0.0, -0.022, scale=2)
+    lid = (ctx.n @ LID_N > 0.9) & (z > H / 2 + 0.004) & pixelfont.stamp(ctx, DIGIT, LID_C[0], LID_C[1], scale=2)
+    marks = (txt | ends | lid) & (ctx.rand(563) > 0.06) & (s.ramp_id == 0)
+    s.use_ramp(M.P["pk_" + NAME], mask=marks,
+               shade=np.full(ctx.N, 5.4) + ctx.fbm(25.0, 2, 565) * 0.8 + M._dither(ctx, 0.8, 567))
+    PP.accent(s, marks, NAME)
     return s
 
 
@@ -63,7 +80,7 @@ def cartridge(p, base, direction, full=True, segments=7):
 
 
 def build():
-    p = Part("ammo_rifle")
+    p = Part(NAME)
     p.box((0, 0, 0), (W, D, H), "wood", bevel=0.005)
     p.box((0, 0, H / 2 - 0.004), (W - 0.02, D - 0.02, 0.01), "inside", bevel=0.001)
     # iron corner brackets
@@ -106,7 +123,7 @@ def build():
         x = x_side - 0.011
         cartridge(p, (x, -CASE_L * 0.55, z), (0, 1, 0), full=True, segments=7)
     # lid, hinged along the back top edge, open past vertical
-    lid = p.box((0, 0, 0), (W, 0.014, D), "wood", bevel=0.004)
-    p.move(lid, T(0, D / 2, H / 2) @ R('X', -18) @ T(0, 0.007, D / 2))
-    return Model("ammo_rifle", [p], FNS, ppm=256, ground=None, ao_dist=0.05, ao_rays=12, ao_stride=1,
+    lid = p.box((0, 0, 0), (W, LID_T, D), "wood", bevel=0.004)
+    p.move(lid, LID_M)
+    return Model(NAME, [p], FNS, ppm=256, ground=None, ao_dist=0.05, ao_rays=12, ao_stride=1,
                  preview_elevation=22.0)

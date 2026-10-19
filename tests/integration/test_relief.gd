@@ -266,3 +266,30 @@ func test_a_patrolling_warrior_has_no_slab_and_is_simply_out() -> void:
 
 func assert_null(value: Variant) -> void:
 	assert_true(value == null, "no slab")
+
+
+# --- back into the slab (ecology) ----------------------------------------------------------
+
+func test_home_again_the_warrior_sinks_back_into_its_slab() -> void:
+	var dummy := _dummy(Vector3(0, 0, 30))   # out of sight: only a noise wakes it
+	var warrior := _warrior(Vector3(1, 0, -0.6), dummy)
+	await physics_frames(5)
+	var panel := warrior.wall.panel
+	assert_not_null(panel)
+	warrior.hear(Vector3(1, 0, -6))
+	await physics_frames(100)
+	assert_eq(warrior.wall.state, ReliefMoves.Wall.OUT, "cracked out to look")
+	assert_true(warrior.brain.is_alerted())
+	var frames := 0
+	while warrior.brain.state != EnemyBrain.State.DORMANT and frames < 40 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		frames += 1
+	assert_eq(warrior.brain.state, EnemyBrain.State.DORMANT, "nothing there: it went home to sleep")
+	await physics_frames(roundi(ReliefMoves.SINK_TIME * Engine.physics_ticks_per_second) + 5)
+	assert_eq(warrior.wall.state, ReliefMoves.Wall.IN, "back in its slab")
+	assert_false(panel.is_empty(), "the carved figure whole again")
+	assert_almost_eq(warrior.global_position.z, WALL_Z - ReliefMoves.FLUSH, 0.1, "flush in the wall")
+	assert_eq(_hit(warrior, Vector3.BACK), 0.0, "stone of the wall once more")
+	warrior.hear(Vector3(1, 0, -6))
+	await physics_frames(10)
+	assert_eq(warrior.wall.state, ReliefMoves.Wall.CRACKING, "woken again, the slab cracks anew")

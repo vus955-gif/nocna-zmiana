@@ -58,6 +58,7 @@ static func build(layout: LevelLayout) -> void:
 	_parthenon(layout)
 	_service(layout)
 	_secrets(layout)
+	_voice(layout)
 
 
 # --- rooms and passages -----------------------------------------------------
@@ -298,8 +299,10 @@ static func _parthenon(layout: LevelLayout) -> void:
 		layout.add_piece(&"pedestal", Vector3(-61.5, 0, z), Vector3(4.0, 1.2, 1.6), room)
 		layout.add_piece(&"sculpture", Vector3(-61.5, 1.2, z), Vector3(3.0, 2.0, 1.0), room, PI * 0.5)
 	layout.add_piece(&"pedestal", Vector3(-27.5, 0, 43.0), Vector3(2.5, 1.2, 12.0), room)
+	# (the figures are drawn on the pedestal's top: their boxes stay within
+	# its 2.5 m, no overhang solid where nothing is drawn)
 	for z in [39.0, 43.0, 47.0]:
-		layout.add_piece(&"sculpture", Vector3(-27.5, 1.2, z), Vector3(1.0, 2.2, 3.0), room, PI * 0.5)
+		layout.add_piece(&"sculpture", Vector3(-27.5, 1.2, z), Vector3(1.0, 2.2, 2.4), room, PI * 0.5)
 	# low plinths down both sides: the Centaur circles round them
 	for x in [-54.0, -44.5, -35.0]:
 		for z in [37.5, 48.5]:
@@ -393,3 +396,11 @@ static func _secrets(layout: LevelLayout) -> void:
 ## [param at] (its foot), along x (yaw 0) or along z (yaw PI/2).
 static func _rail(layout: LevelLayout, at: Vector3, length: float, yaw: float, room: StringName) -> void:
 	layout.add_piece(&"railing", at, Vector3(length, RAIL.y, RAIL.x), room, yaw)
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## The System in the Nereid hall (on the east wall, north of the boarded
+## door from Egypt); stop 5 before the metopes on the south wall.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_greece_1", Vector3(-64.15, 4.0, 6.0), &"greece_nereid", PI * 0.5)
+	layout.add_marker(&"audioguide_metopes", Vector3(-83.5, 0.0, 36.6), &"greece_metopes", 0.0)

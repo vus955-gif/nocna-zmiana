@@ -13,6 +13,8 @@ class_name LockRules
 ## | HOOK    | the harpoon                                              |
 ## | BOLT    | E from the bolt's side (no weapon)                       |
 ## | POWER   | power_on() (no weapon)                                   |
+## A lock-breaking round (DamageInfo.lock_breaker: the rifle with the
+## secrets' peep sight) snaps a chain or a board at once, from anywhere.
 
 enum Verdict { WRONG, SUM, STRIKE, OPEN }
 
@@ -31,12 +33,14 @@ const CRACKED_FLARES := 3
 static func verdict(kind: GateLock.Kind, info: DamageInfo) -> Verdict:
 	match kind:
 		GateLock.Kind.CHAIN:
+			if info.lock_breaker:
+				return Verdict.OPEN
 			if info.weapon == &"shotgun":
 				return Verdict.SUM
 			if info.weapon == &"fists":
 				return Verdict.STRIKE
 		GateLock.Kind.BOARDS:
-			if info.explosive:
+			if info.explosive or info.lock_breaker:
 				return Verdict.OPEN
 			if info.weapon == &"shotgun":
 				return Verdict.SUM

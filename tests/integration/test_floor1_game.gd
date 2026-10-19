@@ -143,3 +143,17 @@ func test_the_wings_met_before_are_remembered() -> void:
 func assert_null_node(value: Variant, message: String = "") -> void:
 	if value != null and is_instance_valid(value):
 		fail("expected null. " + message)
+
+
+## (plan 2026-10-19-glos-g2-kwestie: the System's hourly announcements)
+func test_the_clock_strikes_each_full_hour_on_the_bus() -> void:
+	GameState.new_game()
+	_museum()
+	await physics_frames(3)
+	var struck := watch(Events.hour_struck)
+	museum.watch.clock.haven_left = 0.0   # the booth's break would hold the clock
+	museum.watch.clock.elapsed = NightClock.SECONDS_PER_HOUR - 0.05
+	await physics_frames(8)
+	assert_eq(struck.size(), 1)
+	if struck.size() > 0:
+		assert_eq(struck[0][0], 0, "midnight")

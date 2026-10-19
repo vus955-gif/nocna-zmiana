@@ -13,6 +13,12 @@ extends Node3D
 ##   PANEL_REACH m opens and counts with a knock, else a loose stone
 ##   (SecretCache) gives it away. Found once, for good (GameState.secrets,
 ##   saved; its panels open on later nights),
+## - the secrets' rewards (SecretRewards): a display at every secret marker
+##   (SecretRewardDisplay) lit by the secret's discovery; E takes the reward
+##   (claim_reward(): a pouch of Dust, a permanent bonus, a finish or a mod
+##   applied at once, saved: GameState.secret_rewards) and the display
+##   stands empty from then on; a small secret's stash (Pickups by the
+##   display) restocks every night (RunState.used "stash_<secret>_<n>"),
 ## - Lewis chess pieces: every chess_* marker not found yet (ProgressPickup;
 ##   GameState.chess_found, saved),
 ## - tonight's artifacts on their drawn loot spots (a resumed night gives
@@ -23,6 +29,8 @@ extends Node3D
 ##   MuseumMap.poster(layout) (workstream W6).
 
 signal secret_discovered(id: StringName, found: int, total: int)
+## The guard took a secret's reward (SecretRewards).
+signal reward_claimed(id: StringName)
 signal note_read(id: StringName)
 signal artifact_taken(id: StringName)
 signal pause_requested
@@ -35,6 +43,10 @@ const CHESS_PREFIX := "chess_"
 const MAP_PREFIX := "museum_map_"
 const LOUDSPEAKER_PREFIX := "loudspeaker_"
 const AUDIOGUIDE_PREFIX := "audioguide_"
+## RunState.used id of a stash pickup taken tonight: "stash_<secret>_<n>".
+const STASH_PREFIX := "stash_"
+## Where a stash lies beside its display (display space: x across, -Z front).
+const STASH_SPOTS: Array[Vector3] = [Vector3(0.75, 0.35, 0.1), Vector3(-0.75, 0.35, 0.1)]
 ## The booth's note marker -> the note it holds.
 const NOTE_ALIASES := {&"note_heniek": NoteCatalog.KEY_NOTE}
 ## Pieces of the Lewis set hidden on Floor I.
@@ -54,6 +66,12 @@ var notes: Dictionary = {}
 var secrets: Dictionary = {}
 ## Secret id -> the secret room whose entry counts it (still to be found).
 var secret_rooms: Dictionary = {}
+## Secret id -> its reward's display; secret id -> the stash pickups lying
+## tonight (small rewards in secret rooms).
+var rewards: Dictionary = {}
+var stashes: Dictionary = {}
+## Secrets discovered tonight (the dawn card).
+var found_tonight: int = 0
 ## Chess piece id -> ProgressPickup still lying.
 var chess: Dictionary = {}
 var effects: ArtifactEffects
@@ -91,6 +109,8 @@ func _ready() -> void:
 	var host_hud: Variant = museum.get(&"hud") if is_instance_valid(museum) else null
 	if host_hud is Hud:
 		hud.corner_source = (host_hud as Hud).top_left_bottom
+		hud.top_source = (host_hud as Hud).top_middle_bottom
+		(host_hud as Hud).below_source = hud.banner_bottom
 	add_child(hud)
 	reader = NoteReader.new()
 	reader.name = "NoteReader"
@@ -98,6 +118,7 @@ func _ready() -> void:
 	add_child(reader)
 	_build_notes()
 	_build_secrets()
+	_build_rewards()
 	_build_chess()
 	_build_artifacts()
 	_build_cctv()
@@ -197,16 +218,25 @@ func secrets_found() -> int:
 	return found
 
 
-## Records secret [param id]: sound, banner "Sekret odkryty (n/m)", save.
+## Records secret [param id]: sound, banner "Sekret odkryty (n/m)" with the
+## tier of the reward waiting inside, the reward's display lit, save.
 ## False when it was known.
 func discover_secret(id: StringName) -> bool:
 	if game.secrets.has(id):
 		return false
 	game.secrets.append(id)
+	found_tonight += 1
 	WorldSounds.cue(&"secret")
-	hud.banner(tr("SECRET_FOUND") % [secrets_found(), secrets_total()], _secret_place(id))
+	var hint := ""
+	var display := rewards.get(id) as SecretRewardDisplay
+	if display != null:
+		if not display.is_taken:
+			hint = tr("SECRET_TIER_HINT") % tr(SecretRewards.tier_key(display.tier))
+		display.reveal()
+	hud.banner(tr("SECRET_FOUND") % [secrets_found(), secrets_total()], _secret_place(id), hint)
 	NightRules.save_progress(game, run)
 	secret_discovered.emit(id, secrets_found(), secrets_total())
+	Events.secret_found.emit(id, SecretRewards.tier_of(id), secrets_found())
 	return true
 
 
@@ -328,6 +358,104 @@ func _on_panel_switch(switch: SecretSwitch) -> void:
 		door.open()
 		WorldSounds.cue_at(&"wall_slide", door.global_position + Vector3.UP * door.height * 0.5)
 	discover_secret(switch.tag)
+
+
+# --- the secrets' rewards ----------------------------------------------------------
+
+## How many of the floor's rewards the guard has claimed, and how many there are.
+func rewards_claimed() -> int:
+	return SecretRewards.claimed(game)
+
+
+func rewards_total() -> int:
+	return rewards.size()
+
+
+## A display at every secret marker with a reward, on its room's floor and
+## clear of the pieces, its plaque to the room's way in (RewardSpot): empty
+## when the reward was claimed before, lit when the secret is known; in an
+## open room (a loose stone) it stays out of sight until the stone is out. A
+## small reward's stash lies beside it (secret rooms only), restocked every
+## night.
+func _build_rewards() -> void:
+	var layout := _layout()
+	for reward in SecretRewards.entries():
+		if not _markers().has(reward.id):
+			continue
+		var at := RewardSpot.place(layout, reward.id, _markers()[reward.id], reward.tier)
+		var room := layout.room(layout.marker_rooms.get(reward.id, &"")) if layout != null else null
+		var hidden_room := room != null and room.secret
+		var display := SecretRewardDisplay.make(reward, at)
+		display.taken.connect(_on_reward_taken)
+		add_child(display)
+		if game.secret_rewards.has(reward.id):
+			display.set_taken()
+		if game.secrets.has(reward.id):
+			display.reveal(true)
+		elif not hidden_room:
+			display.hide_away()
+		rewards[reward.id] = display
+		if hidden_room and not reward.stash.is_empty():
+			_build_stash(reward, at)
+
+
+func _build_stash(reward: SecretRewards.Entry, at: Transform3D) -> void:
+	var lying: Array = []
+	for i in mini(reward.stash.size(), STASH_SPOTS.size()):
+		var used_id := StringName("%s%s_%d" % [STASH_PREFIX, reward.id, i])
+		if run.is_used(used_id):
+			continue
+		var item := _loot_for_guard(reward.stash[i])
+		if not Museum.LOOT_TYPES.has(item):
+			continue
+		var pickup := Pickup.new()
+		pickup.name = "Stash_%s_%d" % [reward.id, i]
+		pickup.type = Museum.LOOT_TYPES[item]
+		pickup.amount = Museum.LOOT_AMOUNTS[item]
+		pickup.respawn_time = 0.0
+		pickup.position = at * STASH_SPOTS[i]
+		pickup.taken.connect(run.mark_used.bind(used_id))
+		add_child(pickup)
+		lying.append(pickup)
+	stashes[reward.id] = lying
+
+
+## Ammo of a gun the guard does not have turns into ammo he can use, as
+## every loot does (Museum.loot_for_guard); [param item] itself without a host.
+func _loot_for_guard(item: StringName) -> StringName:
+	if is_instance_valid(museum) and museum.has_method(&"loot_for_guard"):
+		return museum.call(&"loot_for_guard", item)
+	return item
+
+
+func _on_reward_taken(id: StringName) -> void:
+	claim_reward(id)
+
+
+## The reward of secret [param id] is the guard's: a pouch adds its Dust at
+## once; a bonus, a finish or a mod is applied to the guard right away
+## (Player.apply_upgrades with SecretRewards.effective_levels: the weapon is
+## looked over when next drawn); announced, saved. False when it was
+## claimed before (or the secret has none).
+func claim_reward(id: StringName) -> bool:
+	var reward := SecretRewards.entry(id)
+	if reward == null or not game.claim_reward(id):
+		return false
+	var display := rewards.get(id) as SecretRewardDisplay
+	if display != null and not display.is_taken:
+		display.set_taken()
+	if reward.kind == SecretRewards.Kind.POUCH:
+		run.add_dust(SecretRewards.POUCH_DUST, false)
+		Events.dust_collected.emit(SecretRewards.POUCH_DUST)
+	else:
+		var player := guard()
+		if player != null:
+			player.apply_upgrades(SecretRewards.effective_levels(game))
+	NightRules.save_progress(game, run)
+	WorldSounds.cue(&"artifact")
+	hud.banner(tr("REWARD_CAPTION") % tr(SecretRewards.tier_key(reward.tier)), tr(reward.name_key()), tr(reward.desc_key()))
+	reward_claimed.emit(id)
+	return true
 
 
 # --- chess -------------------------------------------------------------------

@@ -71,6 +71,8 @@ const SOUNDS: Array[StringName] = [
 	&"hit_linen", &"break_linen",
 	# the voice: Heniek's walkie-talkie keyed and released (VoiceDirector)
 	&"radio_click_in", &"radio_click_out",
+	# the court café (plan 2026-10-10-kawiarnia-zmeczenie): the counter flap, a coffee poured
+	&"cafe_flap", &"espresso",
 ]
 ## Floor I sounds that loop (their .import sets loop_mode forward): Sfx.play
 ## would cut them after one pass, so they go on a player of their own.
@@ -103,8 +105,9 @@ func quit_cleanly(exit_code: int = 0) -> void:
 	get_tree().quit(exit_code)
 
 
-## Non-positional sound (the guard's own weapon, UI).
-func play(sound: StringName, volume_db: float = 0.0, pitch_jitter: float = 0.06) -> void:
+## Non-positional sound (the guard's own weapon, UI); [param pitch]
+## shifts it (a weapon's own voice, FeelProfile.sound_pitch).
+func play(sound: StringName, volume_db: float = 0.0, pitch_jitter: float = 0.06, pitch: float = 1.0) -> void:
 	var stream := _stream(sound)
 	if stream == null or _quitting:
 		return
@@ -112,7 +115,7 @@ func play(sound: StringName, volume_db: float = 0.0, pitch_jitter: float = 0.06)
 	player.stream = stream
 	player.bus = BUS
 	player.volume_db = volume_db
-	player.pitch_scale = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
+	player.pitch_scale = pitch * (1.0 + randf_range(-pitch_jitter, pitch_jitter))
 	_start(player, sound, stream)
 
 

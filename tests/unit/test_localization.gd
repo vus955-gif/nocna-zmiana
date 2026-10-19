@@ -89,6 +89,7 @@ func test_keys_built_at_runtime_exist() -> void:
 		keys.append(notice)
 	for language in SettingsData.LANGUAGES:
 		keys.append("LANG_" + language.to_upper())
+	keys.append_array(Coffee.all_keys())   # the café builds them at run time
 	for key in keys:
 		assert_true(rows.has(key), "missing " + key)
 

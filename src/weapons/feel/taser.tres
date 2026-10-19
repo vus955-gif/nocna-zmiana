@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="FeelProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/weapons/feel_profile.gd" id="1_feel"]
+
+[resource]
+script = ExtResource("1_feel")
+id = &"taser"
+kick_back = 0.015
+kick_rise = 0.004
+kick_pitch = 2.5
+kick_yaw = 0.5
+kick_roll = 1.0
+kick_frequency = 11.0
+kick_damping = 0.75
+camera_pitch = 0.15
+camera_yaw = 0.1
+camera_frequency = 8.0
+camera_damping = 1.0
+shake = 0.05
+shake_cap = 0.3
+flash_size = 0.07
+flash_color = Color(0.55, 0.85, 1.0, 1.0)
+flash_time = 0.05
+light_color = Color(0.5, 0.8, 1.0, 1.0)
+light_energy = 2.0
+light_range = 4.0
+light_time = 0.08
+sound_jitter = 0.08
+hit_weight = 0.15
+blast_weight = 0.0
+decal_size = 0.06

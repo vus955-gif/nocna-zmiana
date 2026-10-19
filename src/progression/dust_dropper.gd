@@ -24,6 +24,38 @@ func drop(at: Vector3, total: int, max_motes: int = DustRules.MAX_MOTES) -> Arra
 	return DustMote.burst(parent, at, DustRules.split(total, max_motes), target)
 
 
+## The motes lying uncollected, for the save: [[x, y, z, value], ...]
+## (world positions; at most SAVED_MOTES of them).
+func lying() -> Array:
+	var out: Array = []
+	var parent := motes_parent if is_instance_valid(motes_parent) else get_parent()
+	if parent == null:
+		return out
+	for node in parent.get_children():
+		var mote := node as DustMote
+		if mote == null or mote.is_queued_for_deletion() or mote.value <= 0:
+			continue
+		var at := mote.global_position if mote.is_inside_tree() else mote.position
+		out.append([at.x, at.y, at.z, mote.value])
+		if out.size() >= SAVED_MOTES:
+			break
+	return out
+
+
+## Lays the motes of [param saved] (lying() of a saved night) where they lay.
+func lay(saved: Array) -> Array[DustMote]:
+	var parent := motes_parent if is_instance_valid(motes_parent) else get_parent()
+	var motes: Array[DustMote] = []
+	for entry: Variant in saved:
+		var mote: Array = entry
+		motes.append(DustMote.hang(parent, Vector3(mote[0], mote[1], mote[2]), int(mote[3]), target))
+	return motes
+
+
+## The save keeps at most this many lying motes.
+const SAVED_MOTES := 256
+
+
 func _on_enemy_destroyed(enemy: Node, info: DamageInfo, finisher: bool) -> void:
 	var exhibit := enemy as Enemy
 	if exhibit == null or exhibit.dust_value <= 0 or not exhibit.is_inside_tree():

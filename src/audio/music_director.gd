@@ -28,10 +28,14 @@ extends RefCounted
 ## - after the T-Rex, the victory sting, then a quiet walk without tension,
 ## - dawn fades everything out (DAWN_FADE in Music) and stays silent.
 ## Floor I (the museum floor's zones, Events.room_entered):
-## - the walk has a variant per wing ([member variant]: the wing of the
-##   zone around the guard, &"" = the lobby's walk); a new zone must hold
+## - every music zone (MUSIC_ZONES: the six wings, the hub, the basement,
+##   the roof) plays its own loop in four synced stems (ZONE_LAYERS: the
+##   walk, its tension, the fight and the fight's hi stem), so a change of
+##   intensity lands on the beat; [member variant] is the music zone around
+##   the guard (&"" = the lobby's music). A new zone must hold
 ##   VARIANT_SETTLE s before the walk changes (no flicker on a threshold),
-##   at once while nothing walks yet,
+##   FIGHT_SETTLE s in a fight (a fight on a doorway keeps its music), at
+##   once while nothing of the zone plays (night start, a guardian),
 ## - a wing guardian (on_guardian_awakened) brings GUARDIAN: the guardians'
 ##   theme in its wing's colours (GUARDIAN_WINGS), its hi stem from phase 2
 ##   or in a hot fight; its fall plays the guardian sting (VICTORY for
@@ -75,14 +79,22 @@ const POWER_TENSION := 0.5
 const HUSH_LEVEL := 0.05
 const HUSH_TIME := 3.0
 ## Every logical music layer (a file in res://assets/music/, or one per
-## wing: Music.track()).
+## music zone / wing: Music.track()).
 const LAYERS: Array[StringName] = [&"menu", &"explore", &"explore_tension", &"combat", &"combat_hi", &"boss", &"boss_hi",
 	&"guardian", &"guardian_hi"]
-## Layers played in the walk's wing variant, and in the guardian's wing.
-const WALK_LAYERS: Array[StringName] = [&"explore", &"explore_tension"]
+## Layers played in the music zone's colours (one synced loop per zone),
+## and in the guardian's wing.
+const ZONE_LAYERS: Array[StringName] = [&"explore", &"explore_tension", &"combat", &"combat_hi"]
 const GUARDIAN_LAYERS: Array[StringName] = [&"guardian", &"guardian_hi"]
-## Floor I's wings (Floor1Plan zone ids) with music of their own.
+## Floor I's wings (Floor1Plan zone ids): a guardian and a discovery sting
+## each.
 const WINGS: Array[StringName] = [&"egypt", &"assyria", &"greece", &"enlightenment", &"asia", &"americas"]
+## Floor I's music zones: the wings, the hub (HUB_ZONES), the basement and
+## the roof.
+const MUSIC_ZONES: Array[StringName] = [&"court", &"egypt", &"assyria", &"greece", &"enlightenment", &"asia", &"americas",
+	&"basement", &"roof"]
+## Floor1Plan zones that play the hub's music (&"court").
+const HUB_ZONES: Array[StringName] = [&"court", &"entrance", &"booth", &"north_hall"]
 ## A wing guardian's id (or its prefix) -> its wing.
 const GUARDIAN_WINGS := {&"colossus": &"egypt", &"lamassu": &"assyria", &"centaur": &"greece", &"orrery": &"enlightenment",
 	&"samurai": &"asia", &"serpent": &"americas",
@@ -91,6 +103,8 @@ const GUARDIAN_WINGS := {&"colossus": &"egypt", &"lamassu": &"assyria", &"centau
 ## Seconds a new zone must hold before the walk takes its variant (and
 ## how long a fresh walk may still switch at once).
 const VARIANT_SETTLE := 1.0
+## Seconds a new zone must hold in a fight before the fight's music moves.
+const FIGHT_SETTLE := 4.0
 ## Seconds the guardian's fall sting owns the music.
 const GUARDIAN_VICTORY_TIME := 5.0
 ## The stings of a fall: the T-Rex's and a guardian's.
@@ -113,7 +127,8 @@ var held: int = -1
 ## The night in the lobby (kept across set_mode(); Music resets it).
 var night := NightMood.new()
 ## Floor I zone of the listener (Floor1Plan id, &"" = none announced) and
-## the wing the walk plays (&"" = the lobby's walk). Kept across set_mode().
+## the music zone (MUSIC_ZONES) whose loop plays - the walk and the fights
+## alike (&"" = the lobby's music). Kept across set_mode().
 var zone: StringName = &""
 var variant: StringName = &""
 var guardian_active: bool = false
@@ -237,6 +252,21 @@ static func wing_of_zone(zone_id: StringName) -> StringName:
 	return head if WINGS.has(head) else &""
 
 
+## The music zone (MUSIC_ZONES) a Floor I zone plays: its wing, the hub
+## for the court and its halls, the basement, the roof (sub-zones such as
+## &"basement_boiler" too); &"" for anything else (the lobby's music).
+static func music_zone_of(zone_id: StringName) -> StringName:
+	var wing := wing_of_zone(zone_id)
+	if wing != &"":
+		return wing
+	var head := StringName(String(zone_id).get_slice("_", 0))
+	if HUB_ZONES.has(zone_id) or HUB_ZONES.has(head):
+		return &"court"
+	if MUSIC_ZONES.has(head):
+		return head
+	return &""
+
+
 ## The wing of a guardian: GUARDIAN_WINGS by id or by prefix
 ## (&"colossus_ramesses"), an id naming a wing (&"egypt"), else the wing
 ## of [param fallback_zone], else the first wing.
@@ -253,21 +283,26 @@ static func guardian_wing_of(id: StringName, fallback_zone: StringName = &"") ->
 	return here if here != &"" else WINGS[0]
 
 
-## The listener walked into [param zone_id]: the walk follows its wing,
-## after VARIANT_SETTLE s while a walk plays (at once otherwise).
+## The listener walked into [param zone_id]: the music follows its music
+## zone, after VARIANT_SETTLE s while a walk plays, FIGHT_SETTLE s in a
+## fight (at once otherwise).
 func on_zone(zone_id: StringName) -> void:
 	zone = zone_id
-	var wing := wing_of_zone(zone_id)
-	_pending_variant = wing
-	if wing == variant:
+	var music := music_zone_of(zone_id)
+	if music == variant:
+		_pending_variant = music
 		_settle_left = 0.0
 		return
 	var walking := state == State.EXPLORE or state == State.TENSION
-	if not walking or _walked < VARIANT_SETTLE:
-		variant = wing
+	if state == State.COMBAT:
+		if music != _pending_variant or _settle_left <= 0.0:
+			_settle_left = FIGHT_SETTLE
+	elif not walking or _walked < VARIANT_SETTLE:
+		variant = music
 		_settle_left = 0.0
 	else:
 		_settle_left = VARIANT_SETTLE
+	_pending_variant = music
 	_refresh()
 
 

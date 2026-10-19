@@ -98,7 +98,8 @@ func test_dust_and_probes_in_the_dressed_rooms() -> void:
 			assert_true(probes.has(room), "%s has its reflection probe" % room)
 	for room: StringName in [&"court", &"court_reading", &"egypt_gallery", &"egypt_colossus"]:
 		assert_true(motes.has(room), "motes float in %s" % room)
-	assert_false(fog.has(&"assyria_gate"), "a zone not dressed yet gets no recipe dust")
+	# (stage P5: the last zones have their recipe too)
+	assert_true(fog.has(&"americas_moai") and fog.has(&"roof_catwalks"), "the Americas and the roof have their dust")
 
 
 func test_egypt_spotlights_aim_with_their_beams() -> void:
@@ -163,3 +164,52 @@ func test_the_light_model_sees_the_moon_under_the_glass() -> void:
 	var well := court.skylights[0]
 	var under := Vector3(well.get_center().x, 1.3, well.get_center().y)
 	assert_true(model.at(under) >= LayoutIllumination.MOON_LEVEL - 0.001, "moonlight under the glass roof")
+
+## The embers and the smoke over the fires (the Assyrian tripods, the
+## Americas' bowls, the fallen bowl in the pit).
+func _fires() -> Array[GPUParticles3D]:
+	var out: Array[GPUParticles3D] = []
+	for node in level.lights.get_children():
+		if node is GPUParticles3D and (node.get_meta(&"embers", false) or node.get_meta(&"smoke", false)):
+			out.append(node)
+	return out
+
+
+func test_the_fires_stop_smoking_when_their_flames_go_out() -> void:
+	var fires := _fires()
+	assert_gt(fires.size(), 20, "embers over the tripods, embers and smoke over the bowls")
+	var rooms := {}
+	for fire in fires:
+		assert_true(fire.emitting, "%s in %s burns at night" % [fire.name, fire.get_meta(&"room")])
+		rooms[fire.get_meta(&"room")] = true
+	NightModifiers.apply(level, &"blackout", RunState)
+	for fire in fires:
+		assert_false(fire.emitting, "%s in %s stops with its flame" % [fire.name, fire.get_meta(&"room")])
+	# nothing wakes them while the power is out: neither the room-graph culling
+	# bringing a room back nor a change of the graphics preset
+	for room: StringName in rooms:
+		level.culler.set_room(room, false)
+		level.culler.set_room(room, true)
+	GraphicsQuality.apply_all(get_tree(), GraphicsQuality.Quality.HIGH)
+	for fire in fires:
+		assert_false(fire.emitting, "%s in %s stays out" % [fire.name, fire.get_meta(&"room")])
+	# the power back: the fires burn again (the sparks of a low preset stay off)
+	NightModifiers.set_lights(level, LightSpec.MAIN, true)
+	for fire in fires:
+		assert_true(fire.emitting, "%s in %s lights again" % [fire.name, fire.get_meta(&"room")])
+	GraphicsQuality.apply_all(get_tree(), GraphicsQuality.Quality.LOW)
+	for fire in fires:
+		assert_false(fire.emitting, "%s is off on the low preset" % fire.name)
+
+
+func test_the_fire_emitters_share_their_materials() -> void:
+	var process := {}
+	var quads := {}
+	var meshes := 0
+	for fire in _fires():
+		process[fire.process_material] = true
+		quads[fire.draw_pass_1] = true
+		meshes += 1
+	assert_gt(meshes, 20, "the fires")
+	assert_eq(process.size(), 2, "one process material for the embers and one for the smoke")
+	assert_eq(quads.size(), 2, "one quad for each")

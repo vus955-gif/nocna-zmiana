@@ -21,6 +21,17 @@ func test_shows_the_stats() -> void:
 	assert_true(screen.epilogue == null, "the demo's end tells no tale of the floor below")
 
 
+func test_the_end_of_floor_one_counts_the_secrets_and_their_rewards() -> void:
+	GameState.set_flag(ProgressRules.COMPLETE_FLAG)
+	GameState.secrets = [&"secret_egypt_2", &"secret_egypt_3", &"secret_court_1"] as Array[StringName]
+	GameState.claim_reward(&"secret_egypt_2")
+	GameState.claim_reward(&"secret_egypt_3")
+	var screen := (load(SceneFlow.DEMO_END) as PackedScene).instantiate() as DemoEnd
+	add_child(screen)
+	assert_eq(screen.values["secrets"].text, "3 / %d" % SecretRewards.total())
+	assert_eq(screen.values["rewards"].text, "2 / %d" % SecretRewards.total())
+
+
 func test_the_end_of_floor_one_tells_what_lies_below() -> void:
 	GameState.set_flag(ProgressRules.COMPLETE_FLAG)
 	var screen := (load(SceneFlow.DEMO_END) as PackedScene).instantiate() as DemoEnd

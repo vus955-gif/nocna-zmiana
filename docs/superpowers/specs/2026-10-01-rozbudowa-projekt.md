@@ -27,7 +27,7 @@
 ## 2. Nowi przeciwnicy
 
 ### 2.1 Szkielet raptora — `raptor`
-Mały (1,1 m wys.), szybki (7,5 m/s), kruchy (25 HP), **polują stadami po 3–4**: flankują (dzielą się na lewo/prawo względem strażnika), doskok z 4 m (zapowiedź 0,3 s: przykucnięcie + syk), 8 obr. Kość: rozsypuje się na kostki. Pył 3. Pojawiają się w holu (ekspozycja „Velociraptor — stado”) i na antresoli. Ryk T-Reksa w fazie 2 może budzić raptory zamiast figur (50/50).
+Mały (1,1 m wys.), szybki (7,5 m/s), kruchy (25 HP), **polują stadami po 3–4**: flankują (dzielą się na lewo/prawo względem strażnika), doskok z 4 m (zapowiedź 0,6 s: przykucnięcie + syk), 8 obr. Kość: rozsypuje się na kostki. Pył 3. Pojawiają się w holu (ekspozycja „Velociraptor — stado”) i na antresoli. Ryk T-Reksa w fazie 2 może budzić raptory zamiast figur (50/50).
 
 ### 2.2 Portret — `portrait`
 Obraz na ścianie galerii, **nieruchomy i nietykalny, dopóki się nie „obudzi”**: gdy strażnik przejdzie obok, oczy zaczynają go śledzić (sygnał dla uważnych), po 1,5 s rama wysuwa się ze ściany na 0,5 m. Atak: **pluje farbą** (pocisk łukiem, 10 obr., plama farby na podłodze 3 s spowalnia o 40%). 40 HP, słaby punkt: oczy ×2. Nie porusza się. Paralizator: 3 s ogłuszenia. Materiał: płótno + złocona rama (drzazgi, strzępy płótna). Pył 4. 2–4 portrety na noc w galerii i na antresoli, losowane spośród ~10 obrazów (reszta to zwykłe obrazy — napięcie!).

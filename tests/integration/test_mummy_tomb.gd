@@ -154,7 +154,57 @@ func test_a_mummy_slot_now_spawns_a_mummy() -> void:
 	assert_eq(NightSpawner.preferred(kinds, &"wax"), &"mummy")
 	var swarm: Array[StringName] = [&"wolf", &"scarabs"]
 	assert_eq(NightSpawner.preferred(swarm, &"wolf"), &"scarabs", "the swarm replaces its stand-in")
-	var future: Array[StringName] = [&"wolf", &"jaguar"]
-	assert_eq(NightSpawner.preferred(future, &"jaguar"), &"wolf", "a kind still to come keeps its stand-in")
+	var future: Array[StringName] = [&"knight", &"kind_yet_to_come"]
+	assert_eq(NightSpawner.preferred(future, &"kind_yet_to_come"), &"knight", "a kind still to come keeps its stand-in")
 	var plain: Array[StringName] = [&"wax"]
 	assert_eq(NightSpawner.preferred(plain, &"wax"), &"wax")
+
+
+# --- rest and mend (ecology) ------------------------------------------------------------
+
+## Review 19.10 (measured): 4 HP/s made a half-beaten mummy whole again in a
+## quarter of a minute of sleep - 2.5 a second takes the better part of a
+## minute for the whole 110, a rest to be reckoned with, not a reset.
+func test_the_tomb_mends_slowly() -> void:
+	assert_eq(Mummy.REGAIN_PER_SECOND, 2.5)
+	var probe := Mummy.new()
+	assert_gt(probe.max_health / Mummy.REGAIN_PER_SECOND, 40.0, "a whole mummy takes 40+ s of sleep from nothing")
+	probe.free()
+
+
+func test_a_mummy_shuffles_back_into_its_tomb_to_rest_and_mend() -> void:
+	var dummy := _dummy(Vector3(0, 0, -6))
+	_entombed(Vector3.ZERO, 0.0, dummy)
+	await physics_frames(3)
+	var tomb := mummy.tomb
+	assert_not_null(tomb)
+	mummy.brain.wake()
+	for i in 200:
+		await get_tree().physics_frame
+		if not mummy.rising() and i > 10:
+			break
+	assert_true(mummy.brain.is_hunting(), "out and hunting")
+	var info := DamageInfo.make(50.0, DamageInfo.Kind.BLUNT, dummy)
+	info.position = mummy.global_position + Vector3.UP
+	mummy.take_damage(info)
+	assert_almost_eq(mummy.health.current, 60.0, 0.01)
+	dummy.position = Vector3(0, 0, 60)   # gone: a short memory, a search, the way home
+	var frames := 0
+	while mummy.brain.state != EnemyBrain.State.DORMANT and frames < 60 * Engine.physics_ticks_per_second:
+		await get_tree().physics_frame
+		frames += 1
+	assert_eq(mummy.brain.state, EnemyBrain.State.DORMANT, "home and asleep")
+	assert_true(mummy.in_tomb(), "lying in its tomb again")
+	assert_eq(mummy.rise_phases(), Vector3.ZERO)
+	assert_lt(mummy.global_position.distance_to(tomb.rest_position()), 0.1, "exactly in it")
+	assert_true(tomb.is_open(), "the lid stays off")
+	var before := mummy.health.current
+	await physics_frames(10 * Engine.physics_ticks_per_second)
+	assert_gt(mummy.health.current, before + 10.0 * Mummy.REGAIN_PER_SECOND - 1.0, "it mends %.0f a second while it rests" % Mummy.REGAIN_PER_SECOND)
+	assert_lt(mummy.health.current, mummy.health.max_health + 0.01)
+	dummy.position = Vector3(0, 0, -4)   # back, in front of the open tomb
+	for i in 120:
+		await get_tree().physics_frame
+		if mummy.rising():
+			break
+	assert_true(mummy.rising(), "with the lid off it sees him coming and climbs out again")

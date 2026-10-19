@@ -18,12 +18,17 @@ extends RefCounted
 ## - STUNNED interrupts anything and ends in a hunt; DESTROYED is final.
 ## - relentless (summoned by the boss): always knows where the guard is,
 ##   never searches, never goes home.
+## - Calm routines (backlog #8): a PATROL with posts (patrol_dwell /
+##   patrol_yaw: it holds each point for its dwell, facing the post's way)
+##   or, without a route, a wander round its post (roam_radius, each place
+##   passed through roam_filter). FLEE (a blast): it runs FLEE_DISTANCE from
+##   the point, deaf to everything, then goes home.
 
 signal state_changed(from: State, to: State)
 ## The damage moment of an attack (end of the windup).
 signal strike
 
-enum State { DORMANT, SUSPICIOUS, INVESTIGATE, HUNT, SEARCH, RETURN, PATROL, ATTACK, STUNNED, DESTROYED }
+enum State { DORMANT, SUSPICIOUS, INVESTIGATE, HUNT, SEARCH, RETURN, PATROL, ATTACK, STUNNED, DESTROYED, FLEE }
 
 ## Seconds the guard's position stays known after losing sight of him...
 const MEMORY := 1.5
@@ -52,8 +57,15 @@ const PATROL_PAUSE := 1.5
 const SETTLE_TIME := 0.8
 ## A hunter over the cap waits this far from the guard (m).
 const WAIT_EDGE := 10.0
+## Fleeing: how far from the point it runs (m) and how long at most (s).
+const FLEE_DISTANCE := 8.0
+const FLEE_TRAVEL := 4.0
+## Wandering: a new place no nearer than this share of the roam radius,
+## held for a pause in this range (s).
+const ROAM_NEAR := 0.3
+const ROAM_PAUSE := Vector2(2.0, 5.0)
 ## Walking pace per state, as a share of the exhibit's speed.
-const PACE := {State.INVESTIGATE: 0.7, State.SEARCH: 0.55, State.RETURN: 0.6, State.PATROL: 0.45}
+const PACE := {State.INVESTIGATE: 0.7, State.SEARCH: 0.55, State.RETURN: 0.6, State.PATROL: 0.45, State.FLEE: 1.0}
 
 var state: State = State.DORMANT
 ## Seconds of suspicion before it acts (design: 0.6-1.0 s).
@@ -83,6 +95,15 @@ var relentless := false
 var home := Vector3.ZERO
 ## Patrol route (a loop); fewer than two points = it keeps its post.
 var patrol := PackedVector3Array()
+## How long it holds each point of its route (s; missing = PATROL_PAUSE)...
+var patrol_dwell := PackedFloat32Array()
+## ...and which way it faces there (world yaw; missing or NAN = none).
+var patrol_yaw := PackedFloat32Array()
+## Without a route: it wanders this far round its post (m; 0 = it stays).
+var roam_radius: float = 0.0
+## (point) -> the point to walk to (moved onto the floor), or null to
+## reject it; invalid = every point is fine.
+var roam_filter: Callable = Callable()
 ## Where it believes the guard is (or what it heard).
 var last_known := Vector3.ZERO
 ## Where it last saw the guard.
@@ -114,6 +135,10 @@ var _stall_from := Vector3.ZERO
 var _stall_time: float = 0.0
 var _patrol_index: int = 0
 var _pause: float = 0.0
+## The route point it holds now (-1 while walking).
+var _at_point: int = -1
+## Wandering: a place is chosen.
+var _roaming := false
 var _settling := false
 
 
@@ -171,6 +196,9 @@ func hear(point: Vector3, follow: bool = true) -> void:
 			last_known = point
 			_spotted = false
 			_follow = follow
+			_pause = 0.0
+			_at_point = -1
+			_roaming = false
 			_enter(State.SUSPICIOUS)
 		State.SUSPICIOUS:
 			if not _spotted:
@@ -195,6 +223,33 @@ func interrupt() -> void:
 		_enter_hunt()
 
 
+## Shortens a struck attack's recovery to at most [param remaining]
+## seconds (a charge that ended early: the run is over, only the skid and
+## the turn-round are left). Other states are left alone.
+func cut_recovery(remaining: float) -> void:
+	if state == State.ATTACK and _struck:
+		_timer = minf(_timer, maxf(remaining, 0.0))
+
+
+## A fright (a blast at [param from]): it runs FLEE_DISTANCE away from the
+## point and then goes home. Not while attacking, stunned or destroyed;
+## a hunter keeps hunting, and a relentless one (summoned into a fight:
+## no home to go to) never runs.
+func flee(from: Vector3) -> void:
+	if relentless:
+		return
+	match state:
+		State.ATTACK, State.STUNNED, State.DESTROYED, State.HUNT, State.FLEE:
+			return
+	var away := Vector3(position.x - from.x, 0.0, position.z - from.z)
+	away = away.normalized() if away.length() > 0.01 else Vector3.BACK
+	_waiting = false
+	_haven = false
+	_settling = false
+	_begin_walk(position + away * FLEE_DISTANCE)
+	_enter(State.FLEE)
+
+
 func stun(duration: float) -> void:
 	if state == State.DESTROYED or duration <= 0.0:
 		return
@@ -210,12 +265,27 @@ func destroy() -> void:
 		_enter(State.DESTROYED)
 
 
+## A (new) route to patrol: from its first point, now if it patrols already.
+func set_route(route: PackedVector3Array) -> void:
+	patrol = route
+	patrol_dwell.clear()
+	patrol_yaw.clear()
+	_patrol_index = 0
+	_pause = 0.0
+	_at_point = -1
+	_roaming = false
+	if state == State.PATROL and route.size() >= 2:
+		_begin_walk(route[0])
+
+
 ## Awake on its post: it rests by patrolling (its route, or standing guard).
 func start_patrol() -> void:
 	rest_state = State.PATROL
 	if state == State.DORMANT:
 		_patrol_index = 0
 		_pause = 0.0
+		_at_point = -1
+		_roaming = false
 		_begin_walk(patrol[0] if not patrol.is_empty() else home)
 		_enter(State.PATROL)
 
@@ -244,18 +314,23 @@ func is_hunting() -> bool:
 ## calm patrol or the walk home).
 func is_alerted() -> bool:
 	match state:
-		State.SUSPICIOUS, State.INVESTIGATE, State.HUNT, State.SEARCH, State.ATTACK, State.STUNNED:
+		State.SUSPICIOUS, State.INVESTIGATE, State.HUNT, State.SEARCH, State.ATTACK, State.STUNNED, State.FLEE:
 			return true
 	return false
 
 
 ## Up and about on its feet: hunting, attacking, investigating, searching,
-## going home or patrolling (the crowd keeps these apart).
+## going home, patrolling or fleeing (the crowd keeps these apart).
 func is_active() -> bool:
 	match state:
-		State.HUNT, State.ATTACK, State.INVESTIGATE, State.SEARCH, State.RETURN, State.PATROL:
+		State.HUNT, State.ATTACK, State.INVESTIGATE, State.SEARCH, State.RETURN, State.PATROL, State.FLEE:
 			return true
 	return false
+
+
+## Calm and awake on its post or its round (its routine runs).
+func is_calm() -> bool:
+	return state == State.PATROL
 
 
 ## True while it may use the guard's real position: hunting within its
@@ -274,20 +349,35 @@ func spotted() -> bool:
 	return _spotted
 
 
+## Over the hunter cap: it has seen the guard and waits at the edge.
+func waiting() -> bool:
+	return _waiting
+
+
 ## Walking toward [member goal] (else standing: looking, pausing, settling).
 func walking() -> bool:
 	match state:
 		State.INVESTIGATE:
 			return not _waiting or _flat(position, goal) > ARRIVE
-		State.SEARCH:
+		State.SEARCH, State.FLEE:
 			return true
 		State.RETURN:
 			return not _settling
 		State.PATROL:
 			if patrol.size() < 2:
+				if roam_radius > 0.0:
+					return _roaming and _pause <= 0.0
 				return _flat(position, home) > ARRIVE
 			return _pause <= 0.0
 	return false
+
+
+## Holding a post of its route: the world yaw to face there (NAN while
+## walking, or when the post has no facing).
+func post_yaw() -> float:
+	if state != State.PATROL or _pause <= 0.0 or _at_point < 0 or _at_point >= patrol_yaw.size():
+		return NAN
+	return patrol_yaw[_at_point]
 
 
 ## Searching: arrived and looking around (turning to [member goal]).
@@ -334,6 +424,9 @@ func update(delta: float, sees_target: bool, distance: float) -> void:
 			_searching(delta, sees_target)
 		State.RETURN:
 			_returning(delta, sees_target)
+		State.FLEE:
+			if _walk(delta, FLEE_TRAVEL):
+				_go_home()
 		State.ATTACK:
 			_timer -= delta
 			if not _struck and _timer <= 0.0:
@@ -455,17 +548,63 @@ func _returning(delta: float, sees_target: bool) -> void:
 
 func _patrol(delta: float) -> void:
 	if patrol.size() < 2:
-		goal = home
+		if roam_radius > 0.0:
+			_roam(delta)
+		else:
+			goal = home
 		return
 	if _pause > 0.0:
 		_pause -= delta
 		if _pause <= 0.0:
+			_at_point = -1
 			_begin_walk(patrol[_patrol_index])
 		return
 	goal = patrol[_patrol_index]
 	if _walk(delta, PATROL_TRAVEL):
+		_at_point = _patrol_index
 		_patrol_index = (_patrol_index + 1) % patrol.size()
-		_pause = PATROL_PAUSE
+		_pause = _dwell_of(_at_point)
+
+
+## How long it holds route point [param index].
+func _dwell_of(index: int) -> float:
+	if index >= 0 and index < patrol_dwell.size():
+		return maxf(patrol_dwell[index], 0.05)
+	return PATROL_PAUSE
+
+
+## Without a route: walks to a place round its post, pauses, picks another.
+func _roam(delta: float) -> void:
+	if _pause > 0.0:
+		_pause -= delta
+		if _pause <= 0.0:
+			_roaming = false
+		return
+	if not _roaming:
+		var place := _roam_place()
+		if place == Vector3.INF:
+			_pause = ROAM_PAUSE.x   # nowhere to go just now: wait and try again
+			return
+		_roaming = true
+		_begin_walk(place)
+		return
+	if _walk(delta, PATROL_TRAVEL):
+		_pause = rng.randf_range(ROAM_PAUSE.x, ROAM_PAUSE.y)
+
+
+## A place within roam_radius of home (not too near it) that the filter
+## accepts; Vector3.INF when none was found in a few tries.
+func _roam_place() -> Vector3:
+	for attempt in 6:
+		var angle := rng.randf() * TAU
+		var reach := rng.randf_range(roam_radius * ROAM_NEAR, roam_radius)
+		var place := home + Vector3(cos(angle), 0.0, sin(angle)) * reach
+		if not roam_filter.is_valid():
+			return place
+		var accepted: Variant = roam_filter.call(place)
+		if accepted is Vector3:
+			return accepted
+	return Vector3.INF
 
 
 # --- transitions ---------------------------------------------------------------
@@ -543,6 +682,8 @@ func _rest() -> void:
 	if rest_state == State.PATROL:
 		_patrol_index = _nearest_patrol_point()
 		_pause = 0.0
+		_at_point = -1
+		_roaming = false
 		_begin_walk(patrol[_patrol_index] if not patrol.is_empty() else home)
 		_enter(State.PATROL)
 	else:

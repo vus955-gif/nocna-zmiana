@@ -43,6 +43,7 @@ const RUN_SIZES := {
 	# Floor I, Americas and Oceania wing
 	"americas_dado_": [4.0, 2.0, 1.0, 0.5], "americas_frieze_": [4.0, 2.0, 1.0, 0.5],
 	"americas_cornice_": [4.0, 2.0, 1.0, 0.5], "pacific_dado_": [4.0, 2.0, 1.0, 0.5],
+	"temple_tier_": [4.0, 2.0, 1.0],
 	# Floor I, Greek wing (docs/art/kit-pietro1-grecja.md)
 	"gr_base_": [4.0, 2.0, 1.0, 0.5], "gr_frieze_": [4.0, 2.0, 1.0, 0.5], "gr_cornice_": [4.0, 2.0, 1.0, 0.5],
 	"gr_cornice_doric_": [4.0, 2.0, 1.0], "gr_bassae_": [2.0, 1.0], "gr_floor_border_": [4.0, 2.0, 1.0, 0.5],
@@ -391,6 +392,8 @@ const ROOMS := {
 		"bands": [{"prefix": "americas_dado_", "at": "floor"}, {"prefix": "americas_frieze_", "at": 7.0},
 			{"prefix": "americas_cornice_", "at": "ceiling"}],
 		"frame_4": "americas_portal_4m",
+		# (stage P5: the terraces' flights are the wing's own - Floor1ArtAmericas.temple_stairs)
+		"stairs_kit": "temple",
 	},
 	&"americas_north": {
 		"wall": "am_red_wall", "floor": "basalt_americas", "ceiling": "am_ceiling", "reveal": "am_stone_blocks",
@@ -415,12 +418,26 @@ const ROOMS := {
 		"wall": "boards_pacific", "floor": "boards_pacific", "ceiling": "am_tapa", "reveal": "boards_pacific",
 		"threshold": "boards_pacific",
 		"bands": [{"prefix": "pacific_dado_", "at": "floor"}],
+		# (stage P5: painted rafters across the gallery every 2 m, no corbels)
+		"beams": "pacific_beam_4m", "beam_spacing": 2.0,
 	},
 	&"americas_pit": {"same_as": &"americas_pacific"},
 	&"americas_moai_hideout": {"wall": "am_stone_blocks", "wall_tint": Color(0.5, 0.48, 0.46), "floor": "basalt_americas",
 		"ceiling": "am_stone_blocks", "reveal": "am_stone_blocks", "threshold": "am_stone_blocks", "bands": []},
 	&"americas_workshop": {"wall": "boards_pacific", "floor": "boards", "ceiling": "am_ceiling",
 		"reveal": "boards_pacific", "threshold": "boards", "bands": []},
+	# Floor I, the roof (stage P5): the catwalks' lead flats and the court's
+	# Portland stone, the plant deck's ballast gravel, the roofers' boarded huts
+	# (the lead and the soot-darkened stone outside toned down: under the full
+	# moon the pale fields read as daylight snow)
+	&"roof_walks": {"wall": "portland_ashlar", "wall_tint": Color(0.62, 0.64, 0.7), "floor": "stone_slate",
+		"floor_tint": Color(0.5, 0.52, 0.56), "ceiling": "plaster", "reveal": "portland_ashlar",
+		"threshold": "stone_slate", "bands": []},
+	&"roof_deck": {"wall": "portland_ashlar", "wall_tint": Color(0.62, 0.64, 0.7), "floor": "gravel_plain",
+		"floor_tint": Color(0.55, 0.55, 0.58), "ceiling": "plaster", "reveal": "portland_ashlar",
+		"threshold": "stone_slate", "bands": []},
+	&"roof_hut": {"wall": "boards_pacific", "floor": "boards", "ceiling": "boards_pacific", "reveal": "boards_pacific",
+		"threshold": "boards", "bands": []},
 	# Floor I, Greek wing (docs/art/kit-pietro1-grecja.md): white marble
 	# ashlar, the Parthenon frieze at eye level and above (varied slabs), an
 	# Ionic crown under a plaster ceiling with blue-and-gold coffers, a cream
@@ -488,8 +505,11 @@ const ROOMS := {
 		"wall": "asy_alabaster", "wall_upper": "asy_plaster", "upper_from": 3.0, "floor": "flagstone_asy",
 		"ceiling": "asy_cedar", "reveal": "asy_alabaster", "threshold": "flagstone_asy",
 		"beams": "asy_beam_4m", "corbel": "asy_corbel",
-		"bands": [{"prefix": "asy_relief_", "at": "floor", "set": "asy_relief_lions_"},
-			{"prefix": "asy_frieze_", "at": 3.0}],
+		# (the pit's floor is 3 m under the gallery ring: the lion slabs run on
+		# under the ring's slabs, the frieze sits over the gallery's reliefs at
+		# 3.9 m of the world, not at the gallery's feet)
+		"bands": [{"prefix": "asy_relief_", "at": "floor", "set": "asy_relief_lions_", "soffit": true},
+			{"prefix": "asy_frieze_", "at": 6.9}],
 		"frame_4": "asy_portal_4m", "frame_2_6": "asy_doorframe_2x2_6",
 	},
 	&"assyria_balawat": {
@@ -557,10 +577,14 @@ const ROOMS := {
 		"bands": [{"prefix": "asia_dado_", "at": "floor"}, {"prefix": "asia_eaves_", "at": "ceiling"}],
 		"frame_4": "asia_moon_gate_4m", "frame_2_6": "asia_doorframe_2x2_6",
 	},
+	# (over the coping the museum's own court front, as the hall's upper
+	# storey: the string course, the cornice under the sky; Floor1ArtAsia
+	# adds the pilasters, windows and the tsuiji's posts)
 	&"asia_garden": {
 		"wall": "garden_wall", "wall_upper": "portland_ashlar", "upper_from": 3.0, "floor": "gravel_raked",
 		"ceiling": "plaster", "reveal": "garden_wall", "threshold": "stone_slate",
-		"bands": [{"prefix": "asia_wallcap_", "at": 3.0}],
+		"bands": [{"prefix": "asia_wallcap_", "at": 3.0}, {"prefix": "hall_string_", "at": 4.5, "top": true},
+			{"prefix": "hall_cornice_", "at": "ceiling"}],
 		"frame_4": "asia_moon_gate_4m",
 	},
 	&"asia_teahouse": {
@@ -636,6 +660,8 @@ static func field(room: StringName, role: StringName) -> Material:
 	var tint: Color = Color.WHITE
 	if key == "ceiling" and s.has("ceiling_tint"):
 		tint = s["ceiling_tint"]
+	elif key == "floor" and s.has("floor_tint"):
+		tint = s["floor_tint"]
 	elif key == "well":
 		tint = s.get("well_tint", Color.WHITE)
 	elif key == "wall" and s.has("upper_from") and s.has("dado_tint"):
@@ -1011,7 +1037,8 @@ static func dress_ceiling(room: StringName, size: Vector2, walls_x: bool = true)
 					xf = xf * Transform3D(Basis.IDENTITY, Vector3(-1.0, 0.0, 1.0))
 				_add(root, id, xf)
 	if s.has("beams"):
-		var spacing := 4.0
+		# (every 4 m unless the style says otherwise; corbels only where it has them)
+		var spacing := float(s.get("beam_spacing", 4.0))
 		var n := maxi(1, int(floor(size.y / spacing)))
 		for j in n:
 			var z := -size.y * 0.5 + (j + 0.5) * size.y / n
@@ -1019,7 +1046,7 @@ static func dress_ceiling(room: StringName, size: Vector2, walls_x: bool = true)
 			for m: Array in beams:
 				var at := Vector3(-size.x * 0.5 + float(m[1]) + 2.0 * float(m[2]), 0.0, z)
 				_add(root, String(s["beams"]), Transform3D(Basis.from_scale(Vector3(m[2], 1.0, 1.0)), at))
-			if walls_x:
+			if walls_x and s.has("corbel"):
 				for sx2 in [-1.0, 1.0]:
 					var yaw := PI * 0.5 if sx2 < 0.0 else -PI * 0.5
 					_add(root, String(s["corbel"]), Transform3D(Basis(Vector3.UP, yaw), Vector3(sx2 * size.x * 0.5, -0.4, z)))
@@ -1426,6 +1453,11 @@ static func grate_leaf(size: Vector3, opening_id: StringName = &"", side: float 
 static func leaf(kit: StringName, size: Vector3, style_id: int, side: float, face_room: StringName) -> Node3D:
 	if kit != &"door_leaf":
 		return piece(kit, size, face_room)
+	if Floor1Art.ROOM_STYLES.has(face_room):
+		# a Floor I wing's own leaf (the tea house's shoji)
+		var own: Variant = Floor1Art.door_leaf(face_room, size, style_id, side)
+		if own is Node3D:
+			return own
 	var root := _holder("Visual")
 	match style_id:
 		OpeningSpec.DoorStyle.DOUBLE_SWING:

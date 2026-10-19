@@ -228,3 +228,19 @@ func test_an_awake_flock_circles_the_guard_on_the_wing() -> void:
 		if book.global_position.distance_to(before[i]) > 0.5:
 			moved = true
 	assert_true(moved, "the ring turns")
+
+
+# --- a shot spooks the flock (ecology) ---------------------------------------------------
+
+func test_a_shot_nearby_spooks_an_awake_flock() -> void:
+	target.position = Vector3(0, 0, 40)
+	var books := _flock(Vector3(0, 0, -6), 4, true)
+	for i in books.size():
+		books[i].brain.rng.seed = 60 + i
+	await physics_frames(10)
+	var flock := books[0].flock
+	assert_false(flock.spooked())
+	PerceptionWorld.noise(Vector3(0, 0, -2), PerceptionRules.weapon_noise(&"shotgun"), &"shotgun")
+	assert_true(flock.spooked(), "the bang scatters the flock for a moment")
+	for book in books:
+		assert_false(book.brain.state == EnemyBrain.State.FLEE, "no book flies off on its own: the flock widens its ring")

@@ -37,6 +37,28 @@ func test_every_zone_maps_to_its_wing_or_to_the_lobby_walk() -> void:
 	assert_eq(MusicDirector.wing_of_zone(&"north_hall"), &"", "north is no wing")
 
 
+func test_every_floor_zone_plays_a_music_zone_of_its_own() -> void:
+	for wing in MusicDirector.WINGS:
+		assert_eq(MusicDirector.music_zone_of(wing), wing)
+	for hub: StringName in [&"court", &"entrance", &"booth", &"north_hall"]:
+		assert_eq(MusicDirector.music_zone_of(hub), &"court", String(hub) + " plays the hub's music")
+	assert_eq(MusicDirector.music_zone_of(&"basement"), &"basement")
+	assert_eq(MusicDirector.music_zone_of(&"basement_boiler"), &"basement", "a sub-zone plays its zone's music")
+	assert_eq(MusicDirector.music_zone_of(&"roof"), &"roof")
+	assert_eq(MusicDirector.music_zone_of(&"asia_garden"), &"asia")
+	assert_eq(MusicDirector.music_zone_of(&""), &"", "no zone: the lobby's music")
+	assert_eq(MusicDirector.music_zone_of(&"vault"), &"", "an unknown zone too")
+	for zone: StringName in Floor1Plan.ZONES:
+		assert_true(MusicDirector.MUSIC_ZONES.has(MusicDirector.music_zone_of(zone)), String(zone) + " has music")
+
+
+func test_the_fight_and_its_hi_stem_play_in_the_zones_colours() -> void:
+	for layer: StringName in [&"explore", &"explore_tension", &"combat", &"combat_hi"]:
+		assert_true(MusicDirector.ZONE_LAYERS.has(layer), String(layer))
+	for layer: StringName in [&"guardian", &"guardian_hi", &"boss", &"menu"]:
+		assert_false(MusicDirector.ZONE_LAYERS.has(layer), String(layer))
+
+
 func test_each_guardian_belongs_to_its_wing() -> void:
 	var expected := {&"colossus": &"egypt", &"lamassu": &"assyria", &"centaur": &"greece", &"orrery": &"enlightenment",
 		&"samurai": &"asia", &"serpent": &"americas"}
@@ -84,12 +106,42 @@ func test_flickering_on_a_threshold_keeps_the_walk() -> void:
 	assert_eq(director.variant, &"greece")
 
 
-func test_outside_the_walk_the_variant_switches_at_once() -> void:
+func test_outside_the_walk_and_the_fight_the_variant_switches_at_once() -> void:
 	_walking()
+	director.on_guardian_awakened(&"serpent")
+	assert_eq(director.state, S.GUARDIAN)
+	director.on_zone(&"americas")
+	assert_eq(director.variant, &"americas", "the walk that comes back after the guardian is the new wing's")
+
+
+func test_a_fight_keeps_its_zone_until_the_new_one_holds() -> void:
+	_walking()
+	director.on_zone(&"egypt")
+	_run(MusicDirector.VARIANT_SETTLE + 0.1)
 	director.on_combat(MusicDirector.HIT_HEAT)
 	assert_eq(director.state, S.COMBAT)
-	director.on_zone(&"americas")
-	assert_eq(director.variant, &"americas", "the walk that comes back after the fight is the new wing's")
+	director.on_zone(&"greece")
+	assert_eq(director.variant, &"egypt", "the fight goes on in its own music")
+	_run(MusicDirector.FIGHT_SETTLE * 0.5)
+	assert_eq(director.variant, &"egypt", "longer than a walk waits")
+	_run(MusicDirector.FIGHT_SETTLE * 0.5 + 0.1)
+	assert_eq(director.state, S.COMBAT)
+	assert_eq(director.variant, &"greece", "the fight moved: its music follows")
+
+
+func test_a_fight_on_a_doorway_does_not_flip_its_music() -> void:
+	_walking()
+	director.on_zone(&"egypt")
+	_run(MusicDirector.VARIANT_SETTLE + 0.1)
+	director.on_combat(MusicDirector.HIT_HEAT)
+	for i in 8:
+		director.on_combat(MusicDirector.HIT_HEAT)
+		director.on_zone(&"court")
+		_run(1.0)
+		director.on_zone(&"egypt")
+		_run(1.0)
+	assert_eq(director.state, S.COMBAT)
+	assert_eq(director.variant, &"egypt", "back and forth through a door: the fight keeps its music")
 
 
 func test_the_zone_survives_a_mode_change_until_forgotten() -> void:

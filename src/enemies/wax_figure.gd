@@ -23,7 +23,7 @@ func _configure() -> void:
 	dust_value = 3
 	brain.reaction_time = 0.8
 	brain.attack_range = 1.6
-	brain.windup = 0.55
+	brain.windup = 0.6
 	brain.recovery = 0.7
 
 

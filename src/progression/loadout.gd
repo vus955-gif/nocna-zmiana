@@ -24,7 +24,7 @@ const PREFERRED: Array[StringName] = [&"pistol", &"taser"]
 
 
 static func equip_night_start(player: Player, game: PersistentState) -> void:
-	player.apply_upgrades(game.upgrades)
+	player.apply_upgrades(SecretRewards.effective_levels(game))
 	for id in ALWAYS:
 		grant(player, id, game)
 	for id in game.weapons:

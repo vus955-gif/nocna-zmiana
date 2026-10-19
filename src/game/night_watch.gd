@@ -6,7 +6,8 @@ extends Node
 ## and damage from then on, Events.witching_hour for the music) and calls
 ## dawn at 6:00 ([signal dawn]). It stops for good once the boss is beaten
 ## (that ends the demo whatever the hour). A resumed night keeps its time
-## (a "clock_<seconds>" entry in RunState.used, saved with the night).
+## (a "clock_<seconds>" entry in RunState.used, saved with the night). The
+## guard's fatigue reads the night from here (Fatigue.night_fraction).
 
 signal witching
 signal dawn
@@ -24,6 +25,7 @@ func setup(for_museum: Museum) -> void:
 	name = "NightWatch"
 	clock.elapsed = restored_time(museum.run)
 	museum.hud.set_clock(clock.text())
+	_feed_fatigue()
 	if clock.is_witching():
 		for exhibit in museum.exhibits():
 			boost(exhibit)
@@ -64,13 +66,23 @@ func _process(delta: float) -> void:
 		return
 	if not museum.player.alive:
 		return
+	var hour := clock.hour()
 	var crossed := clock.advance(delta, Haven.shelters(museum.player.global_position))
 	museum.hud.set_clock(clock.text())
+	if clock.hour() != hour:
+		Events.hour_struck.emit(clock.hour())   # the System's hourly announcements
+	_feed_fatigue()
 	if crossed.has(&"witching"):
 		_ring_the_witching_hour()
 	if crossed.has(&"dawn"):
 		running = false
 		dawn.emit()
+
+
+## The guard's fatigue follows the clock.
+func _feed_fatigue() -> void:
+	if is_instance_valid(museum.player):
+		museum.player.fatigue.night_fraction = clock.fraction()
 
 
 func _ring_the_witching_hour() -> void:

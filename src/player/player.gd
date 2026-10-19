@@ -7,8 +7,27 @@ extends CharacterBody3D
 ## interpolation. Movement direction comes from the head's yaw. While a menu
 ## holds the input (GameInput.gameplay_input() is false) the guard neither
 ## moves, looks, uses things nor switches the flashlight.
+## The view moves a little with him (plan 2026-10-19-gun-feel): a gentle
+## bob of the eyes as he walks (up and down with every step, a touch from
+## side to side every two, never a roll), a dip that springs back when he
+## lands from a fall, and a slightly wider view while he sprints - all
+## scaled by the head bob option ([member head_bob_scale]).
 
 const FLASHLIGHT_ENERGY := 3.0
+## Head bob: the eyes dip this far (m) with every step at a walk and at a
+## sprint, sway this far sideways, and a step covers BOB_STRIDE m at a walk
+## (longer when faster, like his footsteps).
+const BOB_HEIGHT := 0.011
+const BOB_SPRINT_HEIGHT := 0.018
+const BOB_SIDE := 0.004
+const BOB_STRIDE := 2.4
+## Landing: the eyes dip LANDING_DIP m per m/s of the fall (from
+## LANDING_DIP_SPEED on), never more than LANDING_DIP_MAX, and spring back.
+const LANDING_DIP := 0.007
+const LANDING_DIP_SPEED := 2.0
+const LANDING_DIP_MAX := 0.07
+## A sprint widens the view this much (degrees).
+const SPRINT_FOV := 3.0
 ## RunState.used id of tonight's second wind.
 const SECOND_WIND := &"second_wind"
 ## The level-floor check under the feet (m above and below them).
@@ -26,6 +45,16 @@ const STAGGER_SPEED := 0.2
 ## away (Events.noise_made).
 const SPRINT_NOISE_INTERVAL := 0.4
 const LANDING_NOISE_SPEED := 3.5
+## A ledge at most this high (a stair's open side, a dais's step, a lip) he
+## walks up in his stride instead of stopping at it (QA #49); a higher one
+## (a plinth, a bench) still stops him - a jump takes him up.
+const STEP_HEIGHT := 0.35
+## His eyes catch up with a step at this speed (m/s), so a step never pops
+## the view up in one frame.
+const STEP_EASE := 2.5
+## A step is looked for this far ahead (m): his capsule's round must be
+## over the step's top to stand on it.
+const STEP_PROBE := 0.45
 
 @export var walk_speed: float = 5.5
 @export var sprint_speed: float = 8.5
@@ -43,6 +72,9 @@ const LANDING_NOISE_SPEED := 3.5
 
 var health: Health
 var stamina := Stamina.new()
+## Tiredness over the night (the clock feeds its fraction; a haven's rest
+## and coffee bring it down); it holds the stamina bar down.
+var fatigue := Fatigue.new()
 var head: Node3D
 var camera: ShakeCamera
 var weapons: WeaponHolder
@@ -64,6 +96,14 @@ var last_floor_position := Vector3.ZERO
 var _stagger_left: float = 0.0
 ## Mouse up looks down (option).
 var invert_y: bool = false
+## The head bob option (0..1): bob, landing dip, the sprint's wider view.
+var head_bob_scale: float = 1.0
+## The bob's phase (pi per step), its eased strength (0 standing .. 1 at a
+## walk), the landing dip's spring (m) and the sprint's eased widening.
+var _bob_phase: float = 0.0
+var _bob_height: float = 0.0
+var _landing := Recoil.new(1, 4.0, 0.65)
+var _sprint_fov: float = 0.0
 
 var _eye: float = 1.6
 var _dash_left: float = 0.0
@@ -89,6 +129,11 @@ var _yank_left: float = 0.0
 var _yank_halt := false
 ## Seconds to the next sprint step heard by the exhibits.
 var _noise_timer: float = 0.0
+## How far (m) his eyes still lag behind the body after a step up, at the
+## end of this physics step and of the one before (the view interpolates
+## between them as the body's transform does).
+var _step_lag: float = 0.0
+var _step_lag_before: float = 0.0
 
 
 func _ready() -> void:
@@ -149,8 +194,33 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
-	head.global_position = get_global_transform_interpolated().origin + Vector3.UP * _eye
+	var lag := lerpf(_step_lag_before, _step_lag, Engine.get_physics_interpolation_fraction())
+	head.global_position = get_global_transform_interpolated().origin + Vector3.UP * (_eye - lag)
 	_update_flashlight_light()
+	_update_view_motion(get_process_delta_time())
+
+
+## The bob, the landing dip and the sprint's view, onto the camera.
+func _update_view_motion(delta: float) -> void:
+	var speed := Vector2(velocity.x, velocity.z).length() if alive and is_on_floor() else 0.0
+	var walking := clampf(speed / walk_speed, 0.0, 1.0)
+	var running := clampf((speed - walk_speed) / maxf(sprint_speed - walk_speed, 0.1), 0.0, 1.0)
+	var height := BOB_HEIGHT * walking + (BOB_SPRINT_HEIGHT - BOB_HEIGHT) * running
+	_bob_height = lerpf(_bob_height, height, 1.0 - exp(-8.0 * delta))
+	if speed > 0.1:
+		var stride := BOB_STRIDE * sqrt(speed / walk_speed)
+		_bob_phase = fmod(_bob_phase + PI * speed / stride * delta, TAU * 64.0)
+	_landing.step(delta)
+	_sprint_fov = lerpf(_sprint_fov, SPRINT_FOV if sprinting and alive else 0.0, 1.0 - exp(-6.0 * delta))
+	var dip := sin(_bob_phase)
+	camera.motion = Vector3(BOB_SIDE * (_bob_height / BOB_HEIGHT) * dip, -_bob_height * dip * dip + _landing.value(0), 0.0) \
+			* head_bob_scale
+	camera.motion_fov = _sprint_fov * head_bob_scale
+
+
+## The landing dip now (m, negative = down), for the weapon to follow.
+func landing_offset() -> float:
+	return _landing.value(0) * head_bob_scale
 
 
 ## Switches the flashlight (through the battery). False when it stays dark.
@@ -209,14 +279,71 @@ func _physics_process(delta: float) -> void:
 		var horizontal := Vector3(velocity.x, 0.0, velocity.z).move_toward(target, accel * delta)
 		velocity.x = horizontal.x
 		velocity.z = horizontal.z
+	fatigue.tick(delta, sprinting, Haven.shelters(global_position))
+	var tired := fatigue.take_rise()
+	if tired > 0:
+		Events.fatigue_rose.emit(tired)   # the voice comments it (plan 2026-10-19-glos-g2-kwestie)
+	stamina.capacity_factor = fatigue.capacity_factor()
+	stamina.regen_factor = fatigue.regen_factor()
 	stamina.tick(delta)
 	_slow_left = maxf(_slow_left - delta, 0.0)
 	_stagger_left = maxf(_stagger_left - delta, 0.0)
 	_grace = maxf(_grace - delta, 0.0)
 	var falling := -velocity.y
+	var start := global_transform
+	var pushing := Vector3(velocity.x, 0.0, velocity.z)
 	move_and_slide()
+	_step_lag_before = _step_lag
+	# just up a step his round feet settle onto its edge: the lag his eyes
+	# still have takes that in, so his view does not dip (bob) on the way up
+	var settled := start.origin.y - global_position.y
+	if settled > 0.0 and _step_lag > 0.0 and on_floor and is_on_floor():
+		_step_lag = maxf(_step_lag - settled, 0.0)
+	_step_lag = move_toward(_step_lag, 0.0, STEP_EASE * delta)
+	if on_floor and is_on_wall() and pushing.length() > 0.1:
+		_step_up(start, pushing * delta)
 	_remember_floor()
 	_make_noise(delta, on_floor, falling)
+	if not on_floor and is_on_floor() and falling >= LANDING_DIP_SPEED:
+		_landing.kick(0, -minf(falling * LANDING_DIP, LANDING_DIP_MAX))
+
+
+## He walked from [param start] into something that stopped (or turned) the
+## move [param wanted] of this step: when it is a ledge at most STEP_HEIGHT
+## high with floor on top, he goes up onto it instead, keeping his speed.
+## The step is found by trying the move again raised by STEP_HEIGHT and
+## STEP_PROBE m long (far enough for his round feet to come down on the
+## step's top, not on its edge) and setting that down on what is there;
+## then he takes this step's move at the step's height (the floor snap puts
+## him on the edge, the next steps carry him over it). Only the building
+## counts (an exhibit is never a step). True when he stepped up.
+func _step_up(start: Transform3D, wanted: Vector3) -> bool:
+	var slid := Vector3(global_position.x - start.origin.x, 0.0, global_position.z - start.origin.z)
+	if slid.length() >= wanted.length() * 0.9:
+		return false   # barely held up: no step to take
+	var probe := wanted.normalized() * maxf(wanted.length(), STEP_PROBE)
+	var mask := collision_mask
+	collision_mask = Layers.WORLD
+	var hit := KinematicCollision3D.new()
+	var lift := Vector3.UP * STEP_HEIGHT
+	if test_move(start, lift, hit):
+		lift = hit.get_travel()
+	var raised := start.translated(lift)
+	var free_ahead := not test_move(raised, probe, hit)
+	var rise := INF
+	if free_ahead and test_move(raised.translated(probe), -lift - Vector3.UP * 0.05, hit) 			and hit.get_normal().angle_to(Vector3.UP) <= floor_max_angle:
+		rise = lift.y + hit.get_travel().y
+	var lifted := start.translated(Vector3.UP * (rise + 0.002)) if rise != INF else start
+	var placed := rise != INF and rise >= -0.05 and rise <= STEP_HEIGHT + 0.01 and not test_move(lifted, wanted, hit)
+	collision_mask = mask
+	if not placed:
+		return false
+	global_transform = lifted.translated(wanted)
+	velocity.x = wanted.x / get_physics_process_delta_time()
+	velocity.z = wanted.z / get_physics_process_delta_time()
+	velocity.y = 0.0
+	_step_lag = clampf(_step_lag + maxf(rise, 0.0), 0.0, STEP_HEIGHT)
+	return true
 
 
 ## Sprint steps and hard landings are noises the exhibits hear.
@@ -290,6 +417,7 @@ func dash(direction: Vector3 = Vector3.ZERO) -> bool:
 	_dash_dir = flat.normalized()
 	_dash_left = dash_time
 	_dash_cd = dash_cooldown
+	fatigue.add_dash()
 	camera.kick_fov(8.0)
 	Sfx.play(&"dash", -4.0)
 	return true
@@ -369,7 +497,8 @@ func apply_upgrades(levels: Dictionary) -> void:
 	weapons.apply_upgrades(levels)
 
 
-## Full health, stamina and flashlight (start of a night, a haven).
+## Full health, stamina and flashlight (start of a night, a haven). Fatigue
+## stays: rest in time and coffee bring that down.
 func refill() -> void:
 	health.heal(health.max_health)
 	stamina.current = stamina.maximum
@@ -398,10 +527,16 @@ func respawn(at: Vector3, yaw: float = 0.0) -> void:
 	_yank_halt = false
 	_jump_buffer = 0.0
 	_coyote = 0.0
+	_step_lag = 0.0
+	_step_lag_before = 0.0
 	sprinting = false
 	health.reset()
 	stamina.current = stamina.maximum
 	stamina.exhausted = false
+	fatigue.reset()
+	_landing.reset()
+	_bob_height = 0.0
+	_sprint_fov = 0.0
 	alive = true
 	weapons.enabled = true
 	reset_physics_interpolation()
@@ -469,6 +604,8 @@ func _on_settings_changed(_key: StringName) -> void:
 	mouse_sensitivity = Settings.mouse_turn_per_pixel()
 	invert_y = Settings.data.invert_y
 	camera.base_fov = Settings.data.fov
+	camera.shake_scale = Settings.data.screen_shake
+	head_bob_scale = Settings.data.head_bob
 
 
 func _on_enemy_destroyed(_enemy: Node, info: DamageInfo, finisher: bool) -> void:

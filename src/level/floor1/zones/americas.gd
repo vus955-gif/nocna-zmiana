@@ -77,6 +77,7 @@ static func build(layout: LevelLayout) -> void:
 	_temple(layout)
 	_service(layout)
 	_secrets(layout)
+	_voice(layout)
 
 
 # --- rooms and passages -----------------------------------------------------
@@ -302,13 +303,48 @@ static func _temple(layout: LevelLayout) -> void:
 	var supplies: Array[Vector3] = [Vector3(-22.5, 0, -60.5), Vector3(-6.0, 0, -84.5), Vector3(-6.0, 0, -60.5)]
 	for i in supplies.size():
 		layout.add_marker(StringName("arena_serpent_supply_%d" % (i + 1)), supplies[i], room)
-	# the Serpent's body loops round the walks and over the lower terrace
-	var path: Array[Vector3] = [
-		Vector3(-22.25, 0, -84.0), Vector3(-6.25, 0, -84.0), Vector3(-6.25, 0, -60.75), Vector3(-22.25, 0, -60.75),
-		Vector3(-19.0, TIER, -78.0), Vector3(-9.5, TIER, -78.0), Vector3(-9.5, TIER, -66.5), Vector3(-19.0, TIER, -66.5),
-	]
-	for i in path.size():
-		layout.add_marker(StringName("serpent_path_%d" % (i + 1)), path[i], room)
+	# the Serpent's tracks (SerpentCourse; the body is 0.52 m thick and
+	# weaves 0.25 m): the floor loop round the walks between the fire bowls
+	# and the terrace (swerving in past the side altars), crossing the lower
+	# flights just over their feet (a low hump); the lower terrace's loop, crossing the upper flights the
+	# same way; the links it climbs (pairs: the two lower flights, the gate's
+	# posts down to the north flight's foot); the summit
+	# track over the upper terrace west of the altar house, through the
+	# moon's shaft; and the phase-3 ring round the altar's terrace, 1.1 m off
+	# its face, its gate (the first two markers: west and east posts) over
+	# the north flight, where the heads rise
+	var mid := (STAIR_X.x + STAIR_X.y) * 0.5
+	var tracks := {
+		"path": [
+			Vector3(-23.05, 0, -82.3), Vector3(mid, 0, -82.3), Vector3(-5.45, 0, -82.3), Vector3(-7.1, 0, -72.25),
+			Vector3(-5.45, 0, -62.3), Vector3(mid, 0, -62.3), Vector3(-23.05, 0, -62.3), Vector3(-21.4, 0, -72.25),
+		],
+		"loop": [
+			Vector3(-19.1, TIER, -78.3), Vector3(mid, TIER, -78.3), Vector3(-9.4, TIER, -78.3), Vector3(-9.4, TIER, -76.1),
+			Vector3(-9.4, TIER, -68.4), Vector3(-9.4, TIER, -66.2), Vector3(mid, TIER, -66.2), Vector3(-19.1, TIER, -66.2),
+			Vector3(-19.1, TIER, -68.4), Vector3(-19.1, TIER, -76.1),
+		],
+		"stair": [
+			Vector3(mid, 0, -82.3), Vector3(mid, TIER, -78.3), Vector3(mid, 0, -62.3), Vector3(mid, TIER, -66.2),
+			# (the gate's posts down over the north flight's side to its foot:
+			# the way the resting serpent leaves its ring without crossing itself)
+			Vector3(-16.3, TIER, -76.1), Vector3(mid, TIER, -78.3), Vector3(-12.2, TIER, -76.1), Vector3(mid, TIER, -78.3),
+		],
+		"summit": [
+			Vector3(mid, TIER, -78.3), Vector3(mid, TIER * 2.0, -74.4), Vector3(-15.7, TIER * 2.0, -73.3),
+			Vector3(-15.7, TIER * 2.0, -71.2), Vector3(mid, TIER * 2.0, -70.1), Vector3(mid, TIER, -66.2),
+		],
+		"ring": [
+			Vector3(-16.3, TIER, -76.1), Vector3(-12.2, TIER, -76.1), Vector3(-9.4, TIER, -76.1), Vector3(-9.4, TIER, -68.4),
+			Vector3(mid, TIER, -68.4), Vector3(-19.1, TIER, -68.4), Vector3(-19.1, TIER, -76.1),
+		],
+	}
+	for group: String in tracks:
+		var spots: Array = tracks[group]
+		for i in spots.size():
+			layout.add_marker(StringName("serpent_%s_%d" % [group, i + 1]), spots[i], room)
+	# its reward lies in the moon's shaft on the summit
+	layout.add_marker(&"arena_serpent_reward", Vector3(-14.5, TIER * 2.0, -72.25), room)
 	for spot in [Vector3(-23.6, 0, -85.3), Vector3(-4.7, 0, -59.2)]:
 		layout.add_loot(spot, room)
 	# fire from below up both faces, a flame on the altar house, a single
@@ -375,3 +411,13 @@ static func _secrets(layout: LevelLayout) -> void:
 	layout.add_marker(&"secret_americas_3", Vector3(-32.0, LOW, -67.0), store)
 	Kit.glow(layout, Vector3(-32.0, LOW + 2.7, -67.5), LANTERN, 0.8, store)
 	Kit.lair(layout, &"americas_store", store, Vector3(-31.5, LOW, -63.5), JAGUAR, Grey.r(-34, -70, -30, -62))
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## The System by the shutter from the north corridor (under the painted
+## frieze, which runs at about 4 m); stop 9 at the totems' door from the
+## north hall, stop 10 before the moai (off the way across).
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"loudspeaker_americas_1", Vector3(-10.0, 3.3, -39.15), &"americas_north", 0.0)
+	layout.add_marker(&"audioguide_totems", Vector3(-26.5, 0.0, -58.8), &"americas_totems", -PI * 0.5)
+	layout.add_marker(&"audioguide_moai", Vector3(-38.0, 0.0, -60.2), &"americas_moai", 0.0)

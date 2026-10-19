@@ -248,6 +248,11 @@ func _move(to_open: bool, instant: bool) -> void:
 		_arrived()
 		return
 	moving.emit(self, to_open)
+	if to_open:
+		# the creak of a door opening: the exhibits near it hear it, in the two
+		# rooms it joins and not through the walls round it (a door set open at
+		# once by the level's scripts makes no noise)
+		Events.door_creaked.emit(global_position + Vector3.UP * minf(height * 0.5, 1.2), PerceptionRules.DOOR_NOISE, room_a, room_b)
 	_tween = create_tween().set_parallel(true)
 	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	var poses := _rest_poses()

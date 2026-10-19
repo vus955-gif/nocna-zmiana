@@ -100,6 +100,9 @@ func test_he_wakes_as_the_guard_steps_in_and_announces_every_attack_in_time() ->
 	_museum()
 	await physics_frames(2)
 	var colossus := _colossus()
+	# the dice fixed, so the fight repeats (his picks are weighted dice: left
+	# to chance, now and then a run never rolls one of the three in 48 s)
+	colossus.brain.seed_with(7)
 	var woke := watch(Events.guardian_awakened)
 	_put_guard(Vector3(-43.0, 0.0, -8.0))   # the gallery: not yet
 	await _seconds(0.5)

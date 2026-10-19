@@ -1,13 +1,24 @@
 class_name ArtifactIcon
 extends Control
-## One artifact on the HUD: a dark brass-edged tile with the artifact drawn
-## in a few strokes (scarab, monocle, coin, candle, tooth, key) in its own
-## colour. It pops in when it appears.
+## One artifact on the HUD: a small museum plaque (UiTheme's chip: enamel,
+## cut corners, a brass rule) with the artifact drawn in a few strokes
+## (scarab, monocle, coin, candle, tooth, key) in its own colour. It pops
+## in when it appears.
 
 const SIZE := 52.0
 
 var artifact_id: StringName = &""
 var _pop: float = 1.0
+
+## The tile every icon stands on (made once).
+static var _plate: PlaqueStyle = null
+
+
+static func _tile() -> PlaqueStyle:
+	if _plate == null:
+		_plate = UiTheme.plaque(UiTheme.Plaque.CHIP)
+		_plate.cut = 8.0
+	return _plate
 
 
 static func make(id: StringName) -> ArtifactIcon:
@@ -36,12 +47,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var box := Rect2(Vector2.ZERO, size)
-	var tile := StyleBoxFlat.new()
-	tile.bg_color = Color(0.05, 0.045, 0.04, 0.78)
-	tile.border_color = Color(UiTheme.ACCENT, 0.55)
-	tile.set_border_width_all(2)
-	tile.set_corner_radius_all(6)
-	draw_style_box(tile, box)
+	draw_style_box(_tile(), box)
 	var c := size * 0.5
 	var tint := ArtifactCatalog.color(artifact_id)
 	var gold := Color(0.9, 0.7, 0.32)

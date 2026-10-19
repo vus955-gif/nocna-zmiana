@@ -116,7 +116,7 @@ func _build_overlay() -> void:
 
 static func _label(parent: Control, at: Vector2, font_size: int, color: Color) -> Label:
 	var settings := LabelSettings.new()
-	settings.font = UiTheme.strong_font()
+	settings.font = UiTheme.device_font()
 	settings.font_size = font_size
 	settings.font_color = color
 	settings.outline_size = 3

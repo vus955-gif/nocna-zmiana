@@ -189,3 +189,54 @@ func test_last_floor_position_follows_the_ground() -> void:
 	player.global_position = Vector3(8, 0.05, 8)
 	await physics_frames(10)
 	assert_almost_eq(player.last_floor_position.x, 4.0, 0.05, "falling does not count")
+
+
+# --- fatigue (plan 2026-10-10-kawiarnia-zmeczenie) ------------------------------
+
+func test_sprinting_and_dashing_tire_the_guard() -> void:
+	await physics_frames(5)
+	assert_eq(player.fatigue.level, 0.0, "no clock runs here: fresh")
+	Input.action_press(&"move_forward")
+	Input.action_press(&"sprint")
+	await physics_frames(30)
+	Input.action_release(&"move_forward")
+	Input.action_release(&"sprint")
+	var after_sprint := player.fatigue.level
+	assert_gt(after_sprint, Fatigue.SPRINT_PER_SEC * 0.3, "half a second of sprint")
+	await physics_frames(30)
+	assert_almost_eq(player.fatigue.level, after_sprint, 0.0001, "walking adds nothing")
+	assert_true(player.dash(Vector3.FORWARD))
+	assert_almost_eq(player.fatigue.level, after_sprint + Fatigue.DASH, 0.0001)
+
+
+func test_fatigue_holds_the_stamina_bar_down() -> void:
+	await physics_frames(5)
+	player.fatigue.level = 1.0
+	player.stamina.current = 100.0
+	await physics_frames(2)
+	assert_almost_eq(player.stamina.capacity_factor, 1.0 - Fatigue.CAPACITY_LOSS, 0.0001)
+	assert_almost_eq(player.stamina.current, 70.0, 0.5, "the top of the bar is gone")
+	assert_almost_eq(player.stamina.regen_factor, 1.0 - Fatigue.REGEN_LOSS, 0.0001)
+
+
+func test_a_haven_refill_keeps_the_fatigue_but_a_respawn_clears_it() -> void:
+	await physics_frames(5)
+	player.fatigue.level = 0.6
+	player.fatigue.drink(&"espresso")
+	player.refill()
+	assert_almost_eq(player.fatigue.level, 0.3, 0.0001, "rest and coffee bring it down, not the medkit")
+	assert_true(player.fatigue.caffeinated())
+	player.take_damage(DamageInfo.make(500.0, DamageInfo.Kind.BLUNT))
+	player.respawn(Vector3(3, 0.05, 3))
+	assert_eq(player.fatigue.level, 0.0, "a new night, a fresh guard")
+	assert_false(player.fatigue.caffeinated())
+
+
+func test_tiredness_reaching_a_stage_is_told_on_the_bus() -> void:
+	await physics_frames(2)
+	var told := watch(Events.fatigue_rose)
+	player.fatigue.level = Fatigue.THRESHOLD + 0.01
+	await physics_frames(2)
+	assert_eq(told.size(), 1, "once")
+	if told.size() > 0:
+		assert_eq(told[0][0], 1, "stage 1: tired")

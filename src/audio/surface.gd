@@ -8,7 +8,9 @@ extends RefCounted
 ## 3. a group "surface_<name>" on the collider or its parent,
 ## 4. a level kit piece with a known kit (the balcony is the hall's
 ##    limestone slab),
-## 5. the level room under the point (ROOM_SURFACES, the lobby's rooms),
+## 5. the level room under the point (ROOM_SURFACES, the lobby's rooms), with
+##    the roof's steel catwalk plates (decor over the lead slab, no collision
+##    of their own) as metal where they lie,
 ## 6. STONE.
 ## Names: stone (marble, limestone, flagstones, terrazzo, concrete, tiles,
 ## linoleum), wood (parquet, boards), carpet (rugs, runners), metal
@@ -75,6 +77,9 @@ const ROOM_SURFACES := {
 	# Floor I, the basement, stage P3 (ArtKit "basement_*"): concrete, flagstones
 	# and linoleum everywhere (stone, the default) but the restorer's boards
 	&"basement_workshop": &"boards",
+	# Floor I, the roof, stage P5 (ArtKit "roof_*"): lead and gravel outside
+	# (stone), the roofers' boarded huts
+	&"roof_hut": &"boards", &"roof_loft": &"boards", &"roof_shed": &"boards",
 }
 
 
@@ -115,12 +120,26 @@ static func of(collider: Object, point: Vector3, tree: SceneTree = null) -> Stri
 		depth += 1
 	if tree != null:
 		var room := AudioContext.room_at(tree, point)
-		if ROOM_SURFACES.has(room):
-			return of_room(room)
+		if ROOM_SURFACES.has(room) or Floor1ArtRoof.on_plate(room, point):
+			return of_room_at(room, point)
 	return STONE
+
+
+## The surface a shot hit (plan 2026-10-19-gun-feel): a floor (normal up)
+## as the footsteps hear it (Surface.of with the rooms); a wall or a ceiling
+## only by its own tags (a room's floor says nothing of its walls), else
+## STONE.
+static func of_hit(collider: Object, point: Vector3, normal: Vector3, tree: SceneTree = null) -> StringName:
+	return of(collider, point, tree if normal.y > 0.7 else null)
 
 
 ## The surface of the lobby room [param room] (STONE when unknown).
 static func of_room(room: StringName) -> StringName:
 	var named := normalize(ROOM_SURFACES.get(room, STONE))
 	return named if named != &"" else STONE
+
+
+## The surface of the floor of [param room] at [param point]: its own floor
+## (of_room), steel where the roof's catwalk plates lie over it.
+static func of_room_at(room: StringName, point: Vector3) -> StringName:
+	return METAL if Floor1ArtRoof.on_plate(room, point) else of_room(room)

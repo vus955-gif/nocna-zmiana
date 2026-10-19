@@ -80,6 +80,7 @@ static func build(layout: LevelLayout) -> void:
 	_conservator(layout)
 	_service(layout)
 	_secrets(layout)
+	_voice(layout)
 
 
 # --- rooms and passages -----------------------------------------------------
@@ -137,9 +138,11 @@ static func _vestibule(layout: LevelLayout) -> void:
 	# line from the court door to the camp runs there)
 	layout.add_piece(&"sculpture", Vector3(-48.75, 0, 21.25), Vector3(1.0, 5.5, 1.0), room)
 	layout.add_marker(&"note_egypt_3", Vector3(-38.5, 0.5, 25.9), room, PI * 0.5)
-	# the System: a loudspeaker over the court door; the audio guide's stop 1 a step
-	# and a half in front of the stone, pulpit toward the visitor coming from the court
-	layout.add_marker(&"loudspeaker_egypt_1", Vector3(-31.05, 4.6, 23.0), room, PI * 0.5)
+	# the System: a loudspeaker on the court wall beside the arch (the arch
+	# is 7 m high: "over the door" hung it in mid-air); the audio guide's
+	# stop 1 a step and a half in front of the stone, pulpit toward the
+	# visitor coming from the court
+	layout.add_marker(&"loudspeaker_egypt_1", Vector3(-31.05, 4.6, 28.0), room, PI * 0.5)
 	layout.add_marker(&"audioguide_rosetta", Vector3(-40.7, 0, 24.0), room, -PI * 0.5)
 	for spot in [Vector3(-48.5, 0, 28.5), Vector3(-33.0, 0, 28.8)]:
 		layout.add_loot(spot, room)
@@ -260,7 +263,7 @@ static func _tombs(layout: LevelLayout) -> void:
 	# the tomb passage: standing coffins, the side door into the arena
 	var passage := &"egypt_tomb_passage"
 	for z in [-9.0, -4.0]:
-		layout.add_piece(&"crate", Vector3(-54.4, 0, z), Vector3(0.8, 2.0, 0.7), passage, PI * 0.5)
+		layout.add_piece(&"crate", Vector3(-54.4, 0, z), Vector3(0.86, 2.0, 0.76), passage, PI * 0.5)   # (a MummyTomb coffin's size)
 	Kit.sconce(layout, Vector3(-50.7, 2.6, -3.0), PI * 0.5, TORCH, 0.5, passage)
 	layout.add_loot(Vector3(-52.6, 0, -1.4), passage)
 	layout.add_spawn(Vector3(-52.6, 0, -11.0), passage, 0, SCARABS.duplicate())
@@ -367,3 +370,10 @@ static func _secrets(layout: LevelLayout) -> void:
 	layout.add_marker(&"secret_egypt_3", Vector3(-61.75, 0, 25.5), priest)
 	Kit.glow(layout, Vector3(-62.0, 2.7, 27.0), TORCH, 0.8, priest)
 	Kit.lair(layout, &"egypt_priest", priest, Vector3(-61.6, 0, 23.0), MUMMY, Grey.r(-63, 24, -60.5, 30))
+
+# --- the voice: the System's loudspeakers and the audio guide (plan 2026-10-19-glos-g2-kwestie) ---
+
+## Stop 2 in the Great Gallery: before the first of Ramesses' statues on
+## the east row, facing the visitor who comes in from the vestibule.
+static func _voice(layout: LevelLayout) -> void:
+	layout.add_marker(&"audioguide_ramesses", Vector3(-38.6, 0.0, 13.8), &"egypt_gallery", PI)

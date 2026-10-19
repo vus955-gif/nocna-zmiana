@@ -22,6 +22,12 @@ extends Node3D
 ## chain next to an exhibit), else the nearest one in the sweep. Every view
 ## shows the bought upgrades (WeaponLook through the view's apply_look());
 ## a changed look plays a short inspection the next time it is drawn.
+## How a shot feels comes from the weapon's FeelProfile (plan
+## 2026-10-19-gun-feel): the model's kick (a Recoil spring per weapon),
+## the camera's kick and shake (ShakeCamera), the muzzle's light, the
+## tracer and the shot's sound; a pellet's share of the profile's hit
+## weight rides on its DamageInfo (impact). While the guard sprints the
+## weapon is carried low and tilted; a shot brings it straight up.
 
 signal weapon_changed(state: WeaponState)
 signal load_switched(state: WeaponState)
@@ -45,6 +51,30 @@ const HAVEN_DROP := 0.1
 const HAVEN_TILT := 3.0
 ## Dazed (a stagger): the weapon dips this far (m) and tilts down.
 const DAZE_DROP := 0.14
+## Fatigue (Fatigue, plan 2026-10-10-kawiarnia-zmeczenie): tired hands
+## drift this far (m) at the worst of the night even at rest, and shake
+## this far after the witching special; the walking bob grows with
+## Fatigue.sway_factor(). The shaking is noise sampled JITTER_RATE units a
+## second at JITTER_FREQUENCY cycles a unit: about 10 tremors a second (a
+## default noise would only wander about once a second).
+const FATIGUE_DRIFT := 0.004
+const JITTER_SHAKE := 0.006
+const JITTER_RATE := 40.0
+const JITTER_FREQUENCY := 0.25
+## The model's kick channels (Recoil): back toward the eye, up, sideways
+## (m); muzzle climb, yaw, roll (degrees).
+const KICK_BACK := 0
+const KICK_RISE := 1
+const KICK_SIDE := 2
+const KICK_PITCH := 3
+const KICK_YAW := 4
+const KICK_ROLL := 5
+## Sprinting: the weapon is carried this far lower (m), muzzle down and
+## rolled in (rad); it comes up again this long (s) after a shot.
+const SPRINT_DROP := 0.035
+const SPRINT_TILT := 0.2
+const SPRINT_ROLL := 0.14
+const SPRINT_SHOT_HOLD := 0.35
 
 ## The node credited with hits (the player). It is never hit itself.
 var user: Node3D = null
@@ -58,8 +88,16 @@ var upgrade_levels: Dictionary = {}
 var _reload_held: float = -1.0
 
 var _views: Dictionary = {}
+## Weapon id -> its MuzzleFx (flash, smoke, casings).
+var _muzzles: Dictionary = {}
 var _fist_view: Node3D
-var _kick: float = 0.0
+## The model's kick (KICK_* channels), tuned to the weapon that fired last.
+var _recoil := Recoil.new(6)
+## 0..1: how far the weapon is lowered for a sprint; seconds since a shot.
+var _sprint_pose: float = 0.0
+var _since_shot: float = INF
+## Model kicks given so far (tests: every arrow of a volley kicks).
+var kicks_given: int = 0
 var _switch_drop: float = 0.0
 var _reload_drop: float = 0.0
 var _haven_drop: float = 0.0
@@ -67,6 +105,8 @@ var _haven_drop: float = 0.0
 var _daze_left: float = 0.0
 var _daze_drop: float = 0.0
 var _bob_time: float = 0.0
+var _sway_time: float = 0.0
+var _shake_noise := _make_shake_noise()
 var _empty_click_cd: float = 0.0
 ## Rounds fired, for tracers on every n-th round.
 var _rounds: int = 0
@@ -107,6 +147,7 @@ func give(data: WeaponData) -> WeaponState:
 	var view := Viewmodels.build(data.id)
 	view.position = REST
 	view.visible = false
+	_muzzles[data.id] = MuzzleFx.attach(self, view, FeelProfile.of(data.id))
 	add_child(view)
 	_views[data.id] = view
 	_apply_look(view, false)
@@ -146,6 +187,19 @@ func view_of(id: StringName) -> Node3D:
 	if id == &"fist" or id == &"fists":
 		return _fist_view
 	return _views.get(id) as Node3D
+
+
+## The muzzle effects of weapon [param id] (null when it is not owned).
+func muzzle_of(id: StringName) -> MuzzleFx:
+	return _muzzles.get(id) as MuzzleFx
+
+
+## Weapon [param id]'s action throws [param count] casings out (a rifle's
+## bolt run back, a shotgun broken open: its view calls this).
+func eject(id: StringName, count: int) -> void:
+	var fx := muzzle_of(id)
+	if fx != null:
+		fx.eject(count)
 
 
 ## Where the harpoon's line leaves the gun (world space): the harpoon gun's
@@ -253,7 +307,7 @@ func try_fire() -> bool:
 	var view := _views.get(state.data.id) as Node3D
 	if view != null and view.has_method(&"on_fired"):
 		view.call(&"on_fired", state)
-	_kick = state.data.kick
+	_kick_view(FeelProfile.of(state.data.id))
 	if state.data.ammo_mode == WeaponData.AmmoMode.MAGAZINE and state.magazine == 0:
 		_start_reload(state)
 	return true
@@ -371,7 +425,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	_kick = lerpf(_kick, 0.0, 1.0 - exp(-14.0 * delta))
+	_recoil.step(delta)
+	_since_shot += delta
 	_switch_drop = move_toward(_switch_drop, 0.0, 1.5 * delta)
 	var state := current_state()
 	if state == null:
@@ -384,13 +439,44 @@ func _process(delta: float) -> void:
 	if body != null:
 		speed = Vector2(body.velocity.x, body.velocity.z).length()
 	_bob_time += delta * speed * 1.6
+	_sway_time += delta
 	var sway := minf(speed / 5.5, 1.5)
+	# tired hands: a bigger bob, a slow drift even at rest; shaking after the special
+	var tired := 0.0
+	var shakes := 0.0
+	var sprinting := false
+	var landing := 0.0
+	var guard := user as Player
+	if guard != null:
+		tired = guard.fatigue.effect()
+		shakes = guard.fatigue.jitter()
+		sway *= guard.fatigue.sway_factor()
+		sprinting = guard.sprinting
+		landing = guard.landing_offset() * 0.6   # the weapon dips a little more than the eyes
+	# a sprint carries it low; a shot (or the end of the run) brings it up
+	var lowered := sprinting and _since_shot > SPRINT_SHOT_HOLD
+	_sprint_pose = lerpf(_sprint_pose, 1.0 if lowered else 0.0, 1.0 - exp(-(7.0 if lowered else 16.0) * delta))
 	var bob := Vector3(sin(_bob_time) * 0.012, -absf(cos(_bob_time)) * 0.012, 0.0) * sway
+	var drift := Vector3(sin(_sway_time * 0.9), cos(_sway_time * 0.7) * 0.6, 0.0) * (FATIGUE_DRIFT * tired)
+	if shakes > 0.0:
+		var t := _sway_time * JITTER_RATE
+		drift += Vector3(_shake_noise.get_noise_1d(t), _shake_noise.get_noise_1d(t + 100.0), 0.0) * (JITTER_SHAKE * shakes)
 	var view: Node3D = _views[state.data.id]
-	view.position = REST + bob + Vector3(0.0, -_switch_drop - _reload_drop - _haven_drop - _daze_drop, _kick)
-	view.rotation = Vector3(_kick * 2.5 - _haven_drop * HAVEN_TILT - _daze_drop * HAVEN_TILT, AIM_YAW, _daze_drop * 1.5)
+	var kick := Vector3(_recoil.value(KICK_SIDE), _recoil.value(KICK_RISE), _recoil.value(KICK_BACK))
+	var drops := _switch_drop + _reload_drop + _haven_drop + _daze_drop + SPRINT_DROP * _sprint_pose
+	view.position = REST + bob + drift + kick + Vector3(SPRINT_DROP * 0.4 * _sprint_pose, landing - drops, 0.0)
+	view.rotation = Vector3(deg_to_rad(_recoil.value(KICK_PITCH)) - (_haven_drop + _daze_drop) * HAVEN_TILT - SPRINT_TILT * _sprint_pose,
+			AIM_YAW + deg_to_rad(_recoil.value(KICK_YAW)),
+			_daze_drop * 1.5 + deg_to_rad(_recoil.value(KICK_ROLL)) + SPRINT_ROLL * _sprint_pose)
 	if view.has_method(&"update_view"):
 		view.call(&"update_view", state, delta)
+
+
+## The noise of the shaking hands: fast (JITTER_FREQUENCY), seeded the same every run.
+static func _make_shake_noise() -> FastNoiseLite:
+	var noise := FastNoiseLite.new()
+	noise.frequency = JITTER_FREQUENCY
+	return noise
 
 
 func _input_allowed() -> bool:
@@ -482,23 +568,28 @@ func _attack(state: WeaponState) -> void:
 					if first_hurtbox == null and hits.has(hurtbox.receiver) and chain_target(hurtbox.receiver):
 						first_hurtbox = hurtbox
 				elif dressed:
-					Fx.impact(point, normal, -1, 0.6)
-					if data.damage_kind == DamageInfo.Kind.BALLISTIC and not point_blank:
-						Fx.bullet_hole(point, normal)
+					_mark_wall(data, hit, point, normal, point_blank)
 			if traced and trail_to != Vector3.INF:
 				_trail(data, muzzle, trail_to)
 		if data.damage_kind == DamageInfo.Kind.BALLISTIC and dressed:
-			Fx.flash(muzzle, Color(1.0, 0.8, 0.5), 3.0, 7.0, 0.06)
+			var light := FeelProfile.of(data.id)
+			Fx.flash(muzzle, light.light_color, light.light_energy, light.light_range, light.light_time)
+		if dressed and muzzle_of(data.id) != null:
+			muzzle_of(data.id).fire()
 		if not dressed:
 			for receiver in hits:
 				(hits[receiver] as DamageInfo).effects = false   # its sparks: the next round
 	if data.chain_range > 0.0 and first_hurtbox != null:
 		_chain(space, hits, data, first_hurtbox)
+	var landed := false
 	for receiver in hits:
-		receiver.take_damage(hits[receiver])
+		var info: DamageInfo = hits[receiver]
+		receiver.take_damage(info)
+		landed = landed or (chain_target(receiver) and not info.blocked)
+	var profile := FeelProfile.of(data.id)
 	if data.sound != &"":
-		Sfx.play(data.sound)
-	_shake(data)
+		Sfx.play(data.sound, profile.sound_db, profile.sound_jitter, profile.sound_pitch)
+	_feel_shot(profile, landed)
 	Events.weapon_fired.emit(data.id)
 
 
@@ -521,18 +612,19 @@ func _launch(space: PhysicsDirectSpaceState3D, data: WeaponData, origin: Vector3
 		start = origin + forward * 0.05   # pressed against a wall
 	var direction := (aim - start).normalized() if aim.distance_to(start) > 1.0 else aim_dir
 	var shot: Node3D
-	var flash_color := Color(1.0, 0.45, 0.2)
 	match data.projectile:
 		&"harpoon":
 			shot = Harpoon.launch(start, direction * data.projectile_speed, data, user, self)
-			flash_color = Color(1.0, 0.85, 0.6)
 		&"rocket":
 			shot = HwachaRocket.launch(start, direction * data.projectile_speed, data, user)
 		_:
 			shot = Flare.launch(start, direction * data.projectile_speed, data, user)
 	var parent: Node = user.get_parent() if user != null and user.get_parent() != null else get_tree().current_scene
 	parent.add_child(shot)
-	Fx.flash(_muzzle_position(data.id, start), flash_color, 4.0, 6.0, 0.15)
+	var light := FeelProfile.of(data.id)
+	Fx.flash(_muzzle_position(data.id, start), light.light_color, light.light_energy, light.light_range, light.light_time)
+	if muzzle_of(data.id) != null:
+		muzzle_of(data.id).fire()
 	return shot
 
 
@@ -560,7 +652,11 @@ func _launch_volley_rocket() -> void:
 	if view != null and view.has_method(&"on_volley_rocket"):
 		view.call(&"on_volley_rocket", _volley_index)
 	if _volley_index > 0:
-		Sfx.play(&"hwacha_fire", -4.0, 0.12)
+		# every arrow of the volley kicks a little: the chest ripples
+		var profile := FeelProfile.of(data.id)
+		Sfx.play(&"hwacha_fire", profile.sound_db - 4.0, profile.sound_jitter, profile.sound_pitch)
+		_kick_view(profile)
+		_feel_shot(profile, false)
 	_volley_index += 1
 	_volley_left -= 1
 	_volley_timer = data.volley_interval
@@ -579,19 +675,53 @@ func _tick_volley(delta: float) -> void:
 		_volley_timer += carry
 
 
-## Camera shake of one shot. A capped weapon (the gatling) raises the
-## trauma only up to its cap, so a long burst rumbles steadily instead of
-## piling up to full shake.
-func _shake(data: WeaponData) -> void:
-	if data.shake_cap <= 0.0:
-		Events.shake_requested.emit(data.shake)
-		return
-	var camera := get_viewport().get_camera_3d() as ShakeCamera
+## The model's kick of one shot of a weapon with [param profile]: its
+## spring tuned to the weapon, every channel jolted to its peak (yaw,
+## roll and the sideways shove to a random side).
+func _kick_view(profile: FeelProfile) -> void:
+	_since_shot = 0.0
+	kicks_given += 1
+	_recoil.tune(profile.kick_frequency, profile.kick_damping)
+	_recoil.kick(KICK_BACK, profile.kick_back)
+	_recoil.kick(KICK_RISE, profile.kick_rise)
+	_recoil.kick(KICK_SIDE, profile.kick_side * _random_side())
+	_recoil.kick(KICK_PITCH, profile.kick_pitch)
+	_recoil.kick(KICK_YAW, profile.kick_yaw * _random_side())
+	_recoil.kick(KICK_ROLL, profile.kick_roll * _random_side())
+
+
+## What the guard's view feels of one shot: the camera's kick and FOV
+## punch, the shot's shake (only up to the weapon's cap: a run of shots
+## rumbles at its level instead of piling up) and, when it landed on an
+## exhibit ([param landed]), the blow's own shake. The camera is the one
+## the holder rides on (the guard's), else the active one; without a
+## ShakeCamera the shake goes out as a request.
+func _feel_shot(profile: FeelProfile, landed: bool) -> void:
+	var shake := profile.shake + (profile.hit_shake if landed else 0.0)
+	var camera := get_parent() as ShakeCamera
+	if camera == null and is_inside_tree():
+		camera = get_viewport().get_camera_3d() as ShakeCamera
 	if camera == null:
-		Events.shake_requested.emit(minf(data.shake, data.shake_cap))
+		if shake > 0.0:
+			Events.shake_requested.emit(minf(shake, profile.shake_cap))
 		return
-	var trauma := camera.trauma
-	trauma.value = maxf(trauma.value, minf(trauma.value + data.shake, data.shake_cap))
+	camera.add_trauma(shake, profile.shake_cap)
+	camera.kick(profile.camera_pitch, profile.camera_yaw * _random_side(), profile.camera_frequency, profile.camera_damping)
+	if profile.fov_punch > 0.0:
+		camera.kick_fov(profile.fov_punch)
+
+
+func _random_side() -> float:
+	return _rng.randf_range(0.6, 1.0) * (1.0 if _rng.randf() < 0.5 else -1.0)
+
+
+## The model's kick now: back, rise, side (m) and pitch, yaw, roll
+## (degrees), for tests.
+func view_kick() -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	for channel in 6:
+		out.append(_recoil.value(channel))
+	return out
 
 
 ## The taser arc jumps from the first target (its hurtbox, not the hit
@@ -643,17 +773,36 @@ func _accumulate(hits: Dictionary, hurtbox: Hurtbox, data: WeaponData, point: Ve
 		info.can_finish = data.can_finish
 		info.weapon = data.id
 		info.origin = global_position
+		info.lock_breaker = data.lock_breaker
 		hits[receiver] = info
 	info.amount += data.damage * (data.weak_point_multiplier if hurtbox.weak_point else 1.0)
 	info.knockback += data.knockback
+	# every pellet carries its share of the shot's weight
+	info.impact = minf(info.impact + FeelProfile.of(data.id).hit_weight / maxi(data.pellets, 1), 1.0)
 	info.weak_point = info.weak_point or hurtbox.weak_point
+
+
+## A shot on the level: what it throws off that surface and the mark it
+## leaves there (a bullet's hole, a taser's burn), as big as the weapon's
+## profile says.
+func _mark_wall(data: WeaponData, hit: Dictionary, point: Vector3, normal: Vector3, point_blank: bool) -> void:
+	var profile := FeelProfile.of(data.id)
+	var surface := Surface.of_hit(hit.get("collider"), point, normal, get_tree() if is_inside_tree() else null)
+	Fx.surface_impact(point, normal, surface, 0.4 + 0.6 * profile.hit_weight / maxi(data.pellets, 1))
+	if point_blank:
+		return
+	if data.damage_kind == DamageInfo.Kind.BALLISTIC:
+		Fx.mark(point, normal, surface, profile.decal_size)
+	elif data.damage_kind == DamageInfo.Kind.ELECTRIC:
+		Fx.mark(point, normal, Fx.SCORCH, profile.decal_size)
 
 
 func _trail(data: WeaponData, from: Vector3, to: Vector3) -> void:
 	if data.damage_kind == DamageInfo.Kind.ELECTRIC:
 		Fx.arc(from, to)
 	else:
-		Fx.tracer(from, to)
+		var profile := FeelProfile.of(data.id)
+		Fx.tracer(from, to, profile.tracer_color, profile.tracer_width, profile.tracer_time)
 
 
 func _muzzle_position(id: StringName, fallback: Vector3) -> Vector3:
