@@ -112,8 +112,10 @@ const HERO_FIT: Array[String] = ["lamassu@assyria_gate"]
 ## Fitted pieces drawn in columns along their x ("kit@room" -> how many):
 ## the card catalogue's arc round the astrolabe, the drum's bookcases (each
 ## curved along the drum; a blind portal's leaves sit in the middle one's
-## recess).
-const FIT_COLUMNS := {"catalogue@court_reading": 4, "shelf@court_reading": 3, "pedestal@asia_korea": 3}
+## recess); the Lion Hunt's chariot (its wheels apart from the cab and the
+## pole: one outline round them all stands proud of the air between).
+const FIT_COLUMNS := {"catalogue@court_reading": 4, "shelf@court_reading": 3, "pedestal@asia_korea": 3,
+	"chariot@assyria_lions": 3}
 
 
 ## True when [param spec]'s collision is drawn from its look (FIT_COLLISION).
@@ -427,6 +429,23 @@ static func bounds(id: String) -> AABB:
 	node.free()
 	_bounds_cache[id] = out
 	return out
+
+
+## Model [param id] (a prop modelled for a greybox box: ArtLibrary.KIT_PROPS)
+## fitted into a box of [param size] whose base centre is [param parent]'s
+## origin: turned by [param yaw], scaled by the largest factor that keeps it
+## inside on every axis (or stretched to the box on each, [param stretch]),
+## its footprint centred, its base on the floor. Returns the model's node.
+static func fit_model(parent: Node3D, id: String, size: Vector3, yaw: float = 0.0, stretch: bool = false) -> Node3D:
+	var box := bounds(id)
+	var turn := Basis(Vector3.UP, yaw)
+	var turned := (Transform3D(turn, Vector3.ZERO) * box).size
+	var k := size / turned.max(Vector3.ONE * 0.001)
+	if not stretch:
+		k = Vector3.ONE * minf(k.x, minf(k.y, k.z))
+	var basis := Basis.from_scale(k) * turn
+	var foot := Vector3(box.get_center().x, box.position.y, box.get_center().z)
+	return ArtKit._add(parent, id, Transform3D(basis, -(basis * foot)))
 
 
 ## The café's counter filling its box: the front on the piece's south face

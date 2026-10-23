@@ -12,9 +12,12 @@ static func give(guard: Player, id: StringName, persistent: bool = true) -> bool
 		return false
 	if persistent:
 		GameState.add_weapon(id)
+	var had := guard.weapons.has_weapon(id)
 	var state := Loadout.grant(guard, id, GameState)
 	if state != null:
 		guard.weapons.select_id(id)
+		if not had:
+			guard.weapons.found(id)   # new: looked over at the first calm moment
 	if persistent:
 		NightRules.save_progress(GameState, RunState)
 	Sfx.play(&"pickup")

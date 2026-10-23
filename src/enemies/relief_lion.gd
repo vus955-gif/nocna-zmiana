@@ -117,6 +117,12 @@ func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
 		wall.rest()
 
 
+## Not while it cracks out of its slab, steps or sinks (the wall's own
+## clock runs every frame then).
+func _may_doze() -> bool:
+	return wall == null or wall.state == ReliefMoves.Wall.IN or wall.state == ReliefMoves.Wall.OUT
+
+
 func _set_hurtable(on: bool) -> void:
 	if on == _hurtable:
 		return

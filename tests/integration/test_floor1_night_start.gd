@@ -27,7 +27,7 @@ func test_a_night_starts_quickly() -> void:
 	Museum.prepare_level()   # what the loading screen does first
 	var first := _start()
 	var again := _start()
-	assert_lt(int(first["build_msec"]), 2000, "the level is built, not carved (%d ms)" % first["build_msec"])
+	assert_lt(int(first["build_msec"]), roundi(2000 * time_slack()), "the level is built, not carved (%d ms)" % first["build_msec"])
 	var report := {"first": first, "again": again}
 	print("Floor I night start: %s" % JSON.stringify(report))
 	var file := FileAccess.open(REPORT, FileAccess.WRITE)

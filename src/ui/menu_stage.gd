@@ -53,6 +53,7 @@ const DUST_AMOUNT := 150
 ## must be, the stutter itself (energy fraction, seconds).
 const FLICKER_EVERY := Vector2(7.0, 16.0)
 const FLICKER_FAR := 14.0
+const SOFT_BEATS: Array[Vector2] = [Vector2(Flashing.DIP_FLOOR, 0.4), Vector2(1.0, 0.0)]
 const FLICKER_BEATS: Array[Vector2] = [Vector2(0.1, 0.07), Vector2(1.0, 0.09), Vector2(0.3, 0.05), Vector2(0.9, 0.12), Vector2(0.0, 0.06), Vector2(1.0, 0.0)]
 ## A cloud thins the moon: how often, how long, how much it takes.
 const CLOUD_EVERY := Vector2(30.0, 60.0)
@@ -349,15 +350,21 @@ func stutter() -> void:
 
 func _next_beat() -> void:
 	_beat += 1
-	if _beat >= FLICKER_BEATS.size() or not is_instance_valid(_lamp):
+	if _beat >= beats().size() or not is_instance_valid(_lamp):
 		if is_instance_valid(_lamp):
 			_lamp.light_energy = _lamp_base
 		_beat = -1
 		_lamp = null
 		return
-	var beat := FLICKER_BEATS[_beat]
+	var beat := beats()[_beat]
 	_lamp.light_energy = _lamp_base * beat.x
 	_beat_left = beat.y
+
+
+## The stutter's beats (light share, seconds): the burst of drop-outs, or -
+## with the option "reduce_flashing" - one soft dip.
+func beats() -> Array[Vector2]:
+	return SOFT_BEATS if Flashing.on() else FLICKER_BEATS
 
 
 func _set_moon(fraction: float) -> void:

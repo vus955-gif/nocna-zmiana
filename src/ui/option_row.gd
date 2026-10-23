@@ -7,11 +7,14 @@ extends Button
 ## forward; a slider can also be dragged (the mouse wheel scrolls the list,
 ## it never moves a slider). Every change goes to Settings at once (applied
 ## live, written a moment later) - or, for a row of the game itself (the
-## difficulty), to its [member getter] and [member setter].
+## difficulty), to its [member getter] and [member setter]. An ACTION row
+## changes nothing itself: Enter or a click emits [signal activated] (it
+## opens a panel of its own, the keys) and it shows [member shown].
 
-enum Kind { SLIDER, CHOICE, TOGGLE }
+enum Kind { SLIDER, CHOICE, TOGGLE, ACTION }
 
 signal value_changed(key: StringName)
+signal activated
 
 const HEIGHT := 56
 const VALUE_WIDTH := 400
@@ -33,6 +36,8 @@ var choices: Array = []
 ## () -> value and (value) -> void in place of Settings (invalid: Settings).
 var getter: Callable = Callable()
 var setter: Callable = Callable()
+## ACTION: () -> [text, highlighted] shown on the right.
+var shown: Callable = Callable()
 
 var _name: Label
 var _value: Label
@@ -69,6 +74,16 @@ static func bound_choice(text_key: String, options: Array, read: Callable, write
 	var row := choice(&"", text_key, options)
 	row.getter = read
 	row.setter = write
+	return row
+
+
+## A row that opens something of its own: [param summary] returns
+## [text, highlighted] for its right side.
+static func action(text_key: String, summary: Callable) -> OptionRow:
+	var row := OptionRow.new()
+	row.kind = Kind.ACTION
+	row.label_key = text_key
+	row.shown = summary
 	return row
 
 
@@ -141,6 +156,10 @@ func refresh() -> void:
 			var on := bool(current)
 			_value.text = tr("OPT_ON") if on else tr("OPT_OFF")
 			_value.add_theme_color_override("font_color", UiTheme.ACCENT if on else UiTheme.MUTED)
+		Kind.ACTION:
+			var summary: Array = shown.call() if shown.is_valid() else ["", false]
+			_value.text = "%s   ›" % summary[0]
+			_value.add_theme_color_override("font_color", UiTheme.ACCENT if summary[1] else UiTheme.MUTED)
 
 
 ## Moves the value one step: -1 (left) or +1 (right).
@@ -155,6 +174,8 @@ func step(direction: int) -> void:
 			_apply_value(choices[index][0])
 		Kind.TOGGLE:
 			_apply_value(not bool(_current()))
+		Kind.ACTION:
+			pass
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -175,6 +196,8 @@ func _on_pressed() -> void:
 		step(click_direction(clicked_x))
 	elif kind == Kind.TOGGLE:
 		step(1)
+	elif kind == Kind.ACTION:
+		activated.emit()
 
 
 ## Which way a click at [param x] (row-local, -1 = no click) steps a

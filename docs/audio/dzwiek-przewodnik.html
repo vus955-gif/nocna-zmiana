@@ -152,6 +152,7 @@ figcaption { color: var(--muted); font-size: 0.88rem; margin-top: 6px; }
 		<li><a href="#integracja">Co zostało do wpięcia</a></li>
 		<li><a href="#pietro1">Piętro I: strefy, muzyka biomów, strażnicy, efekty</a></li>
 		<li><a href="#glos">Głos: Heniek, System, audioprzewodnik</a></li>
+		<li><a href="#akustyka">Akustyka sal, przesłanianie, opowieść ambientu</a></li>
 	</ol>
 </nav>
 
@@ -560,7 +561,7 @@ cd tools/music &amp;&amp; "$PY" -m unittest -v test_music_gen   # testy generato
 </section>
 <section id="glos">
 <h2>12. Głos: Heniek, System, audioprzewodnik</h2>
-<p>Gra mówi po angielsku (Kokoro-82M nie ma polskiego), napisy są w języku gry. Mówią dwie postacie „przez urządzenie”: <b>Heniek</b> przez krótkofalówkę i <b>System</b> (Wirtualny Kustosz) z głośników ściennych oraz przy stojakach audioprzewodnika. Projekt: <code>docs/superpowers/specs/2026-10-08-glos-projekt.md</code>; etap G1 (szkielet) w <code>docs/superpowers/plans/2026-10-08-glos-g1-szkielet.md</code>, treść kwestii (etap G2: 140 kwestii – Heniek 69, System 47, audioprzewodnik 12 stanowisk × 2) w <code>docs/superpowers/plans/2026-10-19-glos-g2-kwestie.md</code> (lista kwestii, kto kiedy mówi, przewodnik odsłuchu).</p>
+<p>Gra mówi po angielsku (Kokoro-82M nie ma polskiego), napisy są w języku gry. Mówią dwie postacie „przez urządzenie”: <b>Heniek</b> przez krótkofalówkę i <b>System</b> (Wirtualny Kustosz) z głośników ściennych oraz przy stojakach audioprzewodnika. Projekt: <code>docs/superpowers/specs/2026-10-08-glos-projekt.md</code>; etap G1 (szkielet) w <code>docs/superpowers/plans/2026-10-08-glos-g1-szkielet.md</code>, treść kwestii (etap G2: 140 kwestii – Heniek 69, System 47, audioprzewodnik 12 stanowisk × 2) w <code>docs/superpowers/plans/2026-10-19-glos-g2-kwestie.md</code> (lista kwestii, kto kiedy mówi, przewodnik odsłuchu); etap G3 (cztery kwestie zdarzeń niesamowitych: awaria lamp, zniszczone „muzeum jest zamknięte”, Heniek „ale nie on”, uwaga o oczach portretów) w <code>docs/superpowers/plans/2026-10-22-glos-g3.md</code>.</p>
 <h3>Kanały</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>Szyna</th><th>Wysyłka</th><th>Efekty</th><th>Kto</th></tr></thead>
@@ -582,9 +583,10 @@ cd tools/music &amp;&amp; "$PY" -m unittest -v test_music_gen   # testy generato
 <thead><tr><th>Pole reguły</th><th>Znaczenie</th></tr></thead>
 <tbody>
 <tr><td><code>speaker</code></td><td><code>heniek</code> (kanał radio) albo <code>system</code> (głośniki; ze <code>station</code> – stojak)</td></tr>
-<tr><td><code>event</code></td><td>sygnał <code>Events</code>: <code>night_started</code>, <code>power_cut</code>, <code>witching_hour</code>, <code>dawn_broke</code>, <code>room_entered</code> (tylko pierwsze wejście), <code>guardian_awakened</code>, <code>guardian_defeated</code>, <code>shard_collected</code>, <code>seal_collected</code>, <code>gate_opened</code>, <code>boss_awakened</code>, <code>boss_defeated</code>, <code>cafe_entered</code>, <code>coffee_drunk</code>, <code>cafe_haywire</code>, <code>secret_found</code> (<code>kind</code> = próg nagrody <code>small</code>/<code>medium</code>/<code>great</code>, <code>count</code> = ile sekretów), <code>fatigue_rose</code> (<code>count</code> = stopień zmęczenia 1/2), <code>hour_struck</code> (<code>hour</code> na tarczy: 0 = północ … 5) – albo pseudo-zdarzenie reżysera: <code>death</code> (komentarz po śmierci na początku następnej nocy, na zmianę Heniek/System, najwyżej raz na noc), <code>destroyed</code> (próg liczby zniszczonych eksponatów, <code>count</code>), <code>stall</code> (zastój, <code>goal</code>), <code>night_time</code> (<code>at</code> sekund od startu nocy), <code>idle</code> (kamera 120 s w promieniu 1 m, raz na noc)</td></tr>
+<tr><td><code>event</code></td><td>sygnał <code>Events</code>: <code>night_started</code>, <code>power_cut</code>, <code>witching_hour</code>, <code>dawn_broke</code>, <code>room_entered</code> (tylko pierwsze wejście), <code>guardian_awakened</code>, <code>guardian_defeated</code>, <code>shard_collected</code>, <code>seal_collected</code>, <code>gate_opened</code>, <code>boss_awakened</code>, <code>boss_defeated</code>, <code>cafe_entered</code>, <code>coffee_drunk</code>, <code>cafe_haywire</code>, <code>secret_found</code> (<code>kind</code> = próg nagrody <code>small</code>/<code>medium</code>/<code>great</code>, <code>count</code> = ile sekretów), <code>fatigue_rose</code> (<code>count</code> = stopień zmęczenia 1/2), <code>hour_struck</code> (<code>hour</code> na tarczy: 0 = północ … 5), <code>night_phase_changed</code> (<code>kind</code> = faza: <code>calm</code>/<code>uneasy</code>/<code>witching</code>/<code>predawn</code>), <code>uncanny_event</code> (<code>kind</code> = <code>id</code> zdarzenia z <code>data/night/uncanny.json</code>, <code>room</code> – gdzie; od G3 niosą je cztery zdarzenia: <code>lamp_out</code>, <code>pa_click</code>, <code>radio_breath</code>, <code>court_eyes</code>) – albo pseudo-zdarzenie reżysera: <code>death</code> (komentarz po śmierci na początku następnej nocy, na zmianę Heniek/System, najwyżej raz na noc), <code>destroyed</code> (próg liczby zniszczonych eksponatów, <code>count</code>), <code>stall</code> (zastój, <code>goal</code>), <code>night_time</code> (<code>at</code> sekund od startu nocy), <code>idle</code> (kamera 120 s w promieniu 1 m, raz na noc)</td></tr>
 <tr><td><code>night</code>, <code>night_min</code>, <code>zone</code>, <code>guardian</code>, <code>count</code>, <code>goal</code>, <code>room</code>, <code>gate</code>, <code>modifier</code>, <code>hour</code>, <code>kind</code></td><td>warunki dopasowania (<code>VoiceRules</code>); brak pola = nie filtruje. <code>room</code>/<code>kind: haven</code> – sala wejścia (sale przystani z <code>Floor1Plan.HAVENS</code>), <code>gate</code> – otwarta brama, <code>modifier</code> – modyfikator nocy (<code>blackout</code>, <code>full_moon</code>, <code>calm</code>), <code>kind</code> – kawa, rodzaj sali albo próg nagrody sekretu</td></tr>
 <tr><td><code>delay</code></td><td>sekundy przed wejściem do kolejki</td></tr>
+<tr><td><code>expires</code></td><td>kwestia związana z chwilą (trzask głośnika, gaśnięcie lamp): sekundy, które gotowa kwestia (po <code>delay</code>) może czekać na swoją kolej; potem przepada <b>niewysłuchana</b> i przy następnym zdarzeniu dostaje nową szansę. Brak pola – czeka tak długo, jak jej priorytet (uwaga poboczna 60 s). Zdarzenie z <code>quiet_voice</code> w <code>uncanny.json</code> zagra tylko przy wolnym głosie (<code>VoiceDirector.is_free()</code>: nic nie gra, nic nie czeka, minęło 20 s ciszy)</td></tr>
 <tr><td><code>priority</code></td><td>0 uwaga poboczna, 1 zwykła (domyślnie), 2 wydarzenie; audioprzewodnik (3) wchodzi od razu</td></tr>
 <tr><td><code>once</code></td><td>raz na grę (domyślnie <code>true</code>; zapis w <code>GameState.voice_heard</code>)</td></tr>
 <tr><td><code>level</code>, <code>speed</code></td><td>stopień obróbki Systemu 0–2, tempo nadpisujące mówiącego</td></tr>
@@ -615,6 +617,79 @@ cd tools/tts &amp;&amp; .venv/Scripts/python.exe -m unittest -v     # testy Pyth
 	<li>Głosy wybrane przez właściciela (8.10): Heniek <code>am_michael</code> (radio robi szyna), System <code>af_nicole</code> ze stopniem 2 na co dzień (ASMR z zacięciami – zamierzone; brzmienia <code>system_fx.py</code> nie „czyścić”).</li>
 </ul>
 <p>Testy: <code>test_voice_buses</code>, <code>test_voice_data</code>, <code>test_voice_queue</code>, <code>test_voice_director</code>, <code>test_subtitle_bar</code>, <code>test_voice_props</code>; zapis w <code>test_game_state</code> (<code>voice_heard</code>, <code>voice_state</code>).</p>
+</section>
+<section id="akustyka">
+<h2>13. Akustyka sal, przesłanianie, opowieść ambientu</h2>
+<p>Backlog #40 i #41, plan <code>docs/superpowers/plans/2026-10-21-akustyka-ambient.md</code> (tam przewodnik odsłuchu). Trzy rzeczy: strzał i wybuch brzmią <b>w swojej sali</b> (ogon sali), dźwięk zza ściany jest <b>stłumiony</b> (przesłanianie), a między walkami budynek <b>opowiada</b> rzadkimi dźwiękami i <b>milknie</b>, kiedy trzeba. Wszystko sterują dwa pliki danych: <code>data/audio/acoustics.json</code> i <code>data/audio/ambient_story.json</code> (gra i generatory czytają te same liczby).</p>
+<div class="cards">
+	<div class="card"><b>Acoustics</b><span>dziecko <code>Ambience</code>: szyny pogłosu z danych, ogony sal, przesłanianie głosów <code>Sfx</code> i kroków</span></div>
+	<div class="card"><b>AcousticGraph</b><span>ile przejść między salami (otwory, schody; balkon = sala gospodarza)</span></div>
+	<div class="card"><b>AmbientStory</b><span>czysta logika: co, gdzie i kiedy opowiedzieć; okna ciszy</span></div>
+	<div class="card"><b>StoryLayer</b><span>dziecko <code>Ambience</code>: patrzy na świat, gra historie, deszcz, przyciszenia</span></div>
+</div>
+<h3>Profile przestrzeni</h3>
+<p>Jedenaście profili = jedenaście presetów <code>ReverbZone</code> (nowe: <b>STORE</b>, <b>STEEL</b>, <b>OPEN</b>; ich szyny <code>ReverbStore/Steel/Open</code> tworzy <code>Acoustics.ensure_buses()</code> przy starcie). <b>Parametry szyn pogłosu pochodzą z pliku danych</b> (pole <code>bus</code>) – plik wygrywa z <code>default_bus_layout.tres</code>. Każda z 114 sal Piętra I ma w tabeli <code>rooms</code> swój profil i wysyłkę; <code>Ambience.reverb_for()</code> czyta ją po mapie lobby, przed słowami w id (nowe słowa: <code>store</code>, <code>cloak</code>, <code>cellar</code>, <code>lodge</code>, <code>closet</code> → STORE; <code>boiler</code> → STEEL) i strefą (dach → OPEN).</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Profil</th><th>Gdzie</th><th class="num">RT60</th><th class="num">Predelay</th><th>Charakter ogona</th><th class="num">Ogon pistoletu słychać*</th></tr></thead>
+<tbody>
+<tr><td>vast</td><td>Dziedziniec, balkon, czytelnia, planetarium</td><td class="num">4,6 s</td><td class="num">45 ms</td><td>późne odbicia, jasny (szkło)</td><td class="num">2,0 s</td></tr>
+<tr><td>hall</td><td>hol wejściowy, Kolos, Partenon, Nereidy, świątynia, krypta, Chiny</td><td class="num">2,8 s</td><td class="num">28 ms</td><td>kamienne dudnienie</td><td class="num">1,3 s</td></tr>
+<tr><td>gallery</td><td>galerie Egiptu, Asyrii, Ameryk, hol północny</td><td class="num">2,2 s</td><td class="num">18 ms</td><td>trzepot echa co 46 ms</td><td class="num">0,85 s</td></tr>
+<tr><td>room</td><td>Azja (porcelana, Korea, zbroje)</td><td class="num">0,85 s</td><td class="num">7 ms</td><td>krótko, ciepło</td><td class="num">0,35 s</td></tr>
+<tr><td>store</td><td>magazyny, schowki, szatnie, przystanie, kanciapa</td><td class="num">0,38 s</td><td class="num">2 ms</td><td>pudełkowy klask, rezonanse 140–290 Hz</td><td class="num">0,3 s</td></tr>
+<tr><td>corridor</td><td>korytarze, klatki schodowe, grobowce, szyb</td><td class="num">1,3 s</td><td class="num">4 ms</td><td>twardo, trzepot co 21 ms</td><td class="num">0,45 s</td></tr>
+<tr><td>library</td><td>Oświecenie, archiwum w podziemiach</td><td class="num">0,9 s</td><td class="num">9 ms</td><td>ciemny, góra wchłonięta</td><td class="num">0,45 s</td></tr>
+<tr><td>concrete</td><td>podziemia</td><td class="num">1,8 s</td><td class="num">5 ms</td><td>jasno, blisko</td><td class="num">0,6 s</td></tr>
+<tr><td>steel</td><td>kotłownia, maszynownia na dachu, winda towarowa</td><td class="num">2,1 s</td><td class="num">5 ms</td><td>dzwoniące blachy i rury</td><td class="num">0,65 s</td></tr>
+<tr><td>garden</td><td>ogród japoński</td><td class="num">0,7 s</td><td class="num">25 ms</td><td>kilka dalekich ścian</td><td class="num">0,3 s</td></tr>
+<tr><td>open</td><td>kładki dachu</td><td class="num">0,45 s</td><td class="num">40 ms</td><td>echa kamienic: 240, 430, 690, 1050 ms</td><td class="num">1,1 s</td></tr>
+</tbody>
+</table></div>
+<p class="sub">* do −40 dB pod szczytem strzału, suchy pistolet + ogon z <code>tail_db</code> (liczone na WAV-ach, <code>tools/music/acoustics_tails.py</code>). Suchy pistolet sam spada do −40 dB po ok. 0,25 s.</p>
+<h3>Ogony sal</h3>
+<p>Strzał gra jak dotąd, a obok, w tej samej chwili, gotowy <b>ogon sali</b> (<code>assets/ambience/tails/tail_&lt;profil&gt;_&lt;klasa&gt;.ogg</code>, 33 pliki stereo, ok. 1 MB): splot pobudzenia klasy (<code>crack</code> – pistolet, sztucer, harpun, gatling; <code>boom</code> – strzelba, rakietnica, hwacha, trzaśnięcie drzwi, łupnięcie; <code>blast</code> – wybuch racy, uderzenia strażników, walący się mur) z syntetyczną odpowiedzią impulsową profilu. Tabela <code>tails</code> (dźwięk → klasa, dB) i <code>weapons</code> (gatling: przez <code>Events.weapon_fired</code>, najwyżej co 0,1 s).</p>
+<ul>
+	<li>Broń strażnika (dźwięk 2D na <code>SFX</code>) → ogon sali, w której stoi słuchacz, płasko na <code>SFXReturn</code> (obok SFX – nie przechodzi drugi raz przez pogłos słuchacza; suwak efektów obejmuje go).</li>
+	<li>Dźwięk 3D z tabeli (wybuch, uderzenie, rozbity marmur…) → ogon <b>sali źródła</b> w 3D w miejscu źródła, bez pogłosu strefy (ogon to sala); za dwiema ścianami – przez szynę przesłaniania.</li>
+	<li>Bez strefy pogłosu (sandbox, menu) – bez ogona. Najwyżej <code>tail_voices</code> (6) naraz, tej samej klasy nie częściej niż co <code>tail_gap</code> (0,07 s). Głośność: <code>tail_db</code> profilu + dB dźwięku + głośność samego strzału.</li>
+</ul>
+<h3>Przesłanianie</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Sytuacja</th><th>Ściany</th><th>Szyna</th><th>Co słychać</th></tr></thead>
+<tbody>
+<tr><td>ta sama sala albo czysty promień ucho → źródło</td><td class="num">0</td><td><code>SFX</code></td><td>jak dotąd</td></tr>
+<tr><td>sąsiednia sala, bez linii wzroku</td><td class="num">1</td><td><code>SFXObstructed</code> (dolnoprzepustowy 1,5 kHz, −4 dB)</td><td>stłumione, pogłos sali źródła zostaje</td></tr>
+<tr><td>dwie sale i dalej</td><td class="num">2</td><td><code>SFXOccluded</code> (480 Hz, −10 dB, ciemny pogłos)</td><td>„coś za ścianami”, bez pogłosu sali źródła</td></tr>
+</tbody>
+</table></div>
+<p>Liczone raz, przy starcie dźwięku: <code>room_at</code> obu punktów, BFS w <code>AcousticGraph</code> (z pamięcią), jeden promień po warstwie WORLD (cel podniesiony o 0,6 m; trafienie bliżej niż 0,5 m od celu = czysto). Kroki eksponatów: wynik na eksponat ważny 0,4 s. Wpięcie bez zmian w <code>sfx.gd</code>: <code>Ambience</code> już słucha <code>Sfx.child_entered_tree</code>. Pętle na własnych odtwarzaczach (rój skarabeuszy, galop kentaura, tryby planetarium) i głośniki Systemu – bez przesłaniania.</p>
+<h3>Opowieść ambientu i cisza</h3>
+<p>Historie (<code>ambient_story.json</code> → <code>stories</code>): osiadanie budynku, tykanie kanałów, podmuch wentylacji (gdy jest prąd), kroki-widma w sąsiedniej sali, przesuwający się eksponat (przy prawdziwym śpiącym eksponacie, w jego materiale: kamień, drewno, metal, wosk/płótno), szepty w Egipcie, kurant i nakręcanie zegara w Oświeceniu, zegary milknące w Sali Zegarów, syrena i tramwaj za oknami, radiostacja na biurku kanciapy, grzmot w noc deszczu. Odstępy wg fazy nocy (spokój 38–75 s, niepokój 28–55, godzina duchów 18–40, przed świtem 14–30; noc 1 ×1,3), każda historia ma czas odnowienia i limit na noc. Faza: <code>Events.night_phase_changed</code> (gałąź eskalacji nocy), a bez niego <code>hour_struck</code> 1:00 / 3:00 / 5:00 i <code>witching_hour</code>. Deszcz w niektóre noce (od nocy 2, 30 %, nie w blackout): warstwy <code>rain_glass</code> (Dziedziniec, ciszej hol wejściowy i kanciapa) i <code>rain_open</code> (dach, ogród).</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Cisza</th><th>Historie</th><th>Dalekie dźwięki stref</th><th>Warstwy</th></tr></thead>
+<tbody>
+<tr><td>przystań (sala z <code>RoomSpec.haven</code>)</td><td>tylko radio w kanciapie</td><td>milkną</td><td class="num">−3 dB</td></tr>
+<tr><td>sala obok areny śpiącego strażnika</td><td>milkną</td><td>milkną</td><td class="num">−4 dB</td></tr>
+<tr><td>arena śpiącego strażnika</td><td>milkną</td><td>milkną</td><td class="num">−9 dB</td></tr>
+<tr><td>martwa cisza (od nocy 2, od 1:00, 20 %)</td><td>5–9 s nic, potem kroki-widma</td><td>milkną</td><td class="num">−10 dB</td></tr>
+<tr><td>kwestia głosu i 2 s po niej</td><td>czekają</td><td>czekają</td><td><code>VoiceDuck</code> −4 dB jak dotąd</td></tr>
+<tr><td>walka (muzyka COMBAT/BOSS/GUARDIAN)</td><td>czekają</td><td>grają</td><td>—</td></tr>
+<tr><td>po upadku strażnika / po zdarzeniu niesamowitym</td><td>40 s / 25 s ciszy</td><td>milkną</td><td>—</td></tr>
+</tbody>
+</table></div>
+<pre><code>Ambience.acoustics.walls_to(punkt)              # 0, 1, 2 – ściany między uszami a punktem
+Ambience.acoustics.play_tail("boom", &amp;"hall", 0.0)   # ogon ręcznie (zwraca odtwarzacz albo null)
+Ambience.story_layer.tell(Ambience.story_layer.story.story(&amp;"whispers"))   # historia ręcznie
+Ambience.story_layer.story.hush(20.0)          # cisza na 20 s (np. przed scenką)
+Ambience.hush_layer(&amp;"clocks", 4.0)            # jedna warstwa milknie
+Acoustics.profile_of_room(&amp;"court")            # &amp;"vast"</code></pre>
+<h3>Regeneracja i testy</h3>
+<pre><code>PY="D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe"
+"$PY" tools/music/gen_ambience.py tails      # 33 ogony z data/audio/acoustics.json
+"$PY" tools/music/gen_ambience.py story      # 35 ujęć historii i 2 warstwy deszczu
+".../blender.exe" -b --factory-startup --python tools/music/encode_ogg.py   # ogony stereo 96 kbit/s
+cd tools/music &amp;&amp; "$PY" -m unittest -v test_acoustics   # RT60 Schroedera, predelay, trzepot, echa, szwy deszczu</code></pre>
+<p>Testy Godota: <code>test_acoustics</code>, <code>test_acoustic_graph</code>, <code>test_occlusion</code>, <code>test_room_tails</code>, <code>test_ambient_story</code>, <code>test_story_layer</code>; zasoby w <code>test_audio_assets</code>.</p>
 </section>
 </main>
 </body>

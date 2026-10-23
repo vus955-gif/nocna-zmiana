@@ -213,6 +213,7 @@ func _rally_line(point: Vector3) -> void:
 	near.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
 	for i in mini(near.size(), LINE_MAX):
 		var comrade: Hoplite = near[i][1]
+		comrade.end_doze()   # (its sleep caught up before it is told to keep quiet)
 		comrade.brain.quiet = true
 		comrade.brain.hear(point, true)
 

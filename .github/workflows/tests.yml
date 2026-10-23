@@ -1,0 +1,201 @@
+# Headless tests of the game (Godot 4.7.2). Prepared, not switched on: the file
+# does nothing until it is pushed to a GitHub repository.
+#
+# - Every push and pull request runs the QUICK subset (tests/quick_tests.txt:
+#   the unit tests and the key integration tests) on windows-latest, the same
+#   system the game is developed and exported on (standard hosted runners are
+#   free for public repositories, Windows included).
+# - "Run workflow" (workflow_dispatch) can run the FULL suite instead, and
+#   optionally the same on Linux as an extra check (never needed for a release).
+# - The engine is the official release from github.com/godotengine/godot
+#   (verified against the checksum published with it), the imported assets
+#   (.godot) are cached by the content of the *.import files.
+# - On a failure the whole log and the per-process logs are uploaded.
+#
+# Nothing in the workflow needs a secret.
+
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: "Which tests (full = all ~3200, much slower)"
+        type: choice
+        options: [quick, full]
+        default: quick
+      linux:
+        description: "Also run the same on ubuntu-latest (optional extra check)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: "4.7.2"
+  # sha256 of the zips, from the release's asset list (gh api repos/godotengine/godot/releases/tags/4.7.2-stable)
+  GODOT_LINUX_SHA256: cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4
+  GODOT_WINDOWS_SHA256: 731980f9608d61333e5baf54a2ef17210acc7a538446c0cb9969f002aca1e953
+
+jobs:
+  linux:
+    name: ${{ inputs.suite }} suite (Linux)
+    if: github.event_name == 'workflow_dispatch' && inputs.linux
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.suite == 'full' && 90 || 30 }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Godot ${{ env.GODOT_VERSION }}
+        id: godot
+        uses: actions/cache@v6
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64-${{ env.GODOT_LINUX_SHA256 }}
+
+      - name: Download Godot
+        if: steps.godot.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p ~/godot
+          cd ~/godot
+          curl -fsSL --retry 3 -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          echo "${GODOT_LINUX_SHA256}  godot.zip" | sha256sum -c -
+          unzip -q godot.zip
+          rm godot.zip
+          chmod +x "Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+
+      - name: Imported assets (cache)
+        id: import_cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .godot
+          key: godot-import-${{ env.GODOT_VERSION }}-${{ hashFiles('**/*.import', 'project.godot', 'locale/strings.csv') }}
+          restore-keys: godot-import-${{ env.GODOT_VERSION }}-
+
+      - name: Import the project
+        shell: bash
+        run: |
+          GODOT="$HOME/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          "$GODOT" --version
+          "$GODOT" --headless --path . --import 2>&1 | tail -n 20 || true
+
+      - name: Keep the imported assets
+        if: steps.import_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .godot
+          key: godot-import-${{ env.GODOT_VERSION }}-${{ hashFiles('**/*.import', 'project.godot', 'locale/strings.csv') }}
+
+      - name: Tests
+        shell: bash
+        env:
+          SUITE: ${{ inputs.suite || 'quick' }}
+          # a hosted runner is slower than the developer's PC: budgets in wall-clock time x3 (TestCase.time_slack)
+          NZ_TEST_SLACK: "3"
+        run: |
+          set -o pipefail
+          export GODOT_BIN="$HOME/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          ARGS=()
+          [ "$SUITE" = "quick" ] && ARGS+=(--quick)
+          # a hosted runner has 4 CPU threads: three test processes
+          bash tools/run_tests.sh -j 3 "${ARGS[@]}" | tee tests-linux.log
+          {
+            echo "### ${SUITE} suite (Linux)"
+            echo '```'
+            grep -E "^[0-9]+ passed|^TOTAL|^FAIL|ERRORS DETECTED|NO SUMMARY" tests-linux.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the logs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-logs-linux
+          path: |
+            tests-linux.log
+            tests/_out/shards/*.log
+            tests/_out/*.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  windows:
+    name: ${{ inputs.suite || 'quick' }} suite (Windows)
+    runs-on: windows-latest
+    timeout-minutes: ${{ inputs.suite == 'full' && 120 || 45 }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Godot ${{ env.GODOT_VERSION }}
+        id: godot
+        uses: actions/cache@v6
+        with:
+          path: godot-bin
+          key: godot-${{ env.GODOT_VERSION }}-win64-${{ env.GODOT_WINDOWS_SHA256 }}
+
+      - name: Download Godot
+        if: steps.godot.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force godot-bin | Out-Null
+          Set-Location godot-bin
+          Invoke-WebRequest -Uri "https://github.com/godotengine/godot/releases/download/${env:GODOT_VERSION}-stable/Godot_v${env:GODOT_VERSION}-stable_win64.exe.zip" -OutFile godot.zip
+          $hash = (Get-FileHash godot.zip -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne $env:GODOT_WINDOWS_SHA256) { throw "checksum mismatch: $hash" }
+          Expand-Archive godot.zip -DestinationPath .
+          Remove-Item godot.zip
+
+      - name: Imported assets (cache)
+        id: import_cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .godot
+          key: godot-import-win-${{ env.GODOT_VERSION }}-${{ hashFiles('**/*.import', 'project.godot', 'locale/strings.csv') }}
+          restore-keys: godot-import-win-${{ env.GODOT_VERSION }}-
+
+      - name: Tests
+        shell: bash
+        env:
+          SUITE: ${{ inputs.suite || 'quick' }}
+          # a hosted runner is slower than the developer's PC: budgets in wall-clock time x3 (TestCase.time_slack)
+          NZ_TEST_SLACK: "3"
+        run: |
+          set -o pipefail
+          export GODOT_BIN="$PWD/godot-bin/Godot_v${GODOT_VERSION}-stable_win64_console.exe"
+          ARGS=()
+          [ "$SUITE" = "quick" ] && ARGS+=(--quick)
+          # a hosted runner has 4 CPU threads: three test processes
+          bash tools/run_tests.sh -j 3 "${ARGS[@]}" | tee tests-windows.log
+          {
+            echo "### ${SUITE} suite (Windows)"
+            echo '```'
+            grep -E "^[0-9]+ passed|^TOTAL|^FAIL|ERRORS DETECTED|NO SUMMARY" tests-windows.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the imported assets
+        if: ${{ !cancelled() && steps.import_cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v6
+        with:
+          path: .godot
+          key: godot-import-win-${{ env.GODOT_VERSION }}-${{ hashFiles('**/*.import', 'project.godot', 'locale/strings.csv') }}
+
+      - name: Keep the logs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-logs-windows
+          path: |
+            tests-windows.log
+            tests/_out/shards/*.log
+            tests/_out/*.json
+          if-no-files-found: ignore
+          retention-days: 14

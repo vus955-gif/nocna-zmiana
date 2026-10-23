@@ -13,12 +13,12 @@ const PSEUDO_EVENTS: Array[StringName] = [&"death", &"destroyed", &"stall", &"ni
 const EVENTS: Array[StringName] = [&"night_started", &"power_cut", &"witching_hour", &"dawn_broke",
 		&"room_entered", &"guardian_awakened", &"guardian_defeated", &"shard_collected", &"seal_collected",
 		&"gate_opened", &"boss_awakened", &"boss_defeated", &"cafe_entered", &"coffee_drunk", &"cafe_haywire",
-		&"secret_found", &"fatigue_rose", &"hour_struck",
+		&"secret_found", &"fatigue_rose", &"hour_struck", &"night_phase_changed", &"uncanny_event",
 		&"death", &"destroyed", &"stall", &"night_time", &"idle"]
 ## Every field a rule may have (test_voice_data rejects the rest).
 const RULE_FIELDS: Array[String] = ["speaker", "event", "night", "night_min", "zone", "guardian", "count", "goal",
 		"at", "delay", "priority", "once", "level", "speed", "station", "variant", "after_guardian", "after_witching",
-		"kind", "room", "gate", "modifier", "hour"]
+		"kind", "room", "gate", "modifier", "hour", "expires"]
 
 var lines: Dictionary = {}      ## String key -> Dictionary (the rule)
 var speakers: Dictionary = {}   ## String speaker -> {voice, speed}

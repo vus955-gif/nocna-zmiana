@@ -43,6 +43,16 @@ The interface is in **Polish and English** (switch in Options); voice-over is En
   readable telegraphs (every attack announced for at least 0.6 s) and an ecology of their own: combat roles,
   posts and patrol beats, routines when awake, and graded reactions to shots, doors and fallen neighbours —
   without turning the floor into a horde.
+- **A museum that fights back**: glass cases shatter, lamps swing and fall, busts and statues topple, paintings slip
+  and banners tear; seven tagged environmental tools (a chandelier, a storm lamp, a Greek column, a library bookcase,
+  a hoisted relief slab, a Korean rocket crate, a stone wheel) can be brought down on the exhibits, each with a fair
+  warning. Every wing has a mechanic of its own: curse plates, hunting nets, Helios mirrors, a regulator clock,
+  temple bells, sacred fire and totem sight, basement steam.
+- **Nights that escalate** in four phases, with hand-made uncanny events, foreshadowed ambushes, rooms that have
+  changed when you come back, fights staged as small scenarios (first contact, a turn of events, a flank) and a
+  set-piece across the Great Court — *Grandmother's Footsteps* in the dark.
+- **A story told by things**: brass exhibit labels with clues, staff vignettes in every wing, curios that answer the
+  guard, the café corkboard and the CCTV shift log.
 - **Gun feel**: a data-driven feel profile per weapon (spring recoil, camera kick that never moves your aim,
   capped screen shake, muzzle flashes, casings), hit reactions by direction and weight, kills that scale with
   the weapon, impact marks per surface.
@@ -57,8 +67,11 @@ The interface is in **Polish and English** (switch in Options); voice-over is En
   in Egypt, baroque metal in the library, taiko in Asia, clay flutes and death whistles in the Americas…),
   in four synced layers that follow the fight.
 - **Voice-over**: the caretaker Heniek on the walkie-talkie, the museum's own uncanny "System" over the
-  loudspeakers and an audio guide at twelve stands — 140 lines generated offline with Kokoro-82M;
+  loudspeakers and an audio guide at twelve stands — 144 lines generated offline with Kokoro-82M;
   subtitles in the game's language.
+- **Accessibility**: colour-blind palettes (deuteranopia, protanopia, tritanopia) for weapons, ammo, pickups and
+  the HUD with shape cues that work without colour, HUD size 75–150 %, subtitle size and backing, reduce flashing,
+  toggle sprint, key rebinding.
 
 ### Controls
 
@@ -71,7 +84,9 @@ The interface is in **Polish and English** (switch in Options); voice-over is En
 | Weapons | 1–8 or mouse wheel |
 | Map / help / fullscreen / pause | M / F1 / F11 / Esc |
 
-Keys follow physical positions, so they work on any keyboard layout.
+Keys follow physical positions, so they work on any keyboard layout. Every action has two places and takes
+keyboard keys and mouse buttons (the wheel too); rebind them in Options → Keys (a key already used by another
+action swaps with it). The F1 help and the on-screen prompts show your own keys.
 
 ## Run from source
 
@@ -82,16 +97,26 @@ Keys follow physical positions, so they work on any keyboard layout.
 
 ### Tests
 
-The project has its own headless test runner (no external test framework): ~2600 unit and integration
+The project has its own headless test runner (no external test framework): ~3400 unit and integration
 tests — night director determinism, reachability of every objective through every door the director may
-lock, whole scripted nights, guardian fights, save compatibility.
+lock, whole scripted nights, guardian fights, save compatibility. A headless no-cheat playthrough bot
+(`bash tools/run_playthrough.sh 1 2 3`) plays Floor I through the real input actions, night after night,
+and writes a report per seed.
 
 ```bash
 bash tools/run_tests.sh                  # all tests, headless, --fixed-fps 60
 bash tools/run_tests.sh --filter=lamassu # a subset
+bash tools/run_tests.sh --parallel       # all tests in several Godot processes (about 4x faster)
+bash tools/run_tests.sh --quick          # the fast, high-signal subset (what CI runs)
 ```
 
 The scripts in `tools/` expect Godot in `tools/godot/` (see `tools/dev_env.sh`).
+
+`F3` in a dev build (or with Options → Developer tools) shows a performance overlay: frame time and graph, CPU time
+of the physics tick and of the idle callbacks, renderer CPU/GPU time, draw calls, triangles, lamps and shadows left
+on by the room culling, awake exhibits, memory — and, on a second press, the script time of every subsystem.
+`bash tools/run_cpu_profile.sh` plays a scripted night headless and writes the same breakdown per tick to
+`tests/_out/cpu_profile.json`.
 
 ### Export
 
@@ -148,7 +173,10 @@ z Wielkim Dziedzińcem i sześć skrzydeł (Egipt, Asyria, Grecja, Oświecenie, 
 podziemia i dach — otwierane krok po kroku przez kilka nocy. 8 broni z własnym „gun feel”, sześciu
 strażników skrzydeł, szkielet T-Reksa na finał, eksponaty z rutynami i reakcjami na otoczenie, Pył jako
 waluta, trwałe ulepszenia, sekrety w trzech poziomach nagród, kawiarnia i zmęczenie, przystanie,
-papierowa mapa muzeum, muzyka metal/elektronika z kolorytem każdej kultury i 140 kwestii głosowych.
+papierowa mapa muzeum, muzyka metal/elektronika z kolorytem każdej kultury i 144 kwestie głosowe.
+Muzeum reaguje na walkę (gabloty, lampy, posągi, siedem pułapek otoczenia), każde skrzydło ma własną mechanikę,
+noc narasta w czterech fazach, a Dziedziniec ma własny „moment” — *Baba Jaga patrzy* w ciemności. Opcje dostępności:
+palety dla daltonistów, rozmiar HUD i napisów, ograniczenie błysków, przełączany sprint, zmiana klawiszy.
 
 - **Zagraj:** pobierz wersję dla Windows z zakładki **Releases**, rozpakuj i uruchom `NocnaZmiana.exe`.
 - **Ze źródeł:** Godot 4.7.2 → otwórz `project.godot` i uruchom (albo `Graj.bat` z Godotem w `tools/godot/`).

@@ -14,17 +14,20 @@ const SIDE_EXPIRY := 60.0     ## a side remark that waited this long is dropped 
 const SIDE_GAP := 180.0       ## s between two side remarks
 const LINE_GAP := 20.0        ## s of quiet after any line
 
-var pending: Array[Dictionary] = []   ## {key, priority, delay, waited}
+var pending: Array[Dictionary] = []   ## {key, priority, delay, waited, expires}
 var speaking: Dictionary = {}         ## the request on air; {} when quiet
 var calm_time := 0.0
 var since_line := LINE_GAP
 var since_side := SIDE_GAP
 
 
-func push(key: StringName, priority: int, delay := 0.0) -> bool:
+## Queues [param key]. [param expires] > 0: a line that belongs to a moment
+## (the speaker's click, the lights going out) is dropped, unheard, once it
+## waited that many seconds after its delay - whatever its priority.
+func push(key: StringName, priority: int, delay := 0.0, expires := 0.0) -> bool:
 	if has(key):
 		return false
-	pending.append({"key": key, "priority": priority, "delay": delay, "waited": 0.0})
+	pending.append({"key": key, "priority": priority, "delay": delay, "waited": 0.0, "expires": expires})
 	return true
 
 
@@ -53,7 +56,7 @@ func advance(dt: float, calm: bool) -> StringName:
 			request.delay = maxf(0.0, request.delay - dt)
 		else:
 			request.waited += dt
-		if not (request.priority == SIDE and request.waited > SIDE_EXPIRY):
+		if request.waited <= _expiry_of(request):
 			kept.append(request)
 	pending = kept
 	if not speaking.is_empty() or since_line < LINE_GAP:
@@ -66,6 +69,14 @@ func advance(dt: float, calm: bool) -> StringName:
 	if best.priority == SIDE:
 		since_side = 0.0
 	return best.key
+
+
+## Seconds a ready request may wait: its own expiry, a side remark's minute, else forever.
+func _expiry_of(request: Dictionary) -> float:
+	var own: float = request.get("expires", 0.0)
+	if own > 0.0:
+		return own
+	return SIDE_EXPIRY if request.priority == SIDE else INF
 
 
 func _best_ready() -> Dictionary:

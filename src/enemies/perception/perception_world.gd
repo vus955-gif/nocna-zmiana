@@ -46,6 +46,10 @@ static var stats := {"looks": 0, "rays": 0, "look_usec": 0, "noises": 0}
 static var profiling := false
 ## How many exhibits reacted to the last noise.
 static var last_heard: int = 0
+## Light outside the level's lamps (the biome mechanics: the Helios lamp's
+## beam): callables (point: Vector3) -> float added to the level's light at
+## a point. reset() clears them; their owners take them out when they go.
+static var light_sources: Array[Callable] = []
 
 static var _illumination: Callable = Callable()
 static var _room_of: Callable = Callable()
@@ -55,13 +59,20 @@ static var _holders: Array = []
 static var _exhibits: Array[Enemy] = []
 static var _listening := false
 static var _flare_lamp: LightSpec = null
-## The guard's light, once per physics frame.
+## The guard's light, once per physics frame and place.
 static var _light_frame: int = -1
 static var _light_guard: int = 0
+static var _light_at := Vector3.INF
 static var _light_level: float = 1.0
-## The guard's room, once per physics frame.
+## Whether the guard is in a haven, once per physics frame and place.
+static var _shelter_frame: int = -1
+static var _shelter_guard: int = 0
+static var _shelter_at := Vector3.INF
+static var _sheltered := false
+## The guard's room, once per physics frame and place.
 static var _room_frame: int = -1
 static var _room_guard: int = 0
+static var _room_at := Vector3.INF
 static var _guard_room: StringName = &""
 ## The hunter cap's count, once per physics frame (instance id -> true).
 static var _cap_frame: int = -1
@@ -96,11 +107,13 @@ static func configure(illumination: Callable, room_of: Callable, graph: RoomGrap
 		if owner is RefCounted:
 			_holders.append(owner)
 	_forget_frame()
+	Enemy.reset_phases()   # (a level's exhibits come next: the same build, the same LOD phases)
 
 
 ## Back to the defaults: everything lit, no rooms, all doors open.
 static func reset() -> void:
 	configure(Callable(), Callable(), null, Callable())
+	light_sources.clear()
 
 
 ## 0 calm shift, 1 night shift (default), 2 double shift.
@@ -114,9 +127,16 @@ static func has_rooms() -> bool:
 	return _room_of.is_valid()
 
 
-## How lit [param point] is by the level (1 without a light model).
+## How lit [param point] is by the level (1 without a light model) and the
+## light sources outside it.
 static func light_at(point: Vector3) -> float:
-	return clampf(_illumination.call(point), 0.0, 1.0) if _illumination.is_valid() else 1.0
+	var level := clampf(_illumination.call(point), 0.0, 1.0) if _illumination.is_valid() else 1.0
+	for source in light_sources:
+		if level >= 1.0:
+			break
+		if source.is_valid():
+			level += float(source.call(point))
+	return clampf(level, 0.0, 1.0)
 
 
 ## The room [param point] lies in (&"" without rooms or outside them).
@@ -130,6 +150,12 @@ static func room_graph() -> RoomGraph:
 
 static func is_door_open(passage: StringName) -> bool:
 	return not _door_open.is_valid() or _door_open.call(passage)
+
+
+## The level's light model behind light_at() (a LayoutIllumination), or
+## null: a lamp shot down is put out in it (EnvLayer.put_out).
+static func light_model() -> Object:
+	return _illumination.get_object() if _illumination.is_valid() else null
 
 
 ## An exhibit's rooms: [param explicit] when set, else its home room and
@@ -172,10 +198,11 @@ static func guard_light(guard: Node3D) -> float:
 	if guard == null or not is_instance_valid(guard):
 		return 1.0
 	var frame := Engine.get_physics_frames()
-	if frame == _light_frame and guard.get_instance_id() == _light_guard:
+	if frame == _light_frame and guard.get_instance_id() == _light_guard and guard.global_position == _light_at:
 		return _light_level
 	_light_frame = frame
 	_light_guard = guard.get_instance_id()
+	_light_at = guard.global_position
 	var player := guard as Player
 	if player != null and player.battery.on:
 		_light_level = 1.0
@@ -199,15 +226,35 @@ static func flare_light(point: Vector3) -> float:
 	return total
 
 
+## The guard stands in a haven this physics frame (Haven.shelters, asked
+## once a frame for every exhibit).
+static func guard_sheltered(guard: Node3D) -> bool:
+	if guard == null or not is_instance_valid(guard):
+		return false
+	var frame := Engine.get_physics_frames()
+	if frame != _shelter_frame or guard.get_instance_id() != _shelter_guard or guard.global_position != _shelter_at:
+		_shelter_frame = frame
+		_shelter_guard = guard.get_instance_id()
+		_shelter_at = guard.global_position
+		_sheltered = Haven.shelters(_shelter_at)
+	return _sheltered
+
+
+## A haven opened, shut, came or went: guard_sheltered() looks again.
+static func shelters_changed() -> void:
+	_shelter_frame = -1
+
+
 ## The guard's room this physics frame.
 static func guard_room(guard: Node3D) -> StringName:
 	if guard == null or not is_instance_valid(guard) or not has_rooms():
 		return &""
 	var frame := Engine.get_physics_frames()
-	if frame != _room_frame or guard.get_instance_id() != _room_guard:
+	if frame != _room_frame or guard.get_instance_id() != _room_guard or guard.global_position != _room_at:
 		_room_frame = frame
 		_room_guard = guard.get_instance_id()
-		_guard_room = room_at(guard.global_position)
+		_room_at = guard.global_position
+		_guard_room = room_at(_room_at)
 	return _guard_room
 
 
@@ -319,7 +366,7 @@ static func may_hunt(enemy: Enemy) -> bool:
 static func hunters_near(guard_at: Vector3) -> int:
 	var count := 0
 	for enemy in _exhibits:
-		if is_instance_valid(enemy) and enemy.counts_as_hunter() and enemy.brain.is_hunting() \
+		if is_instance_valid(enemy) and _hunting(enemy) and enemy.counts_as_hunter() \
 				and enemy.global_position.distance_to(guard_at) <= PerceptionRules.HUNT_RADIUS:
 			count += 1
 	return count
@@ -332,9 +379,16 @@ static func _count_hunters(guard_at: Vector3) -> void:
 	_cap_frame = frame
 	_cap_hunters.clear()
 	for enemy in _exhibits:
-		if is_instance_valid(enemy) and enemy.counts_as_hunter() and enemy.brain.is_hunting() \
+		if is_instance_valid(enemy) and _hunting(enemy) and enemy.counts_as_hunter() \
 				and enemy.global_position.distance_to(guard_at) <= PerceptionRules.HUNT_RADIUS:
 			_cap_hunters[enemy.get_instance_id()] = true
+
+
+## EnemyBrain.is_hunting() read straight off the state, first: asked of
+## every exhibit of the floor once a frame (most of them asleep).
+static func _hunting(enemy: Enemy) -> bool:
+	var state := enemy.brain.state
+	return state == EnemyBrain.State.HUNT or state == EnemyBrain.State.ATTACK
 
 
 # --- noise ---------------------------------------------------------------------------
@@ -365,28 +419,19 @@ static func noise(at: Vector3, radius: float, source: StringName = &"", rooms: A
 		return 0
 	stats["noises"] = int(stats["noises"]) + 1
 	var origin := noise_rooms(at, rooms)
-	var reach := {}
-	if _graph != null:
-		for room in origin:
-			var heard_in := PerceptionRules.hearing_rooms(_graph, room, _door_open)
-			for key: StringName in heard_in:
-				reach[key] = maxf(float(reach.get(key, 0.0)), float(heard_in[key]))
+	var reach := _reach(origin)
 	var soft := ReactionRules.is_soft(source)
 	# the ones awake and past answering (hunting, fleeing...) are awake for it
 	# but take no place; [distance, enemy, closeness], nearest first
 	var heard := 0
 	var listeners: Array = []
 	for enemy in exhibits():
-		if not enemy.is_inside_tree() or enemy.is_frozen() or enemy.is_queued_for_deletion():
+		if not enemy.is_inside_tree() or enemy.is_frozen() or enemy.is_queued_for_deletion() or enemy.held:
 			continue
 		var distance := enemy.global_position.distance_to(at)
 		if distance > radius:
 			continue
-		var loudness := 1.0
-		if not origin.is_empty():
-			var room := enemy.current_room()
-			if room != &"":
-				loudness = reach.get(room, 0.0)
+		var loudness := _loudness(enemy, origin, reach)
 		if not PerceptionRules.heard(distance, radius, loudness):
 			continue
 		var state := enemy.brain.state
@@ -428,6 +473,39 @@ static func noise(at: Vector3, radius: float, source: StringName = &"", rooms: A
 				_sends.append([_clock, at])
 	last_heard = heard
 	return heard
+
+
+## True when [param enemy] hears a noise of [param radius] metres at
+## [param at] (made in [param rooms], when given) the way noise() counts
+## its listeners: within the radius scaled by what its room keeps of the
+## noise (through open passages, damped by each; rooms behind shut doors
+## keep none), plain distance without rooms, and nothing from a haven.
+static func hears(enemy: Enemy, at: Vector3, radius: float, rooms: Array[StringName] = []) -> bool:
+	if radius <= 0.0 or Haven.shelters(at) or not is_instance_valid(enemy) or not enemy.is_inside_tree():
+		return false
+	var origin := noise_rooms(at, rooms)
+	return PerceptionRules.heard(enemy.global_position.distance_to(at), radius, _loudness(enemy, origin, _reach(origin)))
+
+
+## Room -> the share of a noise's loudness it keeps, for a noise made in
+## the [param origin] rooms (empty without a room graph).
+static func _reach(origin: Array[StringName]) -> Dictionary:
+	var reach := {}
+	if _graph != null:
+		for room in origin:
+			var heard_in := PerceptionRules.hearing_rooms(_graph, room, _door_open)
+			for key: StringName in heard_in:
+				reach[key] = maxf(float(reach.get(key, 0.0)), float(heard_in[key]))
+	return reach
+
+
+## The share of a noise [param enemy] gets: 1 without rooms or outside
+## them, else what its room keeps ([param reach]).
+static func _loudness(enemy: Enemy, origin: Array[StringName], reach: Dictionary) -> float:
+	if origin.is_empty():
+		return 1.0
+	var room := enemy.current_room()
+	return float(reach.get(room, 0.0)) if room != &"" else 1.0
 
 
 ## The rooms a noise at [param at] belongs to: the [param rooms] it was made
@@ -503,6 +581,7 @@ static func _on_enemy_destroyed(enemy: Node, info: DamageInfo, _finisher: bool) 
 
 static func _forget_frame() -> void:
 	_light_frame = -1
+	_shelter_frame = -1
 	_room_frame = -1
 	_near_from = &""
 	_near_rooms = {}

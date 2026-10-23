@@ -109,6 +109,8 @@ func test_rules_use_only_known_fields_in_range() -> void:
 			assert_true(field in VoiceCatalog.RULE_FIELDS, "%s: unknown rule field %s" % [key, field])
 		assert_true(int(line.get("level", 0)) in [0, 1, 2], key + ": level 0-2")
 		assert_true(int(line.get("priority", 1)) in [0, 1, 2], key + ": priority 0-2")
+		assert_true(float(line.get("expires", 0.0)) >= 0.0, key + ": expires is seconds (0: never)")
+		assert_false(line.has("expires") and line.has("station"), key + ": a guide recording is played by hand")
 		if line.has("variant"):
 			assert_true(line.has("station"), key + ": variant needs a station")
 
@@ -162,7 +164,10 @@ func _gate_ids() -> Array[StringName]:
 func test_every_rule_names_something_that_exists() -> void:
 	var layout := Floor1Layout.create()
 	var kinds := {"coffee_drunk": Fatigue.COFFEES.keys().map(func(k: StringName) -> String: return String(k)),
-			"room_entered": ["haven"], "secret_found": ["small", "medium", "great"]}
+			"room_entered": ["haven"], "secret_found": ["small", "medium", "great"],
+			# G3: the night's phases and the uncanny events (data/night/uncanny.json) by their ids
+			"night_phase_changed": NightEscalation.NAMES.map(func(n: StringName) -> String: return String(n)),
+			"uncanny_event": UncannyCatalog.load_default().events.map(func(e: Dictionary) -> String: return String(e["id"]))}
 	for key in catalog.lines:
 		var rule: Dictionary = catalog.lines[key]
 		if rule.has("zone"):

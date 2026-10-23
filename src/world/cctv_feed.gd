@@ -27,11 +27,15 @@ var renders: int = 0
 ## A frame was asked for at least once (the screen shows snow before).
 var has_picture: bool = false
 var motion: bool = false
+## The room's wing is at rest (its guardian down; plan 2026-10-21-opowiesc-
+## muzeum): a green AT REST tag where MOTION would be, while nothing moves.
+var calm: bool = false
 
 var _name_label: Label
 var _rec_label: Label
 var _time_label: Label
 var _motion_label: Label
+var _calm_label: Label = null
 var _blink: bool = false
 var _environment: Environment
 
@@ -78,6 +82,8 @@ func render_once(clock: String) -> void:
 	_time_label.text = clock
 	_rec_label.modulate.a = 1.0 if _blink else 0.25
 	_motion_label.visible = motion
+	if _calm_label != null:
+		_calm_label.visible = calm and not motion
 	render_target_update_mode = SubViewport.UPDATE_ONCE
 	renders += 1
 	has_picture = true
@@ -87,11 +93,17 @@ func set_motion(on: bool) -> void:
 	motion = on
 
 
+func set_calm(on: bool) -> void:
+	calm = on
+
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSLATION_CHANGED and _name_label != null:
 		_name_label.text = _title()
 		_rec_label.text = tr("CCTV_REC")
 		_motion_label.text = "▲ " + tr("CCTV_MOTION").to_upper()
+		if _calm_label != null:
+			_calm_label.text = "● " + tr("CCTV_CALM").to_upper()
 
 
 func _title() -> String:
@@ -112,6 +124,9 @@ func _build_overlay() -> void:
 	_motion_label = _label(root, Vector2(10, size.y - 25), 14, Color(1.0, 0.3, 0.22))
 	_motion_label.text = "▲ " + tr("CCTV_MOTION").to_upper()
 	_motion_label.visible = false
+	_calm_label = _label(root, Vector2(10, size.y - 25), 14, Color(0.45, 1.0, 0.55))
+	_calm_label.text = "● " + tr("CCTV_CALM").to_upper()
+	_calm_label.visible = false
 
 
 static func _label(parent: Control, at: Vector2, font_size: int, color: Color) -> Label:

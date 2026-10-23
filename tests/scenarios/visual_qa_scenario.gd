@@ -18,12 +18,15 @@ extends Node
 ##   bash tools/run_visual_qa.sh shots [--only=...] [--lang=pl]
 ##       silent 1920x1080 window: the same, each view saved as
 ##       tests/_out/visual_qa/<group>/<name>.png with its brightness
-## Groups: viewmodel, looks, east, pickups, secrets, hud, voice.
+## Groups: viewmodel, looks, east, pickups, secrets, hud, voice, night (the
+## window review of 22.10: the uncanny lamps of two rooms in every mode, a
+## portrait's gaze, every env tool's tag from 10 and 20 m, its warning and
+## its wreck, the biomes' devices before and after they act).
 
 const OUT_DIR := "res://tests/_out/visual_qa/"
 const WATCHDOG_SECONDS := 560.0
 const Tour := preload("res://tests/scenarios/tour_scenario.gd")
-const GROUPS: Array[String] = ["viewmodel", "looks", "east", "east_lit", "pickups", "secrets", "hud", "voice"]
+const GROUPS: Array[String] = ["viewmodel", "looks", "east", "east_lit", "pickups", "secrets", "hud", "voice", "night"]
 const HEAL := 1000000.0
 ## The security booth: out of every arena.
 const BOOTH := Vector3(33.0, 0.0, 45.5)
@@ -73,6 +76,10 @@ var _group := ""
 var _log: Array = []
 var _missed: int = 0
 var _build_ms: int = 0
+## The night group: the free camera stays current between its views (the
+## room culling follows the current camera: back in the guard's, far off in
+## the booth, the rooms watched would go dark).
+var _keep_free_camera := false
 
 
 func _ready() -> void:
@@ -104,7 +111,7 @@ func _ready() -> void:
 	add_child(camera)
 	await _open()
 	for group in GROUPS:
-		if not _wanted(group):
+		if not _wanted(group) and not (group == "night" and _night_part("")):
 			continue
 		_group = group
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT_DIR.path_join(group)))
@@ -125,6 +132,8 @@ func _ready() -> void:
 				await _hud()
 			"voice":
 				await _voice()
+			"night":
+				await _night()
 	var file := FileAccess.open(OUT_DIR.path_join("dry.json" if _dry else "metrics.json"), FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify({"build_ms": _build_ms, "lang": _lang, "shots": _log}, "  "))
@@ -798,6 +807,324 @@ func _voice() -> void:
 	museum.player.weapons.visible = true
 
 
+# --- 6. the night's new systems (window review 22.10) --------------------------------------
+
+## The uncanny lamps: room -> the tour view it is watched from.
+const NIGHT_LAMP_ROOMS := {&"egypt_gallery": "egypt_gallery_long", &"enlightenment_library": "library_gallery_walk",
+	&"enlightenment_portraits": "library_gallery_walk", &"north_hall": "court_from_entrance"}
+## Each lamp mode and the moments (s after it starts) it is shot at.
+const NIGHT_LAMP_MODES: Array = [[&"brownout", [1.4]], [&"out", [0.6]], [&"flicker", [0.3, 0.55, 0.8]], [&"sweep", [0.8, 1.6]]]
+## How far a tool's tag is watched from before it is set going.
+const TOOL_REACHES: Array[float] = [10.0, 20.0]
+
+
+func _night() -> void:
+	var game := museum.floor_game
+	museum.player.weapons.visible = false
+	_put_guard(BOOTH, BOOTH + Vector3(0.0, 1.6, -5.0))
+	if game.uncanny != null:
+		game.uncanny.set_process(false)   # its own events out of the views (its lamps still play)
+	await _clear_cards()
+	_keep_free_camera = true
+	if _night_part("lamps"):
+		await _night_lamps()
+	if _night_part("gaze"):
+		await _night_gaze()
+	if _night_part("tools"):
+		await _night_tools()
+	if _night_part("devices"):
+		await _night_devices()
+	_keep_free_camera = false
+	museum.player.camera.current = true
+	if game.uncanny != null:
+		game.uncanny.set_process(true)
+	museum.player.weapons.visible = true
+
+
+## A part of the night group asked for (--only=night_lamps,night_tools...;
+## "night" or nothing: every part; [param part] "": any part asked).
+func _night_part(part: String) -> bool:
+	if _only.is_empty() or _only.has("night"):
+		return true
+	for asked in _only:
+		if asked.begins_with("night_") and (part == "" or asked == "night_" + part):
+			return true
+	return false
+
+
+func _night_lamps() -> void:
+	var lamps: RoomLamps = museum.floor_game.uncanny.lamps if museum.floor_game.uncanny != null else null
+	for room: StringName in NIGHT_LAMP_ROOMS:
+		# inside the room, aimed at the middle of its own main lamps (the
+		# tour's view as a fallback); the lamps' summed energy logged per shot
+		var view: Array = Tour.VIEWS[NIGHT_LAMP_ROOMS[room]]
+		var from: Vector3 = view[0]
+		var at: Vector3 = view[1]
+		var own: Array[Light3D] = lamps.lit(room) if lamps != null else []
+		if not own.is_empty():
+			var middle := Vector3.ZERO
+			for lamp in own:
+				middle += lamp.global_position
+			middle /= own.size()
+			var ground := _ground_below(middle)
+			var eye := _spot_camera(Vector3(middle.x, ground + 2.0, middle.z), ground, 9.0, room)
+			if eye != Vector3.INF:
+				from = eye
+				at = Vector3(middle.x, lerpf(ground + 1.2, middle.y, 0.5), middle.z)
+		await _settle_camera(from, at)
+		await _view("lamps_%s_steady" % room, from, at, not own.is_empty(), {"lamps": own.size(), "energy": _energy(own), "culler": PerfStats.lights(get_tree())})
+		await _seconds(2.0)
+		await _view("lamps_%s_steady_2s" % room, from, at, not own.is_empty(), {"energy": _energy(own), "culler": PerfStats.lights(get_tree())})
+		for stage: Array in NIGHT_LAMP_MODES:
+			var mode: StringName = stage[0]
+			var played := lamps != null and lamps.play(room, mode, 4.0, from)
+			var waited := 0.0
+			for moment: float in stage[1]:
+				await _seconds(moment - waited)
+				waited = moment
+				await _view("lamps_%s_%s_%02d" % [room, mode, roundi(moment * 10.0)], from, at, played, {"energy": _energy(own)})
+			if lamps != null:
+				lamps.stop(room)
+			await _seconds(0.5)
+		await _seconds(2.0)
+		await _view("lamps_%s_after" % room, from, at, lamps != null and not lamps.busy(room), {"energy": _energy(own), "culler": PerfStats.lights(get_tree())})
+
+
+static func _energy(lamps: Array[Light3D]) -> float:
+	var total := 0.0
+	for lamp in lamps:
+		if is_instance_valid(lamp):
+			total += lamp.light_energy
+	return snappedf(total, 0.01)
+
+
+## A portrait with eyes in the portrait gallery: the guard 6 m in front of
+## it, then 2.5 m to its side while it follows him; a close look at the eyes.
+func _night_gaze() -> void:
+	var painting: WallPainting = null
+	for node in museum.paintings_root.get_children():
+		if node is WallPainting and PaintingGaze.has_eyes(node) and museum.floor_level.room_at(node.global_position) == &"enlightenment_portraits":
+			painting = node
+			break
+	if painting == null:
+		await _view("gaze_none", Vector3.ZERO, Vector3.ONE, false)
+		return
+	var front := -painting.global_basis.z
+	front.y = 0.0
+	front = front.normalized()
+	var side := front.cross(Vector3.UP)
+	var face := painting.global_transform * PaintingGaze._eyes_local(painting)
+	var ground := _floor_at(face + front * 6.0 + Vector3.DOWN * 1.2)
+	ground = ground if not is_nan(ground) else face.y - 1.6
+	museum.player.weapons.visible = true
+	museum.player.weapons.select_id(&"pistol")
+	_put_guard(Vector3(face.x, ground, face.z) + front * 6.0, face)
+	await _seconds(0.6)
+	await _shot("gaze_before", true, {"look": str(PaintingGaze.look_of(painting))}, [face])
+	PaintingGaze.follow(painting, museum.player, 8.0)
+	_put_guard(Vector3(face.x, ground, face.z) + front * 6.0 + side * 2.5, face)
+	await _seconds(1.5)
+	await _shot("gaze_follow_6m", true, {"look": str(PaintingGaze.look_of(painting))}, [face])
+	museum.player.weapons.visible = false
+	await _settle_camera(face + front * 1.6 - side * 0.4 + Vector3.DOWN * 0.15, face)
+	await _view("gaze_follow_close", face + front * 1.6 - side * 0.4 + Vector3.DOWN * 0.15, face, true, {"look": str(PaintingGaze.look_of(painting))})
+	_put_guard(BOOTH, BOOTH + Vector3(0.0, 1.6, -5.0))
+	await _seconds(0.3)
+
+
+## Every env tool: its red tag from 10 and 20 m, set going: its warning
+## (the floor marked, the mount shedding dust), then its wreck.
+func _night_tools() -> void:
+	var env := museum.floor_game.env
+	if env == null:
+		await _view("tools_none", Vector3.ZERO, Vector3.ONE, false)
+		return
+	for prop in env.tools.duplicate():
+		var tool := prop as EnvTool
+		if tool == null or not is_instance_valid(tool) or tool.is_down:
+			continue
+		var id := String(tool.entry.get("id", tool.name))
+		var room: StringName = tool.entry.get("room", &"")
+		var tag_at := tool.tag.global_position if tool.tag != null else tool.global_position + Vector3.UP
+		# watched from beyond where it strikes, looking back at it (the tag,
+		# the mark and the wreck in one line)
+		var strike_at: Vector3 = (tool.call(&"_mark_frame") as Transform3D).origin
+		var prefer := strike_at - tool.global_position
+		prefer.y = 0.0
+		if prefer.length() < 0.5:
+			prefer = Vector3.ZERO
+		var near := Vector3.INF
+		for reach: float in TOOL_REACHES:
+			var eye := _spot_camera(tag_at, tool.floor_y, reach, room, prefer)
+			if near == Vector3.INF:
+				near = eye
+				if eye != Vector3.INF:
+					await _settle_camera(eye, tag_at)
+			await _view("tool_%s_tag_%dm" % [id, roundi(reach)], eye if eye != Vector3.INF else tag_at + Vector3.ONE, tag_at, eye != Vector3.INF,
+					{"distance": snappedf(eye.distance_to(tag_at), 0.1) if eye != Vector3.INF else 0.0})
+		if near == Vector3.INF:
+			continue
+		var warn_eye := _spot_camera(strike_at.lerp(tag_at, 0.5), tool.floor_y, 8.0, room, prefer)
+		if warn_eye == Vector3.INF:
+			warn_eye = near
+		var close := _spot_camera(strike_at, tool.floor_y, 4.5, room, prefer)
+		if close == Vector3.INF:
+			close = warn_eye
+		tool.trigger()
+		await _seconds(0.5)
+		var mark: Node3D = tool.get("_mark")
+		if mark != null and is_instance_valid(mark):
+			strike_at = mark.global_position
+		await _view("tool_%s_warning" % id, warn_eye, strike_at.lerp(tag_at, 0.35), tool.phase == EnvProp.Phase.WARNING, {"phase": tool.phase})
+		# the floor mark from above (high over the spot, under the ceiling)
+		var above := _above(strike_at, prefer, 5.0)
+		await _view("tool_%s_warning_above" % id, above, strike_at, tool.phase == EnvProp.Phase.WARNING, {"phase": tool.phase})
+		await _until(func() -> bool: return tool.is_down, 8.0)
+		await _seconds(0.7)
+		await _view("tool_%s_down" % id, warn_eye, strike_at + Vector3.UP * 0.4, tool.is_down, {"phase": tool.phase, "load": _load_state(tool)})
+		await _seconds(1.5)
+		await _view("tool_%s_down_close" % id, close, strike_at + Vector3.UP * 0.2, tool.is_down)
+		await _view("tool_%s_down_above" % id, above, strike_at, tool.is_down)
+
+
+## The biomes' devices: the first of each kind, before and after it acts.
+func _night_devices() -> void:
+	var biomes := museum.floor_game.biomes
+	if biomes == null:
+		await _view("devices_none", Vector3.ZERO, Vector3.ONE, false)
+		return
+	for kind: Script in [HeliosLamp, TempleBell, SteamVent, HuntingNet, SacredFire, TombTrap, Regulator, BronzeMirror]:
+		var found := biomes.of_kind(kind)
+		if found.is_empty():
+			continue
+		var device: BiomeDevice = found[0]
+		var label := String(kind.get_global_name()).to_snake_case()
+		var subject := device.global_position
+		if device is HeliosLamp:
+			subject = (device as HeliosLamp).origin()
+		elif device is TempleBell:
+			subject = (device as TempleBell).center()
+		elif device is SteamVent:
+			subject = (device as SteamVent).jet_point()
+		elif device is HuntingNet:
+			subject = (device as HuntingNet).knot().lerp((device as HuntingNet).landing(), 0.5)
+		elif device is Regulator:
+			subject = (device as Regulator).pendulum_point()
+		elif device is SacredFire and (device as SacredFire).flame != null:
+			subject = (device as SacredFire).flame.global_position
+		elif device is TombTrap and device.get("_plate_view") != null:
+			subject = (device.get("_plate_view") as Node3D).global_position + Vector3.UP * 0.3
+		elif device is BronzeMirror and device.get("_disc") != null:
+			subject = (device.get("_disc") as Node3D).global_position
+		var ground := _ground_below(subject)
+		var eye := _spot_camera(subject, ground, 7.0, device.room)
+		var ok := eye != Vector3.INF
+		if not ok:
+			eye = subject + Vector3(1.0, 1.0, 1.0)
+		await _settle_camera(eye, subject)
+		await _view("device_%s_idle" % label, eye, subject, ok, {"room": String(device.room)})
+		var acted := false
+		if device is HeliosLamp:
+			acted = (device as HeliosLamp).strike()
+		elif device is TempleBell:
+			acted = (device as TempleBell).ring()
+		elif device is SteamVent:
+			acted = await _until(func() -> bool: return (device as SteamVent).until_burst() <= 0.05, 12.0)
+		elif device is HuntingNet:
+			acted = (device as HuntingNet).drop()
+		elif device is SacredFire:
+			acted = (device as SacredFire).douse()
+		else:
+			continue
+		for moment: float in [0.4, 1.2]:
+			await _seconds(moment if moment < 1.0 else 0.8)
+			await _view("device_%s_act_%02d" % [label, roundi(moment * 10.0)], eye, subject, acted)
+
+
+## What a tool moved looks like now (its load's up axis and its visual's
+## drawn meshes): a fallen bookcase must lie where it fell.
+static func _load_state(tool: EnvTool) -> String:
+	var node: Variant = tool.get("load_node")
+	if not node is Node3D or not is_instance_valid(node):
+		return ""
+	var load := node as Node3D
+	var meshes := 0
+	var shown := 0
+	var box := AABB()
+	for mesh: Node in load.find_children("*", "VisualInstance3D", true, false):
+		meshes += 1
+		var visual := mesh as VisualInstance3D
+		if visual.is_visible_in_tree():
+			shown += 1
+			var world := visual.global_transform * visual.get_aabb()
+			box = world if box.size == Vector3.ZERO else box.merge(world)
+	return "up %s, meshes %d (%d shown), drawn box %s" % [str(load.global_basis.y.snappedf(0.01)), meshes, shown, str(box)]
+
+
+## A camera [param height] m over [param spot] (lower under a ceiling),
+## [param back] m behind it against [param prefer]'s direction.
+func _above(spot: Vector3, prefer: Vector3, height: float, back: float = 2.5) -> Vector3:
+	var space := get_viewport().find_world_3d().direct_space_state
+	var behind := -prefer.normalized() if prefer.length() > 0.01 else Vector3.BACK
+	var base := spot + Vector3.UP * 0.5
+	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(base, base + Vector3.UP * height, Layers.WORLD))
+	var up := height if hit.is_empty() else maxf(base.distance_to(hit["position"]) - 0.4, 1.2)
+	var eye := base + Vector3.UP * up
+	var side := space.intersect_ray(PhysicsRayQueryParameters3D.create(eye, eye + behind * back, Layers.WORLD))
+	var reach := back if side.is_empty() else maxf(eye.distance_to(side["position"]) - 0.4, 0.0)
+	return eye + behind * maxf(reach, 0.3)   # (never straight down: look_at needs a direction off the up axis)
+
+
+## The free camera at [param from] looking at [param at], current, left
+## there long enough for the room culling to light the rooms round it.
+func _settle_camera(from: Vector3, at: Vector3) -> void:
+	camera.global_position = from
+	if from.distance_to(at) > 0.05:
+		camera.look_at(at, Vector3.UP)
+	camera.reset_physics_interpolation()
+	camera.current = true
+	await _seconds(0.8)
+
+
+## The first floor under [param point] (a ray 15 m down), or 1.6 m under it.
+func _ground_below(point: Vector3) -> float:
+	var space := get_viewport().find_world_3d().direct_space_state
+	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(point, point + Vector3.DOWN * 15.0, Layers.WORLD))
+	return point.y - 1.6 if hit.is_empty() else (hit["position"] as Vector3).y
+
+
+## A free camera [param reach] m (or less) from [param subject] across the
+## floor at [param ground], at eye height, inside a room (its own
+## [param room] first), out of the walls, the subject in clear sight
+## ([param prefer]: the direction tried first); Vector3.INF when none of 8
+## directions has one.
+func _spot_camera(subject: Vector3, ground: float, reach: float, room: StringName = &"", prefer: Vector3 = Vector3.ZERO) -> Vector3:
+	var space := get_viewport().find_world_3d().direct_space_state
+	var first := prefer.normalized() if prefer.length() > 0.01 else Vector3.FORWARD
+	for same_room: bool in [true, false]:
+		for share: float in [1.0, 0.8, 0.6]:
+			for i in 8:
+				# the preferred direction first, then turning away from it both ways
+				var turn := ceili(i / 2.0) * (1.0 if i % 2 == 1 else -1.0) * PI / 4.0
+				var direction := first.rotated(Vector3.UP, turn)
+				var eye := Vector3(subject.x, ground + 1.6, subject.z) + direction * reach * share
+				var floor_y := _floor_at(eye)
+				if not is_nan(floor_y) and absf(floor_y - ground) < 1.0:
+					eye.y = floor_y + 1.6
+				var in_room := museum.floor_level.room_at(eye)
+				if in_room == &"" or (same_room and room != &"" and in_room != room):
+					continue
+				var point := PhysicsPointQueryParameters3D.new()
+				point.position = eye
+				point.collision_mask = Layers.WORLD
+				if not space.intersect_point(point).is_empty():
+					continue
+				var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(eye, subject, Layers.WORLD))
+				if hit.is_empty() or eye.distance_to(hit["position"]) > eye.distance_to(subject) - 0.35:
+					return eye
+	return Vector3.INF
+
+
 # --- staging --------------------------------------------------------------------------
 
 func _eye(at: Vector3) -> Vector3:
@@ -873,7 +1200,8 @@ func _view(label: String, from: Vector3, at: Vector3, ok: bool, extra: Dictionar
 	camera.current = true
 	var sights: Array[Vector3] = [at]
 	await _record(label, ok, extra, from, sights, false)
-	museum.player.camera.current = true
+	if not _keep_free_camera:
+		museum.player.camera.current = true
 
 
 func _record(label: String, ok: bool, extra: Dictionary, eye: Vector3, sights: Array[Vector3], hud: bool) -> void:

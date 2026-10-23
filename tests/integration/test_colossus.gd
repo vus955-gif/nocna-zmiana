@@ -342,6 +342,11 @@ func test_his_fall_leaves_stone_and_his_seal_and_shard_for_good() -> void:
 	assert_true(GameState.is_guardian_defeated(&"colossus"))
 	var falls := keeper.find_children("*", "ColossusFall", false, false)
 	assert_eq(falls.size(), 1, "his fall plays out")
+	if falls.size() == 1:
+		# his hit zones go with him: their receivers are freed with him (a
+		# ray on the falling stone met a freed receiver - the playthrough
+		# bot's run, 22.10)
+		assert_eq((falls[0] as Node).find_children("*", "Hurtbox", true, false).size(), 0, "nothing left to shoot on the falling stone")
 	await _seconds(ColossusFall.TREMBLE + ColossusFall.TOPPLE + 0.3)
 	if falls.size() == 1:
 		assert_gt((falls[0] as ColossusFall).pieces.size(), 20, "he broke into stone")

@@ -6,15 +6,21 @@ extends TestCase
 ## "visible" for the exhibits' light model), the graphics presets' share of
 ## the atmosphere, and the moon under the court's glass in the light model.
 
+## The tests that change the level (blackouts, culling, quality presets, parts
+## taken away) build their own; all the others look at one built for the file
+## (TestCase.shared_fixture: the runner fails a test that changed it).
+const OWN_LEVEL: Array[StringName] = [
+	&"test_every_lamp_has_one_group_and_the_moon_is_unfused",
+	&"test_far_rooms_are_culled_but_stay_powered",
+	&"test_presets_carry_the_atmosphere",
+	&"test_the_fires_stop_smoking_when_their_flames_go_out",
+]
+
 var level: MuseumFloorLevel
 
 
 func before_each() -> void:
-	MuseumFloorLevel.dress_default = true
-	level = MuseumFloorLevel.new()
-	level.bake_navigation = false
-	add_child(level)
-	level.build()
+	level = DressedFloor.build(self) if OWN_LEVEL.has(current_test) else await shared_fixture(&"dressed_floor", DressedFloor.build)
 
 
 func after_each() -> void:

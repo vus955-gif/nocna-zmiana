@@ -177,7 +177,8 @@ static func chasers() -> PackedVector3Array:
 	_chaser_ids.clear()
 	_cells.clear()
 	for other in _members:
-		if not is_instance_valid(other) or not other.is_inside_tree():
+		# (the sleepers, most of a floor, are passed over first and cheaply)
+		if not is_instance_valid(other) or other.brain.state == EnemyBrain.State.DORMANT or not other.is_inside_tree():
 			continue
 		if not other.brain.is_active():
 			continue

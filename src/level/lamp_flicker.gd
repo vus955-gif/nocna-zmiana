@@ -6,6 +6,9 @@ extends Node
 ## energy changes (cheap; the light model counts a flickering lamp as lit);
 ## a lamp switched off (blackout, power cut: NightModifiers.set_lights) is
 ## left dark.
+## With the option "reduce_flashing" (Flashing) a burst is one dip, no deeper
+## than half, and at most three dips a second start among all the lamps of
+## one group.
 
 ## Steady between bursts (s), and the blinks of a burst.
 const STEADY := Vector2(0.4, 3.5)
@@ -22,6 +25,9 @@ var _left: Dictionary = {}
 ## Lamp -> blinks left in its burst (0: steady).
 var _blinks: Dictionary = {}
 var _rng := RandomNumberGenerator.new()
+## Game seconds so far, and the gate that spaces the dips of the group.
+var _clock: float = 0.0
+var _gate := Flashing.Gate.new()
 
 
 ## Adds a flicker to [param parent] when it holds flicker lamps (null when
@@ -49,6 +55,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_clock += delta
 	for lamp in lamps:
 		if not is_instance_valid(lamp) or not lamp.visible:
 			continue
@@ -58,8 +65,12 @@ func _process(delta: float) -> void:
 			continue
 		var blinks: int = _blinks[lamp]
 		if blinks <= 0:
-			# a burst begins: the first drop
-			_blinks[lamp] = _rng.randi_range(BLINKS.x, BLINKS.y) * 2 - 1
+			# a burst begins: the first drop (one drop only, and not too soon
+			# after another lamp's, when flashing is reduced)
+			if not _gate.allow(_clock):
+				_left[lamp] = 0.05
+				continue
+			_blinks[lamp] = 1 if Flashing.on() else _rng.randi_range(BLINKS.x, BLINKS.y) * 2 - 1
 			_dip(lamp)
 		elif blinks % 2 == 1:
 			# back up between two drops (or the burst ends)
@@ -77,5 +88,5 @@ func base_energy(lamp: Light3D) -> float:
 
 
 func _dip(lamp: Light3D) -> void:
-	lamp.light_energy = float(_base[lamp]) * _rng.randf_range(BLINK_LEVEL.x, BLINK_LEVEL.y)
+	lamp.light_energy = float(_base[lamp]) * Flashing.lamp_level(_rng.randf_range(BLINK_LEVEL.x, BLINK_LEVEL.y))
 	_left[lamp] = _rng.randf_range(BLINK_TIME.x, BLINK_TIME.y)

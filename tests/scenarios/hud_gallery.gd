@@ -5,17 +5,30 @@ extends Node
 ## languages; the first views also on a 1280x1024 window.
 ##   bash tools/run_hud_gallery.sh dry            no window: stages every view, checks it
 ##   bash tools/run_hud_gallery.sh shots [--tag=after] [--views=hud,notice]
+##       [--languages=en] [--sizes=1920x1080] [--palettes=0,1,2,3]
 ##       silent window: tests/_out/hud_style/<tag>_<view>_<lang>_<w>x<h>.png
+##       (with --palettes: <tag>_cv<n>_<view>_..., n = SettingsData.ColourVisionMode)
 ## Views: hud (every live element at once: night, clock, a long goal, fuses,
 ## shards, Dust and its gain, health, stamina with fatigue and caffeine, the
 ## torch, the weapon, its slots and ammo, the prompt, the room card, a
 ## toast, a guardian's bar), notice (a secret's banner, a subtitle, a hint,
 ## the night's card, exhausted stamina, low health and torch), help (F1),
-## pause, options, map, upgrade, note, dawn, death.
+## pause, options, map, upgrade, note, dawn, death; rims (a row of every
+## ammo box and the medkit near the guard, another far down the hall: their
+## rims in the palette), markers (the crosshair's four hit markers, one shot
+## each: hit, weak point, kill, blocked).
 
 const OUT_DIR := "res://tests/_out/hud_style/"
 const WATCHDOG_SECONDS := 540.0
-const VIEWS: Array[String] = ["hud", "notice", "help", "pause", "options", "map", "upgrade", "note", "dawn", "death"]
+const VIEWS: Array[String] = ["hud", "notice", "help", "pause", "options", "map", "upgrade", "note", "dawn", "death", "rims",
+	"marker_hit", "marker_weak_point", "marker_kill", "marker_blocked"]
+## The rims view: the pickups shown, near (m ahead of the eye) and far.
+const RIM_TYPES: Array[Pickup.Type] = [Pickup.Type.BULLETS, Pickup.Type.SHELLS, Pickup.Type.RIFLE, Pickup.Type.FLARES,
+	Pickup.Type.HUNT_ROUNDS, Pickup.Type.HARPOONS, Pickup.Type.ROCKETS, Pickup.Type.MEDKIT]
+const RIM_NEAR := 2.6
+const RIM_FAR := 11.0
+## The rims view turns the guard this far left (rad).
+const RIM_TURN := 0.6
 ## Views shot on the 1280x1024 window too (after the 1920x1080 ones).
 const SQUARE_VIEWS: Array[String] = ["hud", "notice", "pause"]
 const LANGUAGES: Array[String] = ["en", "pl"]
@@ -26,6 +39,12 @@ var museum: Museum
 var _dry := false
 var _tag := "shot"
 var _views: PackedStringArray = []
+var _languages: PackedStringArray = []
+var _sizes: PackedStringArray = []
+## Colour-vision palettes to shoot each view in (empty: the settings' own).
+var _palettes: PackedStringArray = []
+var _palette_tag := ""
+var _rim_pickups: Array[Node] = []
 var _log: Array = []
 var _problems: int = 0
 var _usable: Interactable = null
@@ -39,6 +58,12 @@ func _ready() -> void:
 			_tag = arg.trim_prefix("--tag=")
 		elif arg.begins_with("--views="):
 			_views = arg.trim_prefix("--views=").split(",", false)
+		elif arg.begins_with("--languages="):
+			_languages = arg.trim_prefix("--languages=").split(",", false)
+		elif arg.begins_with("--sizes="):
+			_sizes = arg.trim_prefix("--sizes=").split(",", false)
+		elif arg.begins_with("--palettes="):
+			_palettes = arg.trim_prefix("--palettes=").split(",", false)
 	_dry = DisplayServer.get_name() == "headless"
 	GameInput.capture_allowed = false
 	if not _dry:
@@ -51,21 +76,34 @@ func _ready() -> void:
 	if ignore != null:
 		ignore.close()
 	await _open()
+	var palettes: Array[String] = []
+	for p in _palettes:
+		palettes.append(p)
+	if palettes.is_empty():
+		palettes.append("")
 	for size in [Vector2i(1920, 1080), Vector2i(1280, 1024)]:
+		if not _sizes.is_empty() and not _sizes.has("%dx%d" % [size.x, size.y]):
+			continue
 		if not _dry:
 			DisplayServer.window_set_size(size)
 			await _frames(6)
-		for view in VIEWS:
-			if not _views.is_empty() and not _views.has(view):
-				continue
-			if size.x != 1920 and not SQUARE_VIEWS.has(view):
-				continue
-			for language in LANGUAGES:
-				Settings.set_value(&"language", language, false)
-				await _frames(2)
-				await _stage(view)
-				await _shot(view, language)
-				await _unstage(view)
+		for palette in palettes:
+			if palette != "":
+				Settings.set_value(&"colour_vision", int(palette), false)
+				_palette_tag = "_cv%s" % palette
+			for view in VIEWS:
+				if not _views.is_empty() and not _views.has(view):
+					continue
+				if size.x != 1920 and not SQUARE_VIEWS.has(view):
+					continue
+				for language in LANGUAGES:
+					if not _languages.is_empty() and not _languages.has(language):
+						continue
+					Settings.set_value(&"language", language, false)
+					await _frames(2)
+					await _stage(view)
+					await _shot(view, language)
+					await _unstage(view)
 		if _dry:
 			break
 	var file := FileAccess.open(OUT_DIR.path_join("dry.json" if _dry else "%s_metrics.json" % _tag), FileAccess.WRITE)
@@ -151,7 +189,7 @@ func _stage(view: String) -> void:
 		"hud":
 			hud.set_clock("23:47")
 			hud.set_objective(_long_goal())
-			hud.set_fuses(1, 0, true)
+			hud.set_fuses(1, 1, true)   # one in the pocket (striped), one in the box (solid, filament)
 			hud.set_shards(3, Floor1Plan.SHARD_COUNT)
 			guard.weapons.select_id(&"shotgun")
 			await _seconds(0.5)
@@ -231,6 +269,32 @@ func _stage(view: String) -> void:
 		"death":
 			museum.death_screen.play(4, 42)
 			await _real(1.8)
+		"rims":
+			# turned to the darker floor on the left, the rows left of the gun in hand
+			guard.head.rotation = Vector3(-0.2, guard.head.rotation.y + RIM_TURN, 0.0)
+			await _frames(2)
+			var eye := guard.camera.global_transform
+			var forward := -eye.basis.z
+			forward.y = 0.0
+			forward = forward.normalized()
+			var right := forward.cross(Vector3.UP).normalized()
+			for row in [RIM_NEAR, RIM_FAR]:
+				var spread: float = 0.3 if row == RIM_NEAR else 0.9
+				var middle: Vector3 = guard.global_position + forward * float(row) - right * float(row) * 0.27
+				for i in RIM_TYPES.size():
+					var box := Pickup.new()
+					box.type = RIM_TYPES[i]
+					box.respawn_time = 0.0
+					museum.add_child(box)
+					var at: Vector3 = middle + right * (i - (RIM_TYPES.size() - 1) * 0.5) * spread
+					box.global_position = Vector3(at.x, guard.global_position.y + 0.35, at.z)
+					_rim_pickups.append(box)
+			await _seconds(0.6)
+		"marker_hit", "marker_weak_point", "marker_kill", "marker_blocked":
+			var kind := StringName(view.trim_prefix("marker_"))
+			var role := &"hit" if kind == &"hit" else StringName("hit_" + kind)
+			await _frames(2)
+			hud._crosshair.show_marker(ColourVision.role(role), kind)
 
 
 func _unstage(view: String) -> void:
@@ -282,6 +346,14 @@ func _unstage(view: String) -> void:
 		"death":
 			museum.death_screen.visible = false
 			museum.death_screen._playing = false
+		"rims":
+			for box in _rim_pickups:
+				if is_instance_valid(box):
+					box.queue_free()
+			_rim_pickups.clear()
+			_put_guard()
+		"marker_hit", "marker_weak_point", "marker_kill", "marker_blocked":
+			hud._crosshair.marker_time = 0.0
 	hud._toast_left = 0.0
 	if hud._room_card != null:
 		hud._room_card.time = INF
@@ -303,7 +375,7 @@ func _shot(view: String, language: String) -> void:
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
-	var path := OUT_DIR.path_join("%s_%s_%s_%dx%d.png" % [_tag, view, language, window.x, window.y])
+	var path := OUT_DIR.path_join("%s%s_%s_%s_%dx%d.png" % [_tag, _palette_tag, view, language, window.x, window.y])
 	image.save_png(path)
 	print("saved %s" % ProjectSettings.globalize_path(path))
 

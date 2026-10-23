@@ -176,6 +176,17 @@ static func bays(from: float, to: float) -> Dictionary:
 	return {"pilasters": pilasters, "cases": cases}
 
 
+## The greybox piece of a long wall's lower or upper bookcases (the cut of
+## [method _library] / [method _gallery]: East.along_z from the north wall to
+## the south one minus [param clear], its default lengths) that holds
+## [param z]: its range along the wall (Vector2.ZERO: none).
+static func shelf_piece(clear: Array, z: float) -> Vector2:
+	for span in East._spans(LIBRARY.position.y, LIBRARY.end.y, clear, 6.0, 0.5):
+		if z >= span.x and z <= span.y:
+			return span
+	return Vector2.ZERO
+
+
 ## The pilaster nearest [param at] among the runs of [param spans].
 static func nearest_pilaster(spans: Array[Vector2], at: float) -> float:
 	var best := at

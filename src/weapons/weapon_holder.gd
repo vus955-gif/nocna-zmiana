@@ -69,12 +69,21 @@ const KICK_SIDE := 2
 const KICK_PITCH := 3
 const KICK_YAW := 4
 const KICK_ROLL := 5
-## Sprinting: the weapon is carried this far lower (m), muzzle down and
-## rolled in (rad); it comes up again this long (s) after a shot.
-const SPRINT_DROP := 0.035
-const SPRINT_TILT := 0.2
-const SPRINT_ROLL := 0.14
+## Sprinting: the weapon is carried as its grip class carries it on the
+## run (ViewmodelMotion.sprint_pose, rocking with the stride); it comes up
+## again this long (s) after a shot.
 const SPRINT_SHOT_HOLD := 0.35
+## The run's carry and the reload's dip follow critically damped springs
+## (ViewmodelMotion.follow) at these rates (1/s): down into the carry, back
+## up at the end of the run (about a quarter of a second) and quicker still
+## for a shot fired on the run (it is needed at once), the dip of a reload
+## (m). ViewmodelRig.RELOAD_OMEGA lifts the reloading models with the same
+## one.
+const SPRINT_OMEGA_DOWN := 12.0
+const SPRINT_OMEGA_UP := 18.0
+const SPRINT_OMEGA_SHOT := 24.0
+const RELOAD_DROP := 0.12
+const RELOAD_OMEGA := 20.0
 
 ## The node credited with hits (the player). It is never hit itself.
 var user: Node3D = null
@@ -95,11 +104,14 @@ var _fist_view: Node3D
 var _recoil := Recoil.new(6)
 ## 0..1: how far the weapon is lowered for a sprint; seconds since a shot.
 var _sprint_pose: float = 0.0
+var _sprint_pose_v: float = 0.0
 var _since_shot: float = INF
 ## Model kicks given so far (tests: every arrow of a volley kicks).
 var kicks_given: int = 0
-var _switch_drop: float = 0.0
+## Putting the weapon in hand away and drawing the next (WeaponSwitch).
+var _switch := WeaponSwitch.new()
 var _reload_drop: float = 0.0
+var _reload_drop_v: float = 0.0
 var _haven_drop: float = 0.0
 ## Seconds the guard is still dazed: no shot, no punch (Player.stagger).
 var _daze_left: float = 0.0
@@ -110,8 +122,18 @@ var _shake_noise := _make_shake_noise()
 var _empty_click_cd: float = 0.0
 ## Rounds fired, for tracers on every n-th round.
 var _rounds: int = 0
-var _punch_tween: Tween = null
+## The free left hand's gesture (a jab, a bash, a reach) and the time since
+## the last blow; the found weapons still to be looked over.
+var _gesture := ViewmodelGesture.new()
+var _since_blow: float = INF
+## Seconds since the guard was last hurt (a first look waits for calm).
+var _since_hurt: float = INF
+var _first_look := FirstLook.new()
 var _rng := RandomNumberGenerator.new()
+## The building near the weapon (owner's note 46) and each weapon's muzzle
+## at rest (the eye's space), where its casts aim.
+var _wall := WallProbe.new()
+var _muzzle_rest: Dictionary = {}
 ## The volley in flight: its numbers, rockets still to launch, the next
 ## one's index and the time to it.
 var _volley_data: WeaponData = null
@@ -122,6 +144,7 @@ var _volley_timer: float = 0.0
 
 func _ready() -> void:
 	_rng.randomize()
+	Events.player_damaged.connect(_on_player_damaged)
 	fists = WeaponState.new(FISTS)
 	fists.apply_upgrades(upgrade_levels)
 	_fist_view = Viewmodels.build(&"fist")
@@ -150,6 +173,9 @@ func give(data: WeaponData) -> WeaponState:
 	_muzzles[data.id] = MuzzleFx.attach(self, view, FeelProfile.of(data.id))
 	add_child(view)
 	_views[data.id] = view
+	var muzzle := view.get_node_or_null(^"Muzzle") as Node3D
+	_muzzle_rest[data.id] = Transform3D(Basis.from_euler(Vector3(0.0, AIM_YAW, 0.0)), REST) \
+			* (muzzle.position if muzzle != null else Vector3(0.0, 0.0, -0.3))
 	_apply_look(view, false)
 	if previous == null:
 		select(owned.find(added))
@@ -230,6 +256,36 @@ func on_screen_like_the_view(point: Vector3) -> Vector3:
 	return eye * Vector3(local.x * k, local.y * k, local.z)
 
 
+## 0..1: how far a wall in front pulls the weapon back (WallProbe).
+func wall_pull() -> float:
+	return _wall.pull
+
+
+## The building near the weapon in hand: casts from the eye (WallProbe)
+## with the weapon's reach and its muzzle at rest, at the camera's field of
+## view. Runs every physics frame (two sphere casts).
+func _probe_wall() -> void:
+	var state := current_state()
+	if state == null or not is_inside_tree():
+		_wall.want = 0.0
+		return
+	var id := state.data.id
+	var gun_point: Vector3 = _muzzle_rest.get(id, REST)
+	_wall.measure(get_world_3d().direct_space_state, global_transform, gun_point,
+			ViewmodelMotion.wall_start(ViewmodelMotion.grip_of(id)), _camera_fov())
+
+
+## The field of view (degrees) of the camera the holder rides on (else the
+## viewport's, else the option's).
+func _camera_fov() -> float:
+	var camera := get_parent() as Camera3D
+	if camera == null and is_inside_tree():
+		camera = get_viewport().get_camera_3d()
+	if camera != null and camera.projection == Camera3D.PROJECTION_PERSPECTIVE:
+		return camera.fov
+	return Settings.data.fov
+
+
 ## Rockets of the running volley still to launch.
 func volley_left() -> int:
 	return _volley_left
@@ -264,20 +320,23 @@ func select(index: int) -> void:
 	if index < 0 or index >= owned.size() or index == current:
 		return
 	var old := current_state()
+	var from := &""
 	if old != null:
 		old.cancel_reload()
+		from = old.data.id
+		# put away: it goes down out of the frame (WeaponSwitch), its
+		# sounds stop at once
 		var old_view := _views[old.data.id] as Node3D
-		old_view.visible = false
 		if old_view.has_method(&"on_hidden"):
 			old_view.call(&"on_hidden")
+		_cut_look(old_view)
 	current = index
 	_reload_held = -1.0
 	var state := owned[index]
 	var view := _views[state.data.id] as Node3D
-	view.visible = true
-	if view.has_method(&"on_drawn"):
-		view.call(&"on_drawn")
-	_switch_drop = 0.25
+	view.visible = true   # (a new look is looked over once it is up: ViewmodelRig, drawn())
+	_switch.begin(from, state.data.id)
+	_pose_view(view, state.data.id, REST, Vector3(0.0, AIM_YAW, 0.0))   # under the frame from the start
 	weapon_changed.emit(state)
 
 
@@ -301,6 +360,10 @@ func try_fire() -> bool:
 			_click_empty()
 		return false
 	state.fire()
+	for id in _switch.hurry():
+		_put_away(id)   # a shot during the switch: the old weapon is out of the way
+	_gesture.hurry()   # and a reaching hand lets the weapon come back up
+	_cut_look(_views.get(state.data.id))
 	if state.data.belt_feed and state.is_reloading():
 		Sfx.play(&"reload", -4.0)   # the box ran dry: the next belt runs in
 	_attack(state)
@@ -318,13 +381,63 @@ func try_punch() -> bool:
 		return false
 	fists.fire()
 	_attack(fists)
-	_animate_punch()
+	var state := current_state()
+	var id := state.data.id if state != null else &""
+	_gesture.punch(ViewmodelMotion.grip_of(id), _weapon_up())
+	_since_blow = 0.0
+	if state != null:
+		_cut_look(_views.get(id))
 	return true
+
+
+## The left hand reaches out to use something (Player, after a use with
+## E): a handgun makes way, a two-handed weapon goes out of the frame for a
+## moment (ViewmodelGesture).
+func reach() -> void:
+	var state := current_state()
+	_gesture.reach(ViewmodelMotion.grip_of(state.data.id) if state != null else ViewmodelMotion.Grip.ONE_HAND, _weapon_up())
+
+
+## Weapon [param id] was just found (a pickup, the fire cabinet, the
+## chained case): the guard looks it over at the next calm moment it is up
+## in his hands (FirstLook).
+func found(id: StringName) -> void:
+	if has_weapon(id):
+		_first_look.queue(id)
+		_first_look.recheck()
+
+
+## True while weapon [param id] still waits for its first look.
+func first_look_waiting(id: StringName) -> bool:
+	return _first_look.queued(id)
+
+
+## True when weapon [param id] is the one in hand and up (out of the
+## switch's way: at most half-way down).
+func drawn(id: StringName) -> bool:
+	var state := current_state()
+	return state != null and state.data.id == id and _switch.lower(id) < 0.5
+
+
+## True when a weapon is up in the hands (not on its way up or down).
+func _weapon_up() -> bool:
+	var state := current_state()
+	return state != null and _switch.lower(state.data.id) < 0.5
+
+
+## Cuts the first look of [param view] short (if it runs).
+func _cut_look(view: Variant) -> void:
+	var rig := view as ViewmodelRig
+	if rig != null:
+		rig.cut_look()
 
 
 func try_reload() -> bool:
 	var state := current_state()
-	return enabled and state != null and _start_reload(state)
+	if not enabled or state == null or not _start_reload(state):
+		return false
+	_cut_look(_views.get(state.data.id))
+	return true
 
 
 ## Walking speed factor from the weapon in hand: a gatling with its
@@ -358,6 +471,7 @@ func _physics_process(delta: float) -> void:
 	_tick_volley(delta)
 	_empty_click_cd = maxf(_empty_click_cd - delta, 0.0)
 	_daze_left = maxf(_daze_left - delta, 0.0)
+	_probe_wall()
 	if not _input_allowed():
 		return
 	if not sheltered() and _daze_left <= 0.0:
@@ -427,11 +541,20 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	_recoil.step(delta)
 	_since_shot += delta
-	_switch_drop = move_toward(_switch_drop, 0.0, 1.5 * delta)
+	_wall.ease(delta)
+	for id in _switch.step(delta):
+		_put_away(id)
+	_gesture.step(delta)
+	_since_blow += delta
+	_since_hurt += delta
+	_pose_fist()
 	var state := current_state()
 	if state == null:
 		return
-	_reload_drop = lerpf(_reload_drop, 0.12 if state.is_reloading() else 0.0, 1.0 - exp(-12.0 * delta))
+	# springs (ViewmodelMotion.follow), so a reload cut short eases back
+	var dip := ViewmodelMotion.follow(_reload_drop, _reload_drop_v, RELOAD_DROP if state.is_reloading() else 0.0, RELOAD_OMEGA, delta)
+	_reload_drop = dip.x
+	_reload_drop_v = dip.y
 	_haven_drop = lerpf(_haven_drop, HAVEN_DROP if sheltered() else 0.0, 1.0 - exp(-8.0 * delta))
 	_daze_drop = lerpf(_daze_drop, DAZE_DROP if _daze_left > 0.0 else 0.0, 1.0 - exp(-(20.0 if _daze_left > 0.0 else 6.0) * delta))
 	var speed := 0.0
@@ -455,7 +578,10 @@ func _process(delta: float) -> void:
 		landing = guard.landing_offset() * 0.6   # the weapon dips a little more than the eyes
 	# a sprint carries it low; a shot (or the end of the run) brings it up
 	var lowered := sprinting and _since_shot > SPRINT_SHOT_HOLD
-	_sprint_pose = lerpf(_sprint_pose, 1.0 if lowered else 0.0, 1.0 - exp(-(7.0 if lowered else 16.0) * delta))
+	var omega := SPRINT_OMEGA_DOWN if lowered else (SPRINT_OMEGA_SHOT if sprinting else SPRINT_OMEGA_UP)
+	var carry := ViewmodelMotion.follow(_sprint_pose, _sprint_pose_v, 1.0 if lowered else 0.0, omega, delta)
+	_sprint_pose = carry.x
+	_sprint_pose_v = carry.y
 	var bob := Vector3(sin(_bob_time) * 0.012, -absf(cos(_bob_time)) * 0.012, 0.0) * sway
 	var drift := Vector3(sin(_sway_time * 0.9), cos(_sway_time * 0.7) * 0.6, 0.0) * (FATIGUE_DRIFT * tired)
 	if shakes > 0.0:
@@ -463,13 +589,97 @@ func _process(delta: float) -> void:
 		drift += Vector3(_shake_noise.get_noise_1d(t), _shake_noise.get_noise_1d(t + 100.0), 0.0) * (JITTER_SHAKE * shakes)
 	var view: Node3D = _views[state.data.id]
 	var kick := Vector3(_recoil.value(KICK_SIDE), _recoil.value(KICK_RISE), _recoil.value(KICK_BACK))
-	var drops := _switch_drop + _reload_drop + _haven_drop + _daze_drop + SPRINT_DROP * _sprint_pose
-	view.position = REST + bob + drift + kick + Vector3(SPRINT_DROP * 0.4 * _sprint_pose, landing - drops, 0.0)
-	view.rotation = Vector3(deg_to_rad(_recoil.value(KICK_PITCH)) - (_haven_drop + _daze_drop) * HAVEN_TILT - SPRINT_TILT * _sprint_pose,
+	var drops := _reload_drop + _haven_drop + _daze_drop
+	# what every weapon in sight shares (the one in hand and one going down)
+	var shared_at := REST + bob + drift + kick + Vector3(0.0, landing - drops, 0.0)
+	var shared_turn := Vector3(deg_to_rad(_recoil.value(KICK_PITCH)) - (_haven_drop + _daze_drop) * HAVEN_TILT,
 			AIM_YAW + deg_to_rad(_recoil.value(KICK_YAW)),
-			_daze_drop * 1.5 + deg_to_rad(_recoil.value(KICK_ROLL)) + SPRINT_ROLL * _sprint_pose)
+			_daze_drop * 1.5 + deg_to_rad(_recoil.value(KICK_ROLL)))
+	for id in _switch.holstering():
+		_pose_view(_views[id] as Node3D, id, shared_at, shared_turn)
+	_pose_view(view, state.data.id, shared_at, shared_turn)
 	if view.has_method(&"update_view"):
 		view.call(&"update_view", state, delta)
+	_tick_first_look(state, view as ViewmodelRig, delta)
+
+
+## The guard was hurt (Events.player_damaged): a first look lets go, and
+## none starts until it is calm again.
+func _on_player_damaged(_amount: float, _from_position: Vector3) -> void:
+	_since_hurt = 0.0
+	var state := current_state()
+	if state != null:
+		_cut_look(_views.get(state.data.id))
+
+
+## The free left fist (a jab, a reach: ViewmodelGesture), shown only while
+## it is out.
+func _pose_fist() -> void:
+	var fist: Array = _gesture.fist()
+	_fist_view.visible = fist[0]
+	if fist[0]:
+		_fist_view.position = fist[1]
+		_fist_view.rotation = fist[2]
+
+
+## The first look at a found weapon (FirstLook): started on the weapon in
+## hand once it is up and all is quiet (no reload, no run, no daze, no
+## gesture, QUIET_AFTER s from a shot, a blow or a hit, no hunter near);
+## cut short when a fight comes near, the guard is hurt (_on_player_damaged)
+## or dazed, or he starts to run.
+func _tick_first_look(state: WeaponState, rig: ViewmodelRig, delta: float) -> void:
+	if rig == null:
+		return
+	if rig.looking_over() > 0.0:
+		if _sprint_pose > 0.3 or _daze_left > 0.0 or (user != null and not _first_look.calm(get_tree(), user.global_position, delta)):
+			rig.cut_look()
+		return
+	var id := state.data.id
+	if not _first_look.queued(id):
+		return
+	if _switch.busy() or state.is_reloading() or _sprint_pose > 0.1 or _daze_left > 0.0 or _gesture.active():
+		return
+	if minf(minf(_since_shot, _since_blow), _since_hurt) <= FirstLook.QUIET_AFTER or not _input_allowed():
+		return
+	if user != null and not _first_look.calm(get_tree(), user.global_position, delta):
+		return
+	_first_look.take(id)
+	rig.look_over()
+
+
+## Weapon [param id]'s view at the shared pose plus its own layers (each a
+## pose of its grip class, ViewmodelMotion, in the share it holds now):
+## put away as far as the switch (or a two-handed reach) has it down,
+## carried on the run (rocking with the stride), pulled back from a wall,
+## and the gesture's layer (a bash, a jab's shoulder turn, making way).
+func _pose_view(view: Node3D, id: StringName, shared_at: Vector3, shared_turn: Vector3) -> void:
+	var grip := ViewmodelMotion.grip_of(id)
+	var lower := _switch.lower(id)
+	var holster: Array = ViewmodelMotion.holster_pose(grip)
+	var wall: Array = ViewmodelMotion.wall_pose(grip)
+	var run: Array = ViewmodelMotion.sprint_pose(grip)
+	var swing := float(ViewmodelMotion.SPRINT_SWING[grip]) * _sprint_pose
+	var stride := Vector3(sin(_bob_time) * 0.2, -absf(cos(_bob_time)) * 0.25, 0.0) * swing
+	var rock := Vector3(-absf(cos(_bob_time)) * 0.5, sin(_bob_time) * 0.6, sin(_bob_time)) * swing
+	var gesture: Array = _gesture.weapon()
+	lower = maxf(lower, _gesture.weapon_lower())
+	var at := shared_at + stride + (gesture[0] as Vector3)
+	var turn := shared_turn + rock + (gesture[1] as Vector3)
+	at += (holster[0] as Vector3) * lower + (wall[0] as Vector3) * _wall.pull + (run[0] as Vector3) * _sprint_pose
+	turn += (holster[1] as Vector3) * lower + (wall[1] as Vector3) * _wall.pull + (run[1] as Vector3) * _sprint_pose
+	view.position = at
+	view.rotation = turn
+
+
+## Weapon [param id] went out of sight on its way down: hidden (unless it
+## was called back meanwhile).
+func _put_away(id: StringName) -> void:
+	var state := current_state()
+	if state != null and state.data.id == id:
+		return
+	var view := _views.get(id) as Node3D
+	if view != null:
+		view.visible = false
 
 
 ## The noise of the shaking hands: fast (JITTER_FREQUENCY), seeded the same every run.
@@ -517,14 +727,21 @@ func _attack(state: WeaponState) -> void:
 			_launch(space, data, origin, forward)
 	elif data.melee_radius > 0.0:
 		# the zone under the crosshair takes the blow (a chain beside an
-		# exhibit); else the nearest one in the sweep
+		# exhibit); else the nearest one in the sweep. A blow aimed at one of
+		# the museum's props (a case's glass) sweeps on too: an exhibit in
+		# reach beside it is not spared by the glass
 		var aimed := Hitscan.ray(space, origin, origin + forward * data.max_range)
 		var aimed_zone: Hurtbox = aimed.get("hurtbox") if not aimed.is_empty() else null
-		if aimed_zone != null and aimed_zone.receiver != null and aimed_zone.receiver != user:
+		var aimed_at := aimed_zone != null and aimed_zone.receiver != null and aimed_zone.receiver != user
+		if aimed_at:
 			_accumulate(hits, aimed_zone, data, aimed["position"], -forward, forward)
-		else:
+		if not aimed_at or Hitscan.is_prop(aimed_zone):
 			var center := origin + forward * (data.max_range - data.melee_radius)
 			for hurtbox in Hitscan.sphere_hurtboxes(space, center, data.melee_radius):
+				# (a blow thrown at an exhibit never lands on the glass case
+				# beside it instead: the museum's props take aimed blows only)
+				if Hitscan.is_prop(hurtbox):
+					continue
 				if hurtbox.receiver != null and hurtbox.receiver != user and _unobstructed(space, origin, hurtbox):
 					_accumulate(hits, hurtbox, data, hurtbox.global_position, -forward, forward)
 					break
@@ -811,14 +1028,3 @@ func _muzzle_position(id: StringName, fallback: Vector3) -> Vector3:
 		return fallback
 	var muzzle := view.get_node_or_null(^"Muzzle") as Node3D
 	return muzzle.global_position if muzzle != null else fallback
-
-
-func _animate_punch() -> void:
-	if _punch_tween != null:
-		_punch_tween.kill()   # an old punch must not hide this one halfway
-	_fist_view.visible = true
-	_fist_view.position = FIST_REST
-	_punch_tween = create_tween()
-	_punch_tween.tween_property(_fist_view, "position", FIST_HIT, 0.07)
-	_punch_tween.tween_property(_fist_view, "position", FIST_REST, 0.16)
-	_punch_tween.tween_callback(func() -> void: _fist_view.visible = false)

@@ -30,6 +30,12 @@ const LANDING_DIP_MAX := 0.07
 const SPRINT_FOV := 3.0
 ## RunState.used id of tonight's second wind.
 const SECOND_WIND := &"second_wind"
+## A tick of damage over time (DamageInfo.periodic: steam, a burn) takes its
+## health at every tick but cries out - the hurt sound, the shake of the view,
+## the flash event - at most this often (s). The ticks kept quiet are not
+## lost to the listeners of Events.player_damaged: their damage goes out with
+## the next cry; a tick that would kill always cries at once.
+const PERIODIC_CUE_GAP := 1.0
 ## The level-floor check under the feet (m above and below them).
 const FLOOR_PROBE_UP := 0.2
 const FLOOR_PROBE_DOWN := 0.35
@@ -44,6 +50,9 @@ const STAGGER_SPEED := 0.2
 ## landing from LANDING_NOISE_SPEED m/s PerceptionRules.STEP_NOISE metres
 ## away (Events.noise_made).
 const SPRINT_NOISE_INTERVAL := 0.4
+## A switched sprint (option sprint_toggle) ends when the guard has taken no
+## step for this long (seconds; Shift a moment before W still works).
+const SPRINT_IDLE_GRACE := 0.4
 const LANDING_NOISE_SPEED := 3.5
 ## A ledge at most this high (a stair's open side, a dais's step, a lip) he
 ## walks up in his stride instead of stopping at it (QA #49); a higher one
@@ -84,6 +93,12 @@ var battery := FlashlightBattery.new()
 var interactor := Interactor.new()
 var alive: bool = true
 var sprinting: bool = false
+## Sprint is switched on and off by its key (option sprint_toggle) instead of
+## held; [member _sprint_latched] is the switch, [member _sprint_idle] the
+## seconds the guard has not moved since.
+var sprint_toggle: bool = false
+var _sprint_latched: bool = false
+var _sprint_idle: float = 0.0
 ## Dust flies to the guard from this far (dust magnet upgrade).
 var dust_magnet_radius: float = DustMote.MAGNET_RADIUS
 ## Second wind is bought (once a night a killing blow leaves 1 health).
@@ -121,6 +136,10 @@ var _slow_factor: float = 1.0
 var _slow_left: float = 0.0
 ## Seconds of invulnerability left (second wind).
 var _grace: float = 0.0
+## Seconds until a tick of damage over time may cry out again.
+var _cue_wait: float = 0.0
+## Damage of the ticks kept quiet since the last cry (told with the next one).
+var _cue_pending: float = 0.0
 ## A forced move (a mummy's bandage whip pulling him in): horizontal
 ## velocity and how long it still holds.
 var _yank := Vector3.ZERO
@@ -223,6 +242,26 @@ func landing_offset() -> float:
 	return _landing.value(0) * head_bob_scale
 
 
+## Does the guard ask for a sprint this frame: the key held, or - with the
+## option sprint_toggle - the switch the key flips (it falls when a menu takes
+## the input or the guard has stood still for SPRINT_IDLE_GRACE).
+func _wants_sprint(controls: bool, input: Vector2, delta: float) -> bool:
+	var moving := input.length() > 0.1
+	if not sprint_toggle:
+		_sprint_latched = false
+		return controls and Input.is_action_pressed(&"sprint") and moving
+	if not controls:
+		_sprint_latched = false
+		return false
+	if GameInput.fresh_press(&"sprint"):
+		_sprint_latched = not _sprint_latched
+		_sprint_idle = 0.0
+	_sprint_idle = 0.0 if moving else _sprint_idle + delta
+	if _sprint_idle > SPRINT_IDLE_GRACE:
+		_sprint_latched = false
+	return _sprint_latched and moving
+
+
 ## Switches the flashlight (through the battery). False when it stays dark.
 func set_flashlight(lit: bool) -> bool:
 	var switched := battery.set_on(lit)
@@ -252,8 +291,9 @@ func _physics_process(delta: float) -> void:
 	if controls:
 		input = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
 	var wish := Basis(Vector3.UP, head.rotation.y) * Vector3(input.x, 0.0, input.y)
-	sprinting = controls and Input.is_action_pressed(&"sprint") and input.length() > 0.1 \
-			and weapons.allows_sprint() and stamina.spend_sprint(delta)
+	sprinting = _wants_sprint(controls, input, delta) and weapons.allows_sprint() and stamina.spend_sprint(delta)
+	if _sprint_latched and not sprinting and input.length() > 0.1:
+		_sprint_latched = false   # out of breath or a weapon forbids it: not resumed by itself
 	_dash_cd = maxf(_dash_cd - delta, 0.0)
 	_dash_left = maxf(_dash_left - delta, 0.0)
 	if GameInput.fresh_press(&"dash"):
@@ -289,6 +329,7 @@ func _physics_process(delta: float) -> void:
 	_slow_left = maxf(_slow_left - delta, 0.0)
 	_stagger_left = maxf(_stagger_left - delta, 0.0)
 	_grace = maxf(_grace - delta, 0.0)
+	_cue_wait = maxf(_cue_wait - delta, 0.0)
 	var falling := -velocity.y
 	var start := global_transform
 	var pushing := Vector3(velocity.x, 0.0, velocity.z)
@@ -429,12 +470,20 @@ func take_damage(info: DamageInfo) -> void:
 	if info.amount >= health.current and second_wind_ready():
 		_second_wind(info)
 		return
-	Events.player_damaged.emit(info.amount, info.position)
-	camera.add_trauma(0.25 + info.amount / 60.0)
+	var cries := not info.periodic or _cue_wait <= 0.0 or info.amount >= health.current
+	if not cries:
+		_cue_pending += info.amount
+	else:
+		if info.periodic:
+			_cue_wait = PERIODIC_CUE_GAP
+		Events.player_damaged.emit(info.amount + _cue_pending, info.position)
+		_cue_pending = 0.0
+		camera.add_trauma(0.25 + info.amount / 60.0)
 	var push := Vector3(info.direction.x, 0.0, info.direction.z)
 	if info.knockback > 0.0 and push.length() > 0.01:
 		velocity += push.normalized() * info.knockback
-	Sfx.play(&"hurt")
+	if cries:
+		Sfx.play(&"hurt")
 	health.apply_damage(info.amount)
 
 
@@ -530,6 +579,8 @@ func respawn(at: Vector3, yaw: float = 0.0) -> void:
 	_step_lag = 0.0
 	_step_lag_before = 0.0
 	sprinting = false
+	_sprint_latched = false
+	_sprint_idle = 0.0
 	health.reset()
 	stamina.current = stamina.maximum
 	stamina.exhausted = false
@@ -552,7 +603,7 @@ func _update_flashlight_light() -> void:
 	if battery.is_flickering():
 		_flicker_time += get_process_delta_time()
 		var wobble := _flicker_noise.get_noise_1d(_flicker_time * 30.0) * 0.5 + 0.5
-		energy *= 0.15 + 0.85 * clampf(wobble * 1.6 - 0.3, 0.0, 1.0)
+		energy *= Flashing.lamp_level(0.15 + 0.85 * clampf(wobble * 1.6 - 0.3, 0.0, 1.0))
 	flashlight.light_energy = energy
 
 
@@ -563,8 +614,8 @@ func _update_interaction(controls: bool) -> void:
 		return
 	var eye := camera.global_transform
 	interactor.update(get_world_3d().direct_space_state, eye.origin, -eye.basis.z, self)
-	if controls and GameInput.fresh_press(&"interact"):
-		interactor.try_interact(self)
+	if controls and GameInput.fresh_press(&"interact") and interactor.try_interact(self):
+		weapons.reach()   # the left hand goes out to it
 
 
 ## Keeps the spot the dropped lantern would go to: level floor only (not an
@@ -606,6 +657,7 @@ func _on_settings_changed(_key: StringName) -> void:
 	camera.base_fov = Settings.data.fov
 	camera.shake_scale = Settings.data.screen_shake
 	head_bob_scale = Settings.data.head_bob
+	sprint_toggle = Settings.data.sprint_toggle
 
 
 func _on_enemy_destroyed(_enemy: Node, info: DamageInfo, finisher: bool) -> void:

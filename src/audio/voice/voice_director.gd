@@ -104,6 +104,13 @@ func _ready() -> void:
 		trigger(&"secret_found", {"kind": tier_name(tier), "count": found}))
 	Events.fatigue_rose.connect(func(stage: int) -> void: trigger(&"fatigue_rose", {"count": stage}))
 	Events.hour_struck.connect(func(hour: int) -> void: trigger(&"hour_struck", {"hour": hour}))
+	# the night's curve (plan 2026-10-21-eskalacja-nocy): no lines yet (G3) -
+	# a rule names the phase (kind: calm, uneasy, witching, predawn) or the
+	# uncanny event (kind: its UncannyCatalog id; room: where it happened)
+	Events.night_phase_changed.connect(func(night_phase: int) -> void:
+		trigger(&"night_phase_changed", {"kind": NightEscalation.phase_name(night_phase)}))
+	Events.uncanny_event.connect(func(id: StringName, at_room: StringName) -> void:
+		trigger(&"uncanny_event", {"kind": id, "room": at_room}))
 	Events.player_died.connect(_on_player_died)
 	Events.player_damaged.connect(func(_amount: float, _from: Vector3) -> void:
 		if not _dawn:   # after dawn the world is frozen: a stray hit must not hold the dawn line back
@@ -175,6 +182,14 @@ func line_left() -> float:
 	return _line_left
 
 
+## True when a line pushed now could start at once: nothing on air, nothing
+## waiting, the quiet after the last line over. The uncanny events that bring
+## a line of their own (UncannyCatalog: quiet_voice) only happen then, so the
+## line speaks at its moment and not behind someone else's.
+func is_free() -> bool:
+	return _line == &"" and not queue.is_speaking() and queue.pending.is_empty() and queue.since_line >= VoiceQueue.LINE_GAP
+
+
 ## Queues every unheard line whose rule fits [param event]. Returns how many.
 func trigger(event: StringName, payload: Dictionary) -> int:
 	if not enabled:
@@ -188,7 +203,7 @@ func trigger(event: StringName, payload: Dictionary) -> int:
 			continue
 		if not VoiceRules.matches(rule, fields):
 			continue
-		if queue.push(key, int(rule.get("priority", VoiceQueue.NORMAL)), float(rule.get("delay", 0.0))):
+		if queue.push(key, int(rule.get("priority", VoiceQueue.NORMAL)), float(rule.get("delay", 0.0)), float(rule.get("expires", 0.0))):
 			queued += 1
 	return queued
 

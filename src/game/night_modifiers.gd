@@ -61,6 +61,8 @@ static func set_lights(level: Level, group: StringName, on: bool, rooms: Array[S
 		var room: StringName = node.get_meta(&"room", node.get_meta(&"kit_room", &""))
 		if not rooms.is_empty() and not rooms.has(room):
 			continue
+		if node.get_meta(&"env_broken", false):
+			continue   # shot down tonight: no switch lights it again
 		for each in groups:
 			if node is Light3D and node.is_in_group(each):
 				(node as Light3D).visible = on

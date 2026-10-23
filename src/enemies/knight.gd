@@ -63,6 +63,11 @@ func _on_damaged(info: DamageInfo) -> void:
 		Fx.chunk(info.position, ExhibitMaterial.color(material_kind), 0.14, fling)
 
 
+## (the greybox's shield arm back up before it dozes)
+func _may_doze() -> bool:
+	return _shield == null or absf(_shield.rotation.x) < DOZE_STILL
+
+
 func _update_visuals(delta: float) -> void:
 	super(delta)
 	if _shield == null:

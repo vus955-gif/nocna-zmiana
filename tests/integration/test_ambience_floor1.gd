@@ -150,7 +150,7 @@ func test_rooms_take_their_reverb_from_their_zone() -> void:
 	assert_eq(Ambience.reverb_for(&"great_gallery", &"egypt")[0], ReverbZone.Preset.GALLERY)
 	assert_eq(Ambience.reverb_for(&"kings_library", &"enlightenment")[0], ReverbZone.Preset.LIBRARY)
 	assert_eq(Ambience.reverb_for(&"japanese_garden", &"asia")[0], ReverbZone.Preset.GARDEN, "a word in the id first")
-	assert_eq(Ambience.reverb_for(&"boiler_room", &"basement")[0], ReverbZone.Preset.CONCRETE)
+	assert_eq(Ambience.reverb_for(&"boiler_room", &"basement")[0], ReverbZone.Preset.STEEL, "the boiler house rings steel")
 	assert_eq(Ambience.reverb_for(&"north_corridor", &"north_hall")[0], ReverbZone.Preset.CORRIDOR)
 	assert_eq(Ambience.reverb_for(&"nowhere")[0], ReverbZone.Preset.ROOM, "no zone: the default")
 

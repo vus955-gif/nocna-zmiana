@@ -3,7 +3,8 @@ extends RefCounted
 ## Wires a level built from a LevelLayout into PerceptionWorld: the light
 ## model from its LightSpecs (LayoutIllumination) with the power read from
 ## the real lamps (the blackout, the power cut and the lamps' stutter all
-## show in Light3D.visible), its rooms (LevelLayout.room_at), its room graph
+## show in Light3D.visible), its rooms (LevelLayout.room_at, through a
+## RoomIndex: the exhibits ask it all the time), its room graph
 ## (passage ids = opening and stairs ids) and its doors (Door.is_open;
 ## passages without a Door, like stairs and arches, are always open).
 ## Call it once the level is built (lamps and doors exist), before the
@@ -23,7 +24,9 @@ static func configure_layout(layout: LevelLayout, doors: Dictionary, lights_root
 	var powered := LayoutIllumination.powered_by_nodes(lights_root) if lights_root != null else Callable()
 	var light := LayoutIllumination.from_layout(layout, powered)
 	light.moon_level = moon_level
-	PerceptionWorld.configure(light.callable(), layout.room_at, layout.graph(), door_checker(doors))
+	# (held in a variable until configure() keeps it: a callable does not hold its object, a temporary is gone first)
+	var rooms := RoomIndex.build(layout)
+	PerceptionWorld.configure(light.callable(), rooms.room_at, layout.graph(), door_checker(doors))
 	return light
 
 

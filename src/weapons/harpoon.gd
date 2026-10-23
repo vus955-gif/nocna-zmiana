@@ -193,8 +193,11 @@ func _impact(hurtbox: Hurtbox, point: Vector3, normal: Vector3) -> void:
 		_stick_into(exhibit, point)
 		return
 	_hit(receiver, hurtbox, point, normal, direction, 0.0)
-	# it rides on whatever carries the hit zone (a hook ring's object moves)
+	# it rides on whatever carries the hit zone (a hook ring's object moves;
+	# a museum's lamp or tool swings and falls with its piece, not its zone)
 	var body := hurtbox.get_parent() as Node3D if is_instance_valid(hurtbox) else null
+	if is_instance_valid(receiver) and receiver is EnvProp:
+		body = (receiver as EnvProp).carrier()
 	if body != null and body.is_inside_tree():
 		_stick_into(body, point)
 	else:

@@ -316,7 +316,7 @@ func _lamps(brain: OrreryBrain, waking: bool, progress: float) -> void:
 					var tier := brain.surge_tier
 					if t < 1.0:
 						# flickers on, then burns: the warning
-						var blink := 1.0 if t > 0.3 or fmod(time * 14.0, 1.0) < 0.6 else 0.2
+						var blink := 1.0 if t > 0.3 or Flashing.on() or fmod(time * 14.0, 1.0) < 0.6 else 0.2
 						p.lamps[tier] = blink * clampf(t / 0.12, 0.0, 1.0)
 						p.tier_glow[tier] = 0.8 * MotionClip.eased(MotionClip.IN, t)
 					elif t < 2.0:

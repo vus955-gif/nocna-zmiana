@@ -28,6 +28,8 @@ const KEYS := {
 	&"pause": [KEY_ESCAPE],
 	# the paper museum map (Floor I)
 	&"map": [KEY_M],
+	# dev: the performance overlay (dev builds, or the option "dev tools")
+	&"toggle_perf": [KEY_F3],
 	# dev arenas only (6-8 are weapons now)
 	&"spawn_wax": [KEY_F5],
 	&"spawn_wolf": [KEY_F6],
@@ -115,6 +117,25 @@ func _enter_tree() -> void:
 			var event := InputEventKey.new()
 			event.physical_keycode = key
 			InputMap.action_add_event(action, event)
+
+
+## Puts the player's keys and mouse buttons in the InputMap (the pad's
+## events of an action stay): the events of an action in the order of its
+## places, so key_label() names the main one first.
+func apply_bindings(bindings: KeyBindings) -> void:
+	for action in KeyBindings.actions():
+		if not InputMap.has_action(action):
+			continue
+		var kept: Array[InputEvent] = []
+		for event in InputMap.action_get_events(action):
+			if not (event is InputEventKey or event is InputEventMouseButton):
+				kept.append(event)
+		InputMap.action_erase_events(action)
+		for code in bindings.codes(action):
+			InputMap.action_add_event(action, KeyBindings.event_for(code))
+		for event in kept:
+			InputMap.action_add_event(action, event)
+	_labels.clear()
 
 
 ## A menu takes the input (and frees the cursor, or hides it without
@@ -250,31 +271,32 @@ func _forget_freed() -> void:
 			_releasing.remove_at(i)
 
 
-## Name of the first key bound to [param action] as printed on the player's
-## keyboard (bindings are physical positions, the label follows the layout).
+## Name of the main key or mouse button of [param action] as the player
+## sees it (key bindings are physical positions, the label follows the
+## keyboard layout; "?" when it has none).
 func key_label(action: StringName) -> String:
 	if _labels.has(action):
 		return _labels[action]
-	var label := "?"
-	if InputMap.has_action(action):
-		for event in InputMap.action_get_events(action):
-			var key := event as InputEventKey
-			if key == null:
-				continue
-			var shown := key.physical_keycode
-			if DisplayServer.get_name() != "headless":
-				var on_layout := DisplayServer.keyboard_get_keycode_from_physical(key.physical_keycode)
-				if on_layout != KEY_NONE:
-					shown = on_layout
-			label = OS.get_keycode_string(shown)
-			break
+	var names := binding_labels(action)
+	var label: String = names[0] if not names.is_empty() else "?"
 	_labels[action] = label
 	return label
 
 
+## The names of all keys and mouse buttons of [param action], main first.
+func binding_labels(action: StringName) -> Array[String]:
+	var names: Array[String] = []
+	if InputMap.has_action(action):
+		for event in InputMap.action_get_events(action):
+			var code := KeyBindings.code_of_event(event)
+			if code != 0:
+				names.append(KeyBindings.label(code))
+	return names
+
+
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_IN:
-		_labels.clear()   # the keyboard layout may have changed meanwhile
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_TRANSLATION_CHANGED:
+		_labels.clear()   # the keyboard layout (or the mouse buttons' language) may have changed meanwhile
 
 
 func _ensure(action: StringName) -> void:

@@ -12,15 +12,25 @@ const Enlightenment := preload("res://src/level/floor1/zones/enlightenment.gd")
 const Greece := preload("res://src/level/floor1/zones/greece.gd")
 const WINGS: Array[StringName] = [&"greece", &"enlightenment"]
 
+## The tests that change the level (blackouts, culling, quality presets, parts
+## taken away) build their own; all the others look at one built for the file
+## (TestCase.shared_fixture: the runner fails a test that changed it).
+const OWN_LEVEL: Array[StringName] = [
+	&"test_the_wings_light_recipes",
+	&"test_clocks_tick_and_the_culling_stops_them",
+	&"test_the_bookcase_the_env_tool_brings_down_is_drawn_and_falls_whole",
+]
+
+## A stand-in for the Museum: the env layer reads its guard and night.
+class EnvHost extends Node3D:
+	var player: Player = null
+	var run: NightState = null
+
 var level: MuseumFloorLevel
 
 
 func before_each() -> void:
-	MuseumFloorLevel.dress_default = true
-	level = MuseumFloorLevel.new()
-	level.bake_navigation = false
-	add_child(level)
-	level.build()
+	level = DressedFloor.build(self) if OWN_LEVEL.has(current_test) else await shared_fixture(&"dressed_floor", DressedFloor.build)
 
 
 func after_each() -> void:
@@ -134,7 +144,8 @@ func test_the_library_bookcases_run_from_pilaster_to_pilaster() -> void:
 	var runs: Array = []
 	for tier in 2:
 		var upper := tier == 1
-		for clear: Array in [Enlightenment.UP_CLEAR_WEST if upper else Enlightenment.LOW_CLEAR_WEST, Enlightenment.UP_CLEAR_EAST if upper else Enlightenment.LOW_CLEAR_EAST]:
+		# (each wall's doorways and the env tools' bookcases, which draw their own)
+		for clear: Array in [Floor1ArtEnlightenment.run_clear(Floor1ArtEnlightenment.WEST, upper), Floor1ArtEnlightenment.run_clear(Floor1ArtEnlightenment.EAST, upper)]:
 			for span in Enlightenment.shelf_spans(clear):
 				runs.append([span, upper])
 		runs.append([Floor1ArtEnlightenment.SHORT_RUN, upper])
@@ -182,6 +193,70 @@ func test_the_library_bookcases_run_from_pilaster_to_pilaster() -> void:
 		assert_true(pilaster_z.any(func(z: float) -> bool: return absf(z - light.position.z) < 0.001), "the sconce at %s hangs on a pilaster" % light.position)
 		assert_almost_eq(absf(light.position.x - (31.0 if light.position.x < 38.0 else 45.0)), Enlightenment.SCONCE_OUT, 0.001)
 	assert_eq(sconces, 8)
+
+
+## The world boxes of every mesh under [param root].
+func _mesh_boxes(root: Node) -> Array[AABB]:
+	var out: Array[AABB] = []
+	for child in root.find_children("*", "MeshInstance3D", true, false):
+		var view := child as MeshInstance3D
+		if view.mesh != null:
+			out.append(view.global_transform * view.get_aabb())
+	return out
+
+
+## The window review of 22.10 (§3.1): the library's bookcase tool toppled
+## an empty Visual and the run's cases stood on. Its piece draws its own
+## cases, the run leaves them out (no lamp hangs on them), and once it fell
+## nothing of it stands where it stood.
+func test_the_bookcase_the_env_tool_brings_down_is_drawn_and_falls_whole() -> void:
+	var host := EnvHost.new()
+	host.name = "EnvHost"
+	add_child(host)
+	host.run = NightState.new()
+	host.add_child(host.run)
+	var env := EnvLayer.install(level, host)
+	await physics_frames(2)
+	var tool := env.prop(&"bookcase_library") as EnvToppleTool
+	assert_not_null(tool, "(control) the library's bookcase tool is built")
+	if tool == null or not is_instance_valid(tool.load_node):
+		host.free()
+		return
+	var look := tool.load_node.get_node_or_null(^"Visual")
+	assert_not_null(look, "(control) its piece has a Visual")
+	var drawn: Array[AABB] = _mesh_boxes(look) if look != null else ([] as Array[AABB])
+	assert_gt(drawn.size(), 0, "the bookcase the tool brings down is drawn")
+	var size: Vector3 = tool.load_node.get_meta(&"kit_size")
+	var rest := tool.load_node.global_transform
+	# the piece's box, a little inside its ends (the run's end pilasters touch them)
+	var standing := rest * AABB(Vector3(-size.x * 0.5 + 0.1, 0.0, -size.z * 0.5), Vector3(size.x - 0.2, size.y, size.z))
+	for box in drawn:
+		assert_true(standing.grow(0.5).encloses(box), "(control) drawn in its piece's place: %s" % box)
+	var run := _heroes().get_node(^"LibraryBookcases")
+	var overlaps := 0
+	for box in _mesh_boxes(run):
+		if box.intersects(standing.grow(-0.02)):
+			overlaps += 1
+	assert_eq(overlaps, 0, "the run leaves the tool's bookcase out (no case twice)")
+	for light: Dictionary in Floor1ArtEnlightenment.extra_lights():
+		var at: Vector3 = light["position"]
+		var on_it := absf(at.x - rest.origin.x) < 1.5 and absf(at.z - rest.origin.z) < size.x * 0.5
+		assert_false(on_it, "no lamp hangs on the bookcase that falls (%s)" % at)
+	tool.trigger()
+	await physics_frames(roundi((EnvRules.TOOL_WARNING + EnvToppleTool.FALL_TIME + 0.6) * Engine.physics_ticks_per_second))
+	assert_true(tool.is_down, "(control) it fell")
+	var upright := rest * AABB(Vector3(-size.x * 0.5 + 0.1, 1.0, -size.z * 0.5), Vector3(size.x - 0.2, size.y - 1.0, size.z))
+	var left := 0
+	for box in _mesh_boxes(run) + _mesh_boxes(tool.load_node):
+		if box.intersects(upright):
+			left += 1
+	assert_eq(left, 0, "nothing of the bookcase stands where it stood")
+	var lying := _mesh_boxes(look) if is_instance_valid(look) else ([] as Array[AABB])
+	assert_eq(lying.size(), drawn.size(), "(control) the fallen bookcase is still drawn")
+	for box in lying:
+		assert_lt(box.end.y, tool.floor_y + 0.8, "it lies on the floor: %s" % box)
+		assert_gt((box.get_center() - rest.origin).dot(-rest.basis.z.normalized()), 0.3, "out in the aisle: %s" % box)
+	host.free()
 
 
 func test_the_rifle_rack_stands_behind_the_rifle() -> void:

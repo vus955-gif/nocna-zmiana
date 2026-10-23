@@ -22,10 +22,12 @@ Sfx="*res://src/fx/sfx.gd"
 GameState="*res://src/state/game_state.gd"
 RunState="*res://src/state/run_state.gd"
 SceneFlow="*res://src/core/scene_flow.gd"
+ExhibitClock="*res://src/enemies/exhibit_clock.gd"
 Music="*res://src/audio/music.gd"
 Ambience="*res://src/audio/ambience.gd"
 Foley="*res://src/audio/foley.gd"
 VoiceDirector="*res://src/audio/voice/voice_director.gd"
+PerfOverlay="*res://src/dev/perf_overlay.gd"
 
 [debug]
 
@@ -66,6 +68,7 @@ locale/fallback="pl"
 3d/physics_engine="Jolt Physics"
 common/physics_interpolation=true
 common/physics_jitter_fix=0.0
+jolt_physics_3d/limits/max_bodies=32768
 
 [rendering]
 

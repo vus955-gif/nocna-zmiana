@@ -137,8 +137,13 @@ func test_only_the_weapon_in_hand_animates() -> void:
 	assert_false(shotgun.is_processing(), "put away")
 	holder.select_id(&"shotgun")
 	await get_tree().process_frame
-	assert_false(pistol.is_processing())
 	assert_true(shotgun.is_processing())
+	# the pistol is put away first (WeaponSwitch: down out of the frame in
+	# its holster time), then it rests
+	for i in roundi(ViewmodelMotion.holster_time(&"pistol") * 60.0) + 4:
+		await get_tree().process_frame
+	assert_false(pistol.visible, "out of sight")
+	assert_false(pistol.is_processing())
 
 
 ## Every first-person mesh, flash and puff of smoke is on render layer 20

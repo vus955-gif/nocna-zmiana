@@ -125,7 +125,13 @@ static func dress_arena(level: MuseumFloorLevel, parent: Node3D) -> Array[Node3D
 	var props: Array[Node3D] = []
 	if level.markers.has(&"guardian_centaur"):
 		var slab := CentaurMetope.make(level.markers[&"guardian_centaur"], GameState.is_guardian_defeated(&"centaur"))
-		parent.add_child(slab)
+		# a stone in the middle of the gallery the exhibits (and every way
+		# planned across it) go round: a navigation source of the level, as
+		# the Lamassu's plinth (QA Q4) and the mummies' coffins
+		if level.navigation != null:
+			level.add_walk_source(slab)
+		else:
+			parent.add_child(slab)
 		props.append(slab)
 	return props
 

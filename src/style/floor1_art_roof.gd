@@ -19,7 +19,10 @@ extends RefCounted
 
 ## Every model this module places (the art tests check each is registered,
 ## on disk and placed).
-const MODELS: Array[String] = ["rr_dome_outer", "hall_string_4m", "hall_string_1m"]
+const MODELS: Array[String] = ["rr_dome_outer", "hall_string_4m", "hall_string_1m",
+	# props modelled in Blender in place of the procedural solids (plan 2026-10-21-modele-blender.md)
+	"roof_water_tank", "roof_air_handler", "roof_chimney_tall", "roof_chimney_short", "roof_pigeon_loft",
+	"rr_dome_lantern"]
 ## The roof's level (Floor1Plan.ROOF_Y) and the dome: the court kit's outer
 ## dome (modelled in the court's frame at 21.64-23.69 m) lifted onto the
 ## drum's top (the greybox drum: 2.5 m over the roof), its lantern on it.
@@ -27,13 +30,9 @@ const ROOF_Y := 22.5
 const DOME_LIFT := 3.357
 const DOME_TOP := 27.05
 ## The lantern on the dome's top (the greybox lantern stands 0.75 m over it):
-## iron posts round a glazed drum, a lead cap and a spire under the red
-## warning lamp.
+## the rr_dome_lantern model (iron mullions round a glazed drum, a lead
+## cupola, the finial and the spire under the red warning lamp).
 const LANTERN_DROP := 0.75
-const LANTERN_POSTS := 16
-const LANTERN_R := 1.55
-const LANTERN_H := 1.6
-const SPIRE_TOP := 2.45
 ## The railings: painted steel tubes - posts at most 2 m apart (and at both
 ## ends), a hand rail at 1.05 m, a mid rail, a toe board.
 const RAIL_TOP := 1.05
@@ -60,7 +59,6 @@ const PLATE_TINT := Color(0.42, 0.44, 0.48)
 
 static var _steel: StandardMaterial3D = null
 static var _tiles: Dictionary = {}
-static var _cage_mesh: StandardMaterial3D = null
 ## A railing's mesh by its size (railings of one size share it) and the unit
 ## tube and slab the rods and the toe boards are cut from.
 static var _rail_meshes: Dictionary = {}
@@ -122,26 +120,7 @@ static func _solid(parent: Node3D, box: AABB, material: Material) -> MeshInstanc
 	return view
 
 
-## A cylinder of radius [param radius] (tapering to [param radius_b]) from
-## [param a] to [param b].
-static func _rod(parent: Node3D, a: Vector3, b: Vector3, radius: float, material: Material, radius_b: float = -1.0, sides: int = 8) -> MeshInstance3D:
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = radius if radius_b < 0.0 else radius_b
-	mesh.bottom_radius = radius
-	mesh.height = a.distance_to(b)
-	mesh.radial_segments = sides
-	mesh.rings = 1
-	var view := MeshInstance3D.new()
-	view.mesh = mesh
-	view.material_override = material
-	var up := (b - a).normalized()
-	var side := up.cross(Vector3.FORWARD if absf(up.dot(Vector3.FORWARD)) < 0.9 else Vector3.RIGHT).normalized()
-	view.transform = Transform3D(Basis(side, up, side.cross(up)), (a + b) * 0.5)
-	parent.add_child(view)
-	return view
-
-
-## Painted steel of the railings, the lantern's posts, the tank's legs.
+## Painted steel of the railings and the glazing bars.
 static func steel() -> StandardMaterial3D:
 	if _steel == null:
 		_steel = StandardMaterial3D.new()
@@ -150,13 +129,6 @@ static func steel() -> StandardMaterial3D:
 		_steel.metallic = 0.6
 		_steel.roughness = 0.5
 	return _steel
-
-
-## A tile field mapped in the piece's own frame (shared).
-static func _tile(id: String) -> Material:
-	if not _tiles.has(id):
-		_tiles[id] = ArtLibrary.arch_tile(id, true)
-	return _tiles[id]
 
 
 ## The yaw (in the piece's frame) turning a wall piece's front (-Z) away from
@@ -203,32 +175,10 @@ static func _drum(spec: PieceSpec) -> Node3D:
 
 
 ## The lantern on the dome's top in the greybox lantern's frame (it stands
-## LANTERN_DROP over the dome): a ring of iron posts round a glazed drum, a
-## lead cap and a spire.
+## LANTERN_DROP over the dome): the rr_dome_lantern model on the crown.
 static func _lantern() -> Node3D:
 	var root := _holder("Visual")
-	var base := -LANTERN_DROP
-	for k in LANTERN_POSTS:
-		var a := TAU * k / LANTERN_POSTS
-		var at := Vector3(cos(a), 0.0, sin(a)) * LANTERN_R
-		_rod(root, at + Vector3.UP * base, at + Vector3.UP * (base + LANTERN_H), 0.04, steel())
-	var drum := CylinderMesh.new()
-	drum.top_radius = LANTERN_R - 0.05
-	drum.bottom_radius = LANTERN_R - 0.05
-	drum.height = LANTERN_H - 0.05
-	drum.radial_segments = LANTERN_POSTS
-	drum.rings = 1
-	var glass := MeshInstance3D.new()
-	glass.name = "LanternGlass"
-	glass.mesh = drum
-	glass.material_override = LevelKit.glass()
-	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	glass.position = Vector3(0.0, base + LANTERN_H * 0.5, 0.0)
-	root.add_child(glass)
-	var lead := _tile("cast_iron")
-	_solid(root, AABB(Vector3(-LANTERN_R - 0.08, base + LANTERN_H - 0.05, -LANTERN_R - 0.08), Vector3((LANTERN_R + 0.08) * 2.0, 0.08, (LANTERN_R + 0.08) * 2.0)), lead)
-	_rod(root, Vector3(0.0, base + LANTERN_H, 0.0), Vector3(0.0, base + LANTERN_H + 0.8, 0.0), 1.8, lead, 0.12, LANTERN_POSTS)
-	_rod(root, Vector3(0.0, base + LANTERN_H + 0.8, 0.0), Vector3(0.0, base + SPIRE_TOP, 0.0), 0.06, steel(), 0.015)
+	ArtKit._add(root, "rr_dome_lantern", Transform3D(Basis.IDENTITY, Vector3(0.0, -LANTERN_DROP, 0.0)))
 	return root
 
 
@@ -367,125 +317,41 @@ static func _glazing_mesh(size: Vector3) -> ArrayMesh:
 	return _glazing_meshes[key]
 
 
-## The plant deck's water tank filling its box: a riveted iron drum with two
-## hoops on four steel legs, a conical lid, a ladder up its front (-Z).
+## The plant deck's water tank filling its box: the roof_water_tank model (a
+## riveted steel tank of three courses on a braced steel trestle, a conical
+## lid with its hatch and vent, the ladder up its front, -Z; the overflow,
+## the float gauge, the feed pipe and its valve).
 static func _water_tank(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var legs := 0.8
-	var lid := 0.2
-	var r := minf(size.x, size.z) * 0.5 - 0.05
-	var body_h := size.y - legs - lid
-	var iron := _tile("cast_iron")
-	for sx: float in [-1.0, 1.0]:
-		for sz: float in [-1.0, 1.0]:
-			_rod(root, Vector3(sx * r * 0.7, 0.0, sz * r * 0.7), Vector3(sx * r * 0.62, legs, sz * r * 0.62), 0.05, steel())
-	_solid(root, AABB(Vector3(-r * 0.75, legs - 0.12, -r * 0.75), Vector3(r * 1.5, 0.12, r * 1.5)), steel())
-	_rod(root, Vector3(0.0, legs, 0.0), Vector3(0.0, legs + body_h, 0.0), r, iron, -1.0, 24)
-	for y: float in [legs + body_h * 0.3, legs + body_h * 0.75]:
-		var hoop := TorusMesh.new()
-		hoop.inner_radius = r - 0.01
-		hoop.outer_radius = r + 0.03
-		hoop.rings = 32
-		hoop.ring_segments = 6
-		var band := MeshInstance3D.new()
-		band.mesh = hoop
-		band.material_override = steel()
-		band.position = Vector3(0.0, y, 0.0)
-		root.add_child(band)
-	_rod(root, Vector3(0.0, legs + body_h, 0.0), Vector3(0.0, size.y, 0.0), r + 0.03, iron, 0.15, 24)
-	# the ladder up the front, from the deck to the lid's rim
-	var front := -r - 0.08
-	for x: float in [-0.22, 0.22]:
-		_rod(root, Vector3(x, 0.0, front), Vector3(x, legs + body_h, front), 0.022, steel())
-	for k in 8:
-		var y2 := 0.3 + (legs + body_h - 0.4) * k / 7.0
-		_rod(root, Vector3(-0.22, y2, front), Vector3(0.22, y2, front), 0.016, steel())
+	Floor1Art.fit_model(root, "roof_water_tank", size)
 	return root
 
 
-## An air handler filling its box (along X): a steel cabinet with louvres on
-## its long faces and a fan in a ring on its top.
+## An air handler filling its box (along X): the roof_air_handler model (a
+## blue-grey cabinet on steel skids, louvred intake, access doors, the fan
+## under its guard on the top, off the middle: the first unit's pickup lies
+## on its flat roof).
 static func _plant_unit(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var body := size.y - 0.1
-	_solid(root, AABB(Vector3(-size.x * 0.5, 0.0, -size.z * 0.5), Vector3(size.x, body, size.z)), _tile("court_steel"))
-	for side: float in [-1.0, 1.0]:
-		for k in 7:
-			var y := 0.25 + (body - 0.5) * k / 6.0
-			_solid(root, AABB(Vector3(-size.x * 0.4, y, side * size.z * 0.5 - 0.01), Vector3(size.x * 0.8, 0.03, 0.02)), steel())
-	var fan := CylinderMesh.new()
-	fan.top_radius = 0.4
-	fan.bottom_radius = 0.4
-	fan.height = 0.1
-	fan.radial_segments = 20
-	var hub := MeshInstance3D.new()
-	hub.mesh = fan
-	hub.material_override = steel()
-	hub.position = Vector3(size.x * 0.22, body + 0.05, 0.0)
-	root.add_child(hub)
-	var ring := TorusMesh.new()
-	ring.inner_radius = 0.4
-	ring.outer_radius = 0.46
-	ring.rings = 24
-	ring.ring_segments = 6
-	var guard := MeshInstance3D.new()
-	guard.mesh = ring
-	guard.material_override = steel()
-	guard.position = Vector3(size.x * 0.22, body + 0.06, 0.0)
-	root.add_child(guard)
+	Floor1Art.fit_model(root, "roof_air_handler", size)
 	return root
 
 
-## A chimney stack filling its box: a brick shaft, a stone cap a hair wider,
-## a steel cowl on top.
+## A chimney stack filling its box: the plant deck's tall boiler flue (two
+## pots) or a squat corner stack of the old fireplaces (four pots) - brick
+## on a plinth, a corbelled cap, a stone coping, the lightning tape.
 static func _chimney(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var cowl := 0.35
-	var cap := 0.1
-	var shaft := size.y - cowl - cap
-	_solid(root, AABB(Vector3(-size.x * 0.5, 0.0, -size.z * 0.5), Vector3(size.x, shaft, size.z)), _tile("brick"))
-	_solid(root, AABB(Vector3(-size.x * 0.5 - 0.05, shaft, -size.z * 0.5 - 0.05), Vector3(size.x + 0.1, cap, size.z + 0.1)), _tile("portland_ashlar"))
-	_rod(root, Vector3(0.0, shaft + cap, 0.0), Vector3(0.0, shaft + cap + cowl * 0.6, 0.0), 0.18, steel(), 0.18, 12)
-	_rod(root, Vector3(0.0, shaft + cap + cowl * 0.6, 0.0), Vector3(0.0, size.y, 0.0), 0.35, steel(), 0.12, 12)
+	Floor1Art.fit_model(root, "roof_chimney_tall" if size.y > 3.5 else "roof_chimney_short", size)
 	return root
 
 
-## Wire mesh: dark, see-through, both sides.
-static func cage_mesh() -> StandardMaterial3D:
-	if _cage_mesh == null:
-		_cage_mesh = StandardMaterial3D.new()
-		_cage_mesh.resource_name = "pigeon_mesh"
-		_cage_mesh.albedo_color = Color(0.25, 0.25, 0.27, 0.45)
-		_cage_mesh.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		_cage_mesh.cull_mode = BaseMaterial3D.CULL_DISABLED
-		_cage_mesh.roughness = 0.7
-		_cage_mesh.metallic = 0.4
-	return _cage_mesh
-
-
-## The pigeon fanciers' cages filling their box (along X, the wire on the
-## front, -Z): a frame of battens, three shelves, perches.
+## The pigeon fanciers' nest boxes filling their box (along X, the wire on
+## the front, -Z): the roof_pigeon_loft model (eighteen pigeonholes in
+## limewashed battens, wire doors - three gone -, straw, nest bowls).
 static func _cages(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var wood := _tile("boards")
-	var h := Vector3(size.x * 0.5, size.y, size.z * 0.5)
-	_solid(root, AABB(Vector3(-h.x, 0.0, h.z - 0.03), Vector3(size.x, size.y, 0.03)), wood)
-	for x: float in [-h.x, -h.x * 0.33, h.x * 0.33, h.x]:
-		_solid(root, AABB(Vector3(x - 0.03, 0.0, -h.z), Vector3(0.06, size.y, size.z)), wood)
-	for y: float in [0.0, size.y * 0.34, size.y * 0.67, size.y - 0.04]:
-		_solid(root, AABB(Vector3(-h.x, y, -h.z), Vector3(size.x, 0.04, size.z)), wood)
-	var wire := MeshInstance3D.new()
-	var quad := QuadMesh.new()
-	quad.size = Vector2(size.x, size.y)
-	wire.mesh = quad
-	wire.material_override = cage_mesh()
-	wire.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	wire.position = Vector3(0.0, size.y * 0.5, -h.z + 0.01)
-	root.add_child(wire)
-	for k in 6:
-		var x2 := -h.x + size.x * (k % 3 + 0.5) / 3.0
-		var y2 := size.y * (0.12 + 0.34 * float(k / 3))
-		_rod(root, Vector3(x2 - 0.4, y2, 0.0), Vector3(x2 + 0.4, y2, 0.0), 0.015, wood)
+	Floor1Art.fit_model(root, "roof_pigeon_loft", size)
 	return root
 
 

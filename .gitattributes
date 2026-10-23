@@ -15,3 +15,6 @@
 *.cfg text eol=lf
 *.gdshader text eol=lf
 *.gdshaderinc text eol=lf
+*.tsv text eol=lf
+*.yml text eol=lf
+tests/quick_tests.txt text eol=lf

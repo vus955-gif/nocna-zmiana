@@ -334,7 +334,7 @@ func _build_hints() -> Control:
 	hints.alignment = BoxContainer.ALIGNMENT_CENTER
 	hints.add_child(UiTheme.caption(tr("TERMINAL_HINT_SELECT").to_upper(), 18))
 	hints.add_child(UiTheme.caption(tr("TERMINAL_HINT_BUY").to_upper(), 18))
-	hints.add_child(UiTheme.caption(tr("TERMINAL_HINT_CLOSE").to_upper(), 18))
+	hints.add_child(UiTheme.caption((tr("TERMINAL_HINT_CLOSE") % GameInput.key_label(&"interact")).to_upper(), 18))
 	return hints
 
 

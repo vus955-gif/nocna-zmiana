@@ -428,3 +428,26 @@ func test_sprinting_and_landing_make_noise() -> void:
 	assert_eq(noises.size(), 2, "a landing")
 	if noises.size() == 2:
 		assert_eq(noises[1][2], &"landing")
+
+
+func test_the_guard_s_haven_room_and_light_follow_him_within_a_frame() -> void:
+	# (asked once a frame for all the exhibits - but the answer is his place's)
+	var haven := Haven.make(&"booth", AABB(Vector3(20, 0, 20), Vector3(4, 3, 4)))
+	add_child(haven)
+	PerceptionWorld.configure(func(point: Vector3) -> float: return 0.0 if point.x > 10.0 else 1.0,
+			func(point: Vector3) -> StringName: return &"east" if point.x > 10.0 else &"west", RoomGraph.new(), Callable())
+	await get_tree().physics_frame
+	target.global_position = Vector3(0, 0, 0)
+	assert_false(PerceptionWorld.guard_sheltered(target))
+	assert_eq(PerceptionWorld.guard_room(target), &"west")
+	assert_almost_eq(PerceptionWorld.guard_light(target), 1.0)
+	target.global_position = Vector3(22, 0, 22)   # in the same frame: into the booth, the dark east
+	assert_true(PerceptionWorld.guard_sheltered(target), "moved into the haven")
+	assert_eq(PerceptionWorld.guard_room(target), &"east", "and into the east room")
+	assert_lt(PerceptionWorld.guard_light(target), 0.5, "and into the dark")
+	haven.set_active(false)   # the haven shut, still the same frame
+	assert_false(PerceptionWorld.guard_sheltered(target), "a shut haven shelters nobody")
+	haven.set_active(true)
+	assert_true(PerceptionWorld.guard_sheltered(target))
+	haven.free()
+	assert_false(PerceptionWorld.guard_sheltered(target), "a haven gone shelters nobody")

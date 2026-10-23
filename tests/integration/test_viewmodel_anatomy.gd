@@ -316,3 +316,47 @@ func test_a_cut_reload_brings_the_hand_back_smoothly() -> void:
 	assert_gt(step, 0.02, "not snapped")
 	await physics_frames(60)
 	assert_lt(hand.position.distance_to(rest_pos), 0.005, "back under the fore-end")
+
+
+## (Plan 2026-10-21-animacje-fpp, owner's note 45: every reload frame by
+## frame.) The reloads the arms ride through - the harpoon tipped up, the
+## fire-arrow chest jolting as each arrow seats, the gatling hauling in its
+## next belt, the shotgun's keyed break - keep every wrist within its
+## limits and both elbows out of the frame.
+func test_every_two_handed_reload_keeps_the_wrists_and_the_elbows() -> void:
+	for id in [&"shotgun", &"rifle_hunt", &"harpoon", &"hwacha", &"gatling"]:
+		var rig := _rig(id)
+		if rig == null:
+			continue
+		await physics_frames(40)
+		var state := holder.current_state()
+		state.magazine = 0
+		state.reserve = maxi(state.reserve, state.data.magazine_size * 2)
+		if state.data.belt_feed:
+			state._feed_belt()
+		else:
+			assert_true(holder.try_reload(), "%s reloads" % id)
+		var frames := roundi((state.data.belt_change_time if state.data.belt_feed else state.data.reload_time) * 60.0) + 20
+		for i in frames:
+			await physics_frames(1)
+			_check_wrists(rig, "reload frame %d" % i)
+			for side in SIDES:
+				assert_false(_in_frame(rig, rig.arm_line(side)[1], -0.1), "%s reload frame %d: elbow_%s out of the frame" % [id, i, side])
+		assert_false(state.is_reloading(), "%s reloaded" % id)
+
+
+## The whole-weapon motions (the switch, the run, the bash, a wall, the
+## first look) turn the model as one piece: the wrists stay as they were
+## and the elbows out of the frame.
+func test_the_whole_weapon_motions_keep_the_wrists_and_the_elbows() -> void:
+	for id in TWO_HANDED:
+		var rig := _rig(id)
+		if rig == null:
+			continue
+		await physics_frames(40)
+		rig.look_over()
+		for i in roundi(rig.first_look_time() * 60.0):
+			await physics_frames(1)
+			_check_wrists(rig, "first look frame %d" % i)
+			for side in SIDES:
+				assert_false(_in_frame(rig, rig.arm_line(side)[1], -0.1), "%s first look frame %d: elbow_%s out of the frame" % [id, i, side])

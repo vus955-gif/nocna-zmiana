@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piętro II — warianty</title>
+<style>
+  :root {
+    --bg: #f6f3ee;
+    --paper: #fffdf9;
+    --ink: #22201c;
+    --muted: #6b655c;
+    --line: #ddd5c8;
+    --accent: #a8322a;
+    --accent-soft: #f3e1dd;
+    --gold: #8a6b22;
+    --code-bg: #efe9df;
+    --va: #9a5424;
+    --va-soft: #f5e6d8;
+    --vb: #3f6b44;
+    --vb-soft: #e3eee2;
+    --vc: #5a4a8c;
+    --vc-soft: #e8e4f3;
+    --fix: #2f5d50;
+    --fix-soft: #dcebe5;
+    --prop: #2d5a8a;
+    --prop-soft: #dde8f4;
+    --ask: #9a5b00;
+    --ask-soft: #f8e9cf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141312;
+      --paper: #1c1a18;
+      --ink: #ebe6de;
+      --muted: #a39b8f;
+      --line: #36322d;
+      --accent: #e0675c;
+      --accent-soft: #3a2320;
+      --gold: #d2b064;
+      --code-bg: #25221f;
+      --va: #e09a62;
+      --va-soft: #33261b;
+      --vb: #86c08c;
+      --vb-soft: #1f2c20;
+      --vc: #ab9be6;
+      --vc-soft: #262238;
+      --fix: #7fc4ae;
+      --fix-soft: #1c2c27;
+      --prop: #86b4e6;
+      --prop-soft: #1c2633;
+      --ask: #e8b45c;
+      --ask-soft: #332818;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.65 Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  }
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 20px 96px;
+  }
+  .sans { font-family: system-ui, "Segoe UI", sans-serif; }
+
+  /* nagłówek dokumentu */
+  header.doc {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 22px;
+    margin-bottom: 34px;
+  }
+  .kicker {
+    font: 600 12px/1 system-ui, "Segoe UI", sans-serif;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    font-size: 2.5rem;
+    line-height: 1.1;
+    margin: 10px 0 10px;
+  }
+  .subtitle { color: var(--muted); font-style: italic; margin: 0; font-size: 1.08rem; }
+  .meta {
+    font: 13px/1.6 system-ui, "Segoe UI", sans-serif;
+    color: var(--muted);
+    margin-top: 14px;
+  }
+
+  /* nagłówki */
+  h2 {
+    font-size: 1.6rem;
+    line-height: 1.25;
+    margin: 64px 0 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  h2 .num {
+    font: 600 13px/1 system-ui, "Segoe UI", sans-serif;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 8px;
+    letter-spacing: .08em;
+  }
+  h3 { font-size: 1.2rem; margin: 34px 0 10px; line-height: 1.3; }
+  h4 {
+    font: 700 13px/1.3 system-ui, "Segoe UI", sans-serif;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 26px 0 8px;
+  }
+  p, ul, ol { margin: 0 0 14px; }
+  li { margin-bottom: 7px; }
+  li:last-child { margin-bottom: 0; }
+  a { color: inherit; }
+  code {
+    font-family: Consolas, "Cascadia Mono", monospace;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: .86em;
+  }
+
+  /* spis treści */
+  nav.toc {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px 24px;
+    font: 15px/1.75 system-ui, "Segoe UI", sans-serif;
+  }
+  nav.toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+  nav.toc li { margin: 0; break-inside: avoid; }
+  nav.toc a { text-decoration: none; border-bottom: 1px dotted var(--muted); }
+
+  /* oznaczenia */
+  .b {
+    display: inline-block;
+    font: 700 10.5px/1 system-ui, "Segoe UI", sans-serif;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: 4px 7px 3px;
+    border-radius: 3px;
+    vertical-align: 2px;
+    white-space: nowrap;
+  }
+  .b.fix { background: var(--fix-soft); color: var(--fix); }
+  .b.prop { background: var(--prop-soft); color: var(--prop); }
+  .b.ask { background: var(--ask-soft); color: var(--ask); }
+  .src { font: 13px/1.4 system-ui, "Segoe UI", sans-serif; color: var(--muted); }
+
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 22px 0 8px;
+  }
+  .legend div {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font: 14px/1.5 system-ui, "Segoe UI", sans-serif;
+  }
+  .legend .b { margin-bottom: 8px; }
+
+  /* bloki */
+  .pitch {
+    background: var(--paper);
+    border-left: 4px solid var(--accent);
+    padding: 18px 22px;
+    font-size: 1.1rem;
+    margin: 22px 0;
+  }
+  .note {
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: .96rem;
+    margin: 18px 0;
+  }
+  .note p:last-child, .note ul:last-child { margin-bottom: 0; }
+  .fact {
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: .95rem;
+    background: var(--paper);
+  }
+  .fact strong.lbl {
+    font: 700 11px/1 system-ui, "Segoe UI", sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .fact p:last-child { margin-bottom: 0; }
+
+  /* tabele */
+  .table-wrap { overflow-x: auto; margin: 12px 0 22px; -webkit-overflow-scrolling: touch; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font: 14.5px/1.5 system-ui, "Segoe UI", sans-serif;
+    background: var(--paper);
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-size: 11.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--line);
+    white-space: nowrap;
+  }
+  td.k { font-weight: 600; white-space: nowrap; }
+  table.cmp td:first-child { font-weight: 600; color: var(--muted); width: 17%; }
+  table.cmp th.a { color: var(--va); }
+  table.cmp th.bb { color: var(--vb); }
+  table.cmp th.c { color: var(--vc); }
+  .mark-best { font-weight: 700; }
+
+  /* warianty */
+  .variant {
+    margin-top: 64px;
+    border-top: 6px solid var(--vcol);
+    padding-top: 6px;
+  }
+  .variant.va { --vcol: var(--va); --vsoft: var(--va-soft); }
+  .variant.vb { --vcol: var(--vb); --vsoft: var(--vb-soft); }
+  .variant.vc { --vcol: var(--vc); --vsoft: var(--vc-soft); }
+  .vhead {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    margin: 18px 0 12px;
+  }
+  .vletter {
+    flex: none;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: var(--vcol);
+    color: var(--paper);
+    font: 700 28px/58px system-ui, "Segoe UI", sans-serif;
+    text-align: center;
+  }
+  .vhead h2 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 1.75rem;
+  }
+  .vhead .vsub { margin: 4px 0 0; color: var(--muted); font-style: italic; }
+  .variant .pitch { border-left-color: var(--vcol); }
+  .variant h3 { color: var(--ink); }
+  .variant h3::before {
+    content: "";
+    display: inline-block;
+    width: 10px; height: 10px;
+    background: var(--vcol);
+    border-radius: 2px;
+    margin-right: 10px;
+    vertical-align: 1px;
+  }
+  .keyfacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 18px 0 24px;
+  }
+  .keyfacts div {
+    background: var(--paper);
+    padding: 11px 14px;
+    font: 14px/1.45 system-ui, "Segoe UI", sans-serif;
+  }
+  .keyfacts span {
+    display: block;
+    font-size: 11px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--vcol);
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .moments { list-style: none; padding: 0; }
+  .moments li {
+    background: var(--vsoft);
+    border-radius: 6px;
+    padding: 11px 16px;
+    margin-bottom: 10px;
+  }
+  .effort {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0 20px;
+  }
+  .effort .size {
+    flex: none;
+    font: 800 30px/1 system-ui, "Segoe UI", sans-serif;
+    color: var(--vcol);
+    min-width: 64px;
+    text-align: center;
+  }
+  .effort p { margin: 0; font-size: .96rem; }
+  .decide {
+    background: var(--ask-soft);
+    border-radius: 6px;
+    padding: 14px 18px 14px 18px;
+    margin: 16px 0;
+  }
+  .decide h4 { color: var(--ask); margin-top: 0; }
+  .decide ul { margin-bottom: 0; }
+
+  /* schematy */
+  figure.diagram {
+    margin: 20px 0 26px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 12px 10px;
+  }
+  figure.diagram svg { display: block; width: 100%; height: auto; max-width: 720px; margin: 0 auto; }
+  figure.diagram figcaption {
+    font: 13px/1.5 system-ui, "Segoe UI", sans-serif;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px;
+  }
+  .sv-box { fill: var(--paper); stroke: var(--muted); stroke-width: 1.4; }
+  .sv-hub { fill: var(--vsoft); stroke: var(--vcol); stroke-width: 2; }
+  .sv-end { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+  .sv-dash { fill: none; stroke: var(--vcol); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  .sv-line { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+  .sv-t { fill: var(--ink); font: 13px system-ui, "Segoe UI", sans-serif; }
+  .sv-s { fill: var(--muted); font: 11px system-ui, "Segoe UI", sans-serif; }
+  .sv-tb { fill: var(--ink); font: 700 13px system-ui, "Segoe UI", sans-serif; }
+
+  /* rekomendacja i pytania */
+  .reco {
+    background: var(--paper);
+    border: 2px solid var(--va);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 22px 0;
+  }
+  .reco .kicker { color: var(--va); }
+  .reco p.big { font-size: 1.15rem; margin: 10px 0 0; }
+  .qlist { counter-reset: q; list-style: none; padding: 0; margin: 18px 0; }
+  .qlist > li {
+    counter-increment: q;
+    position: relative;
+    padding: 16px 18px 16px 64px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .qlist > li::before {
+    content: counter(q);
+    position: absolute;
+    left: 18px; top: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--ask);
+    color: var(--paper);
+    font: 700 15px/32px system-ui, sans-serif;
+    text-align: center;
+  }
+  .qlist .q { font-weight: 700; display: block; margin-bottom: 6px; }
+  .qlist .why { font-size: .95rem; color: var(--muted); display: block; }
+  .qlist .rec { font-size: .95rem; display: block; margin-top: 6px; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 14px 0 22px;
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .card h4 { margin-top: 0; color: var(--gold); }
+  .card p, .card ul { font-size: .95rem; }
+  .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 72px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font: 13px/1.6 system-ui, "Segoe UI", sans-serif;
+    color: var(--muted);
+  }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    main { padding: 32px 16px 72px; }
+    h1 { font-size: 1.95rem; }
+    h2 { font-size: 1.4rem; }
+    nav.toc ol { columns: 1; }
+    .legend, .keyfacts, .grid2 { grid-template-columns: 1fr; }
+    .vhead h2 { font-size: 1.4rem; }
+    .vletter { width: 46px; height: 46px; font-size: 22px; line-height: 46px; }
+    .qlist > li { padding-left: 56px; }
+    .qlist > li::before { left: 14px; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="doc">
+  <div class="kicker">Dokument opcji · do decyzji właściciela</div>
+  <h1>Piętro II: trzy warianty</h1>
+  <p class="subtitle">Co może leżeć pod kryptą: trzy różne pomysły na drugi obszar gry, porównanie i rekomendacja. Niczego jeszcze nie budujemy.</p>
+  <div class="meta">Nocna Zmiana · 22/23 października 2026 · stan repozytorium: gałąź <code>pietro-1</code> · opracowanie: Claude · decyzja: właściciel</div>
+</header>
+
+<nav class="toc" aria-label="Spis treści">
+  <ol>
+    <li><a href="#czytanie">Jak czytać ten dokument</a></li>
+    <li><a href="#stan">Gdzie jesteśmy</a></li>
+    <li><a href="#ramy">Ramy wspólne dla wariantów</a></li>
+    <li><a href="#wariant-a">Wariant A: Zaplecze</a></li>
+    <li><a href="#wariant-b">Wariant B: Galerie Przyrody</a></li>
+    <li><a href="#wariant-c">Wariant C: Warstwy</a></li>
+    <li><a href="#porownanie">Porównanie</a></li>
+    <li><a href="#rekomendacja">Rekomendacja i pytania</a></li>
+    <li><a href="#fakty">Fakty z prawdziwych muzeów</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="czytanie"><span class="num">00</span>Jak czytać ten dokument</h2>
+
+<p>To materiał do jednej dużej decyzji kreatywnej, która należy do Ciebie. Wszystko, co nie wynika z Twoich decyzji, z wizji z 25 września albo z kanonu fabuły, jest moją propozycją i tak to oznaczam.</p>
+
+<div class="legend">
+  <div><span class="b fix">ustalone</span><br>Wynika z Twojej decyzji, z wizji z 25.09, z backlogu albo z kanonu fabuły. Przy każdym podaję źródło.</div>
+  <div><span class="b prop">propozycja</span><br>Mój pomysł. Możesz go przyjąć, zmienić albo odrzucić. W rozdziałach o wariantach wszystko jest propozycją, chyba że zaznaczono inaczej.</div>
+  <div><span class="b ask">do decyzji</span><br>Pytanie, którego nie rozstrzygam sam, bo zmienia charakter gry.</div>
+</div>
+
+<div class="note">
+  <p><strong>Nazwa.</strong> W backlogu i w tym dokumencie „Piętro II” oznacza drugi obszar gry. W samej grze to miejsce ma już nazwę: ekran końca Piętra I kończy się słowami „Ciąg dalszy nastąpi: Piętro −1” <span class="src">(kanon: <code>END_FLOOR1_EPILOGUE</code>, biblia fabuły §6)</span>. Proponuję w grze zostać przy „Piętrze −1”, bo numeracja w dół sama opowiada o zejściu <span class="b prop">propozycja</span>.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="stan"><span class="num">01</span>Gdzie jesteśmy</h2>
+
+<p>Piętro I jest kompletne i jest w szlifie. To duże, połączone muzeum wokół Wielkiego Dziedzińca. Otwiera się przez kilka krótkich nocy jak metroidvania, a kończy walką z T-Reksem i zejściem do krypty.</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Piętro I w liczbach</th><th>Stan</th></tr>
+  <tr><td class="k">Przestrzeń</td><td>Wielki Dziedziniec z Czytelnią, 6 skrzydeł, hol, kanciapa, podziemia, dach; ok. 45–55 sal na obszarze ok. 178 × 138 m</td></tr>
+  <tr><td class="k">Walka</td><td>9 broni, ok. 14 rodzajów eksponatów, 6 strażników skrzydeł i T-Rex jako finał</td></tr>
+  <tr><td class="k">Treść</td><td>27 sekretów z trzema poziomami nagród, 32 notatki, 6 przystani, szachy z Lewis, 7 mechanik biomów, 7 pułapek otoczenia</td></tr>
+  <tr><td class="k">Czas gry (model z W7)</td><td>droga krytyczna 57 min; typowy pierwszy gracz 1 h 43 min; 100% ok. 2 h 39 min</td></tr>
+  <tr><td class="k">Skala pracy</td><td>ok. 930 commitów od 2 października; ok. 124 tys. wierszy kodu gry; ok. 3170 testów i bot, który przechodzi całą grę</td></tr>
+</table>
+</div>
+
+<h3>Co da się przenieść na Piętro II</h3>
+<p>Prawie wszystkie systemy są ogólne. Drogie i związane z Piętrem I są trzy rzeczy: ręcznie zbudowane strefy, zestawy architektury skrzydeł i strażnicy.</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>System</th><th>Co robi dziś</th><th>Na Piętrze II</th></tr>
+  <tr><td class="k">Poziom jako dane</td><td>sale, przejścia, schody, światła i spawny opisane w modułach stref; budowniczy, rzeźbienie skorupy, graf sal, wyłączanie dalekich sal, okludery, nawigacja per strefa</td><td><strong>gotowe</strong>: nowe piętro to nowe moduły stref i nowy plan piętra</td></tr>
+  <tr><td class="k">Postęp metroidvanii</td><td>reguły postępu, 8 rodzajów zamków, test „bez blokady” dla każdego stanu, cel na HUD, papierowy plan muzeum (M)</td><td><strong>do uogólnienia</strong>: reguły i plan pisane pod Piętro I; zapis musi znać kilka pięter</td></tr>
+  <tr><td class="k">Bronie</td><td>9 broni, ulepszenia widoczne na modelu, osobny charakter każdej broni, reakcje trafień, rozpad materiałowy</td><td><strong>gotowe w całości</strong>; Piętro II potrzebuje najwyżej jednego nowego narzędzia albo broni</td></tr>
+  <tr><td class="k">Eksponaty</td><td>wspólna baza, stany świadomości, rutyny, role bojowe, reakcje na zdarzenia, percepcja (światło, słuch, graf sal), limit polujących</td><td><strong>gotowe</strong>; warianty w nowym materiale są tanie (jak hoplita z rycerza)</td></tr>
+  <tr><td class="k">Strażnicy</td><td>wspólna infrastruktura: fazy, animacja kodem, IK, sprężyny, znaki na posadzce, fale uderzeniowe, rozpad</td><td><strong>infrastruktura gotowa, ale każdy strażnik to osobna duża praca</strong>: kod sześciu strażników to ok. 22 tys. wierszy</td></tr>
+  <tr><td class="k">Noc</td><td>zegar, reżyser z ziarna, modyfikatory, krzywa nocy, zdarzenia „nie z tego świata” z danych, zmiany przy powrocie</td><td><strong>gotowe</strong>; nowe zdarzenia to nowe wpisy w danych</td></tr>
+  <tr><td class="k">Otoczenie</td><td>warstwa reaktywna, walka otoczeniem, mechaniki biomów jako urządzenia</td><td><strong>infrastruktura gotowa</strong>; urządzenia per biom do zrobienia</td></tr>
+  <tr><td class="k">Pętla</td><td>przystanie, terminal ulepszeń, Pył i latarka, artefakty, sekrety, notatki, CCTV, kawiarnia i zmęczenie</td><td><strong>gotowe</strong></td></tr>
+  <tr><td class="k">Oprawa i dźwięk</td><td>modele Blendera ze skryptów, zestawy architektury, muzyka biomów, akustyka sal, ambient, głos (Heniek, System)</td><td><strong>potok gotowy</strong>, treść każdego biomu nowa</td></tr>
+  <tr><td class="k">Kontrola jakości</td><td>testy, bot przechodzący grę, profil wydajności</td><td><strong>gotowe</strong>; bota i test osiągalności trzeba nauczyć nowego piętra</td></tr>
+</table>
+</div>
+
+<div class="note">
+  <p><strong>Wniosek dla wyboru wariantu.</strong> O koszcie Piętra II zdecydują głównie <strong>liczba strażników</strong>, <strong>liczba nowych zestawów architektury</strong> i <strong>wrogowie z nowym sposobem poruszania się</strong> (zwierzęta, latające). Tanie są natomiast warianty istniejących wrogów w nowym materiale i nowe dane: spotkania, zdarzenia, urządzenia.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="ramy"><span class="num">02</span>Ramy wspólne dla wariantów</h2>
+
+<p>Te punkty obowiązują w każdym wariancie. Większość jest już ustalona.</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Zasada</th><th>Status</th><th>Źródło</th></tr>
+  <tr><td>Gra prowadzi <strong>w dół</strong>, do najgłębszych poziomów muzeum i źródła przebudzeń</td><td><span class="b fix">ustalone</span></td><td class="src">wizja 25.09</td></tr>
+  <tr><td>Wejście na Piętro II: schody pod kryptą za kratą w korytarzu północnym; na schodach stoi latarnia Kopcia z 1912 roku, „jeszcze ciepła”</td><td><span class="b fix">ustalone</span></td><td class="src">kanon: epilog Piętra I</td></tr>
+  <tr><td><strong>Im głębiej, tym mroczniej</strong>; notatki coraz mniej zabawne</td><td><span class="b fix">ustalone</span></td><td class="src">wizja 25.09, biblia fabuły §1</td></tr>
+  <tr><td><strong>Losowość rośnie w głąb</strong>, ale poziomy są robione ręcznie; składanie poziomów z sal (jak w Dead Cells) i hybrydę odrzucono</td><td><span class="b fix">ustalone</span></td><td class="src">rejestr decyzji 25.09 (specyfikacja §15)</td></tr>
+  <tr><td>Bez hordy, zapowiedzi ataków ≥ 0,6 s, bez softlocków, Pył bez zmian, bronie zostają na zawsze, ruch „strażnik, nie komandos”, rozpad materiałowy zamiast ragdolli, „styl retro, nie jakość retro”</td><td><span class="b fix">ustalone</span></td><td class="src">wizja 25.09; backlog #13; lista rozszerzona 3.10</td></tr>
+  <tr><td>Starcia jako małe scenariusze, wertykalność, reagujące otoczenie, mechanika biomu zmienia sposób gry, jeden zapamiętany moment na segment, nawigacja bez strzałek</td><td><span class="b fix">ustalone</span></td><td class="src">backlog #20, #21, #22–23, #26, #56, #38</td></tr>
+  <tr><td>Zaplecze ma być „muzealne, nie generyczny industrial”; podziemia schodzą w coraz starsze warstwy budynku; 1–3 świadome momenty niemożliwej architektury, nie ciągły gadżet; najlepsze momenty ręcznie, nie proceduralnie; bez platformówki</td><td><span class="b fix">ustalone</span><br><span class="src">wybór Claude'a z Twoim upoważnieniem</span></td><td class="src">lista rozszerzona, selekcja 3.10</td></tr>
+  <tr><td>Fakty z notatek Piętra I (daty, nazwiska, kolejność zdarzeń) są nienaruszalne</td><td><span class="b fix">ustalone</span></td><td class="src">biblia fabuły §2</td></tr>
+  <tr><td>Gra może być długa, nawet ok. 180 minut, jeśli ma to sens</td><td><span class="b fix">ustalone</span></td><td class="src">Twoja uwaga z 3.10</td></tr>
+  <tr><td>Natura źródła przebudzeń („prawda autorska”: muzeum jako pokrywa, kamień budzi to, co pamięta)</td><td><span class="b ask">do decyzji</span></td><td class="src">biblia fabuły §2: propozycja czekająca na zatwierdzenie</td></tr>
+  <tr><td>Piętro I zostaje dostępne. Winda towarowa staje się trwałym skrótem po uruchomieniu, żeby dało się wrócić po sekrety i szachy</td><td><span class="b prop">propozycja</span></td><td class="src">—</td></tr>
+  <tr><td>Plan muzeum na Piętrze II to <strong>stary plan fundatorów</strong> z kondygnacją „−1”: niepełny i miejscami błędny. Strażnik poprawia go ołówkiem</td><td><span class="b prop">propozycja</span></td><td class="src">nawiązanie do kanonu: plany fundatorów (biblia §2)</td></tr>
+  <tr><td>Radio Heńka słabnie z głębokością: kwestie są rzadsze, krótsze i trzeszczą. Cisza staje się narzędziem napięcia</td><td><span class="b prop">propozycja</span></td><td class="src">—</td></tr>
+  <tr><td>Zamiast wielu nowych broni: modyfikacje istniejących (2–3 na broń, zmieniające działanie) jako nagrody strażników i sekretów</td><td><span class="b prop">propozycja</span></td><td class="src">realizuje backlog #30</td></tr>
+</table>
+</div>
+
+<p>Trzy warianty różnią się <strong>miejscem</strong> (zaplecze, sale publiczne, coraz starsze warstwy), <strong>strukturą</strong> (pionowy węzeł, węzeł ze skrzydłami, zejście warstwami) i tym, <strong>jak rośnie losowość</strong>. Kolejność A, B, C nie jest rankingiem.</p>
+
+<!-- ============================================================ -->
+<section class="variant va" id="wariant-a">
+  <div class="vhead">
+    <div class="vletter">A</div>
+    <div>
+      <h2>Zaplecze</h2>
+      <p class="vsub">Magazyny, pracownie i archiwum fundatorów: muzeum, którego nikt nie zwiedza</p>
+    </div>
+  </div>
+
+  <div class="pitch">Na salach wystawia się drobną część zbiorów, a reszta leży w skrzyniach, na regałach i w słojach. Kondygnacja „−1” ze starych planów to zaplecze fundatorów: magazyny, pracownie konserwacji i archiwum, których nie ma na nowszych planach. Na samym dole jest Depozyt, w którym fundatorzy trzymali rzeczy, których nie wolno było wystawić.</div>
+
+  <div class="keyfacts">
+    <div><span>Struktura</span>pionowy węzeł (Magazyn Główny) + 4 działy + Depozyt</div>
+    <div><span>Noce</span>ok. 3 dla nowego gracza</div>
+    <div><span>Sale</span>ok. 30–40</div>
+    <div><span>Strażnicy</span>4 + finał w Depozycie</div>
+    <div><span>Losowość</span>co noc „inwentaryzacja”: inne ustawienie skrzyń i regałów</div>
+    <div><span>Nakład</span>M (ok. 0,6–0,7 Piętra I)</div>
+  </div>
+
+  <h3>Idea i motyw</h3>
+  <p>Piętro I pokazuje muzeum od frontu: sale, gabloty i księżyc przez szklany dach. Wariant A pokazuje je od tyłu. Są tu drewniane regały z XIX wieku, numery inwentarzowe malowane pędzlem, skrzynie z napisem „OSTROŻNIE”, gabloty pod pokrowcami, stoły konserwatorów z na wpół sklejonymi eksponatami i słoje z okazami. Eksponaty tutaj nigdy nie stały przed zwiedzającymi. Przeciwnicy są przez to inni: niedokończeni, zapakowani, skopiowani.</p>
+  <p>Fabularnie to najprostsze przedłużenie kanonu. Stare plany fundatorów pokazują kondygnację „−1”, a w windzie towarowej jest zamalowany przycisk „−1”. W Depozycie fundatorzy trzymali to, czego nie wpisano do żadnej księgi: własne zapiski i plany tego, co leży niżej, oraz rzeczy, które od początku „ciągnęły w dół”. Muzeum okazuje się pokrywą także w sensie dosłownym. Fakty z notatek zostają nietknięte: perła smoka, gniazdo serca i światło kaszalota w kanonie <em>zeszły pod ziemię</em>, więc w Depozycie leżą najwyżej ich ślady, a nie one same.</p>
+
+  <div class="fact">
+    <strong class="lbl">Fakt dla klimatu</strong>
+    <p>Duże muzea wystawiają tylko niewielką część zbiorów. O British Museum mówi się zwykle o ok. 1% z ok. 8 milionów obiektów. Magazyny często mają regały przesuwne na szynach, poruszane kołem. Konserwatorzy zwalczają szkodniki zamrażaniem i komorami beztlenowymi, a pod lampą UV widzą późniejsze retusze. Każdy obiekt ma numer w księdze inwentarzowej.</p>
+  </div>
+
+  <h3>Struktura</h3>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 300" role="img" aria-label="Schemat wariantu A: pionowy Magazyn Główny z działami na różnych kondygnacjach i Depozytem na dole">
+      <text class="sv-s" x="360" y="16" text-anchor="middle">schody spod krypty</text>
+      <line class="sv-line" x1="360" y1="22" x2="360" y2="40"/>
+      <rect class="sv-box" x="270" y="40" width="180" height="34" rx="4"/>
+      <text class="sv-t" x="360" y="62" text-anchor="middle">Hala Przyjęć · przystań</text>
+      <line class="sv-line" x1="360" y1="74" x2="360" y2="88"/>
+      <rect class="sv-hub" x="300" y="88" width="120" height="150" rx="6"/>
+      <text class="sv-tb" x="360" y="112" text-anchor="middle">Magazyn</text>
+      <text class="sv-tb" x="360" y="128" text-anchor="middle">Główny</text>
+      <text class="sv-s" x="360" y="150" text-anchor="middle">3 kondygnacje</text>
+      <text class="sv-s" x="360" y="164" text-anchor="middle">antresol,</text>
+      <text class="sv-s" x="360" y="178" text-anchor="middle">szyb windy,</text>
+      <text class="sv-s" x="360" y="192" text-anchor="middle">studnia światła</text>
+      <line class="sv-line" x1="300" y1="112" x2="230" y2="112"/>
+      <rect class="sv-box" x="40" y="94" width="190" height="36" rx="4"/>
+      <text class="sv-t" x="135" y="117" text-anchor="middle">Archiwum · Kartoteka</text>
+      <line class="sv-line" x1="420" y1="112" x2="490" y2="112"/>
+      <rect class="sv-box" x="490" y="94" width="190" height="36" rx="4"/>
+      <text class="sv-t" x="585" y="117" text-anchor="middle">Hala gabarytów · suwnica</text>
+      <line class="sv-line" x1="300" y1="196" x2="230" y2="196"/>
+      <rect class="sv-box" x="40" y="178" width="190" height="36" rx="4"/>
+      <text class="sv-t" x="135" y="201" text-anchor="middle">Pracownia i preparatornia</text>
+      <line class="sv-line" x1="420" y1="196" x2="490" y2="196"/>
+      <rect class="sv-box" x="490" y="178" width="190" height="36" rx="4"/>
+      <text class="sv-t" x="585" y="201" text-anchor="middle">Magazyn kompaktowy</text>
+      <line class="sv-line" x1="360" y1="238" x2="360" y2="254"/>
+      <rect class="sv-end" x="280" y="254" width="160" height="34" rx="4"/>
+      <text class="sv-tb" x="360" y="276" text-anchor="middle">Depozyt · finał</text>
+      <text class="sv-s" x="40" y="80">kondygnacja górna</text>
+      <text class="sv-s" x="40" y="164">kondygnacja dolna</text>
+    </svg>
+    <figcaption>Węzeł jest pionowy: do działów schodzi się po antresolach i windą towarową. Do Depozytu prowadzą cztery karty depozytowe.</figcaption>
+  </figure>
+
+  <ul>
+    <li><strong>Hala Przyjęć i Ekspedycja</strong> (pierwsza sala po schodach): pochylnia dla wózków, waga towarowa, księga nadawcza. Leży w niej wpis z października 1912 ręką Kopcia, pierwszy ślad tego, skąd mogła wyjść paczka. Zagadka zostaje jednak otwarta. Jest tu też przystań: pokój magazyniera z 1912 roku.</li>
+    <li><strong>Magazyn Główny (węzeł)</strong>: wysoka hala z regałami na trzech kondygnacjach antresol, szybem windy towarowej w rogu i jedną <strong>studnią światła</strong> z Dziedzińca. To jedyny księżyc na piętrze, a zarazem punkt orientacyjny widoczny z każdej kondygnacji. Hala zmienia się z nocy na noc (patrz losowość).</li>
+    <li><strong>Cztery działy</strong>, każdy z własną mechaniką i strażnikiem: Hala gabarytów, Magazyn kompaktowy, Pracownia z preparatornią, Archiwum.</li>
+    <li><strong>Depozyt fundatorów</strong> (finał): krypta z gablotami pełnymi rzeczy spoza inwentarza. Otwierają ją cztery <strong>karty depozytowe</strong> od strażników, tak jak sześć odłamków otwierało astrolabium.</li>
+    <li><strong>Noce:</strong> noc 1 to Hala Przyjęć, węzeł i pierwszy dział do wyboru; noc 2 to dwa kolejne działy i winda jako skrót na Piętro I; noc 3 to ostatni dział i Depozyt.</li>
+  </ul>
+
+  <h3>Nowe mechaniki (jedna na dział)</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Dział</th><th>Mechanika: co gracz robi inaczej</th><th>Uczciwość i zapowiedź</th></tr>
+    <tr><td class="k">Hala gabarytów</td><td><strong>Suwnica</strong>: z kabiny przy ścianie przesuwasz hak z ładunkiem. Robisz most albo osłonę ze skrzyni, zrzucasz ciężar na wrogów, otwierasz górną trasę. Wrogowie mogą zrobić to samo</td><td>cień ładunku na posadzce i dzwonek suwnicy ≥ 0,6 s przed zrzutem; ustawiona skrzynia stoi nieruchomo, więc nie ma platformówki</td></tr>
+    <tr><td class="k">Magazyn kompaktowy</td><td><strong>Regały przesuwne</strong>: kołem otwierasz i zamykasz korytarze, czyli sam układasz labirynt. Przejeżdżający regał miażdży wrogów</td><td>klekot kół, sypiący się kurz i lampka na regale przed ruchem; regał nigdy nie zamyka jedynej drogi do wyjścia</td></tr>
+    <tr><td class="k">Pracownia i preparatornia</td><td><strong>Alkohol i ogień</strong>: słoje z okazami pękają, rozlany alkohol zapala się od racy i ognistej skrzyni. To pułapka na wrogów i zagrożenie dla Ciebie. Dodatkowo <strong>zamrażarka do dezynsekcji</strong>, w której mróz spowalnia wszystkich</td><td>połysk kałuży i opary nad nią jako znak; ogień gaśnie po kilku sekundach</td></tr>
+    <tr><td class="k">Archiwum</td><td><strong>Poczta pneumatyczna</strong>: wysyłasz kapsułę rurą. Jej huk w innej sali odciąga eksponaty, a kapsuła z kluczem otwiera zamek po drugiej stronie</td><td>na planie i przy stacji widać, dokąd biegnie rura</td></tr>
+  </table>
+  </div>
+
+  <p><strong>Nowe narzędzie: lampa kwarcowa (UV)</strong>, drugi tryb latarki zasilany tą samą baterią. W jej świetle widać retusze, ukryte znaki (sekrety), szwy kleju (słabe punkty) i eksponaty, które w zwykłym świetle są niewidoczne. Dochodzi jeden nowy rodzaj zamka: „znak w UV”. Lampa zostaje na zawsze i działa też na Piętrze I, gdzie odsłania kilka nowych sekretów.</p>
+
+  <h3>Wrogowie</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Eksponat</th><th>Rola</th><th>Co robi</th><th>Koszt</th></tr>
+    <tr><td class="k">Skrzynia</td><td>zasadzka, przywoływacz</td><td>drga i trzeszczy, zanim się otworzy (zapowiedź pokazuje zagrożenie wcześniej, backlog #28); wypuszcza zawartość; rozbita z daleka jest rozbrojona</td><td>nowy, prosty</td></tr>
+    <tr><td class="k">Manekin z magazynu kostiumów</td><td>presja, flankowanie</td><td>zamiera w snopie latarki i rusza, gdy światło zgaśnie albo patrzysz gdzie indziej. Latarka chroni przed manekinami, ale zdradza Cię innym eksponatom</td><td>nowy</td></tr>
+    <tr><td class="k">Odlewy gipsowe</td><td>jak oryginał</td><td>gipsowe kopie mumii, hoplity, wojownika z reliefu i rycerza. Są kruche na broń obuchową, puste w środku, przy trafieniu pylą i odsłaniają druty zbrojenia</td><td><strong>tani</strong>: istniejące zachowania, nowy materiał</td></tr>
+    <tr><td class="k">Okaz w słoju</td><td>glass cannon: kruchy, ale groźny</td><td>mały i szybki; rozbija słój i rozlewa alkohol, więc łączy się z mechaniką ognia</td><td>nowy, mały</td></tr>
+    <tr><td class="k">Rój skórników</td><td>rój</td><td>chrząszcze z preparatorni, które czyszczą szkielety</td><td><strong>tani</strong>: rój skarabeuszy w nowym wyglądzie</td></tr>
+    <tr><td class="k">Kartoteka</td><td>nękanie z dystansu</td><td>stadka kart katalogowych i teczek</td><td><strong>tani</strong>: latające księgi</td></tr>
+  </table>
+  </div>
+
+  <h3>Strażnicy i finał</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Strażnik</th><th>Arena</th><th>Pomysł na walkę</th></tr>
+    <tr><td class="k">Portal w skrzyniach</td><td>Hala gabarytów</td><td>rozebrana kamienna brama z numerowanych bloków sama się składa pod suwnicą. Walka ma etapy budowy, a słabym punktem jest zwornik. Jego numer można znaleźć na karcie inwentarzowej obok, jako cichą podpowiedź</td></tr>
+    <tr><td class="k">Totem nr 3</td><td>Magazyn kompaktowy</td><td>totem, który w 1931 roku zniknął w ścianie i „śpiewa pod podłogą” (kanon). Przechodzi przez regały tak jak wojownik z reliefu przez ściany, a jego miejsce zdradza śpiew. Regały służą Ci za broń</td></tr>
+    <tr><td class="k">Pacjent</td><td>Pracownia</td><td>olbrzym źle sklejony z setek fragmentów. Szwy kleju świecą w UV i to one są słabymi punktami. W fazie 2 rozkleja się na najwyżej trzy części walczące osobno</td></tr>
+    <tr><td class="k">Kartoteka Główna</td><td>Archiwum</td><td>strażnik-sala jak Planetarium. Szuflady katalogu wystrzeliwują, karty sypią się jak burza, a rury pneumatyczne strzelają kapsułami. Słabym punktem jest jedyna karta nie na swoim miejscu: „−1”</td></tr>
+    <tr><td class="k">Finał: Rada Fundatorów</td><td>Depozyt</td><td>kamienni fundatorzy z krypty (w epilogu mają głowy zwrócone ku schodom) schodzą bronić pokrywy. Prowadzi ich Zawilski i rozpoznaje swój sztucer w Twoich rękach. Ci przeciwnicy mogą mieć rację. Po walce Depozyt otwiera schody niżej</td></tr>
+  </table>
+  </div>
+  <p class="src">Finał zależy od prawdy autorskiej: zadziała tylko wtedy, jeśli zatwierdzisz, że muzeum jest pokrywą, a fundatorzy wiedzieli.</p>
+
+  <h3>Momenty do zapamiętania</h3>
+  <ul class="moments">
+    <li><strong>Pierwszy zjazd windą towarową</strong> przez trzy kondygnacje Magazynu Głównego. W snopie latarki regały ciągną się po horyzont, a w studni światła wisi coś, co obraca się w ślad za windą.</li>
+    <li><strong>Korytarz, który się zwęża.</strong> Ktoś po drugiej stronie kręci kołem regału i trzeba uciekać, zanim przejście się zamknie.</li>
+    <li><strong>Walka w zamrażarce</strong>, gdzie wszystko zwalnia, a szron zdradza ślady wrogów.</li>
+    <li><strong>Depozyt.</strong> Wszystkie gabloty z rzeczami spoza inwentarza zaczynają świecić w rytm stukania spod podłogi.</li>
+  </ul>
+
+  <h3>Jak rośnie losowość</h3>
+  <p>Na Piętrze I układ jest stały, a losowane są eksponaty, łup, drzwi nocy i modyfikator. W wariancie A dochodzi <strong>„inwentaryzacja”</strong>: co noc skrzynie i regały przesuwne w Magazynie Głównym i w Magazynie kompaktowym stoją w jednym z kilku <strong>ręcznie zaprojektowanych ustawień</strong>, a zawartość skrzyń (łup, wróg, nic albo sekret) jest losowana. Sale dalej są robione ręcznie, więc zgadza się to z decyzją z 25.09. Mocniejszy krok losowości zostaje na kolejne piętro.</p>
+
+  <h3>Co wraca z Piętra I</h3>
+  <ul>
+    <li>Wszystkie systemy z tabeli w rozdziale 01, bez wyjątku.</li>
+    <li>Zestaw architektury podziemi (beton, rury, kratki) jako baza korytarzy, przerobiony na epokę fundatorów: cegła, lampy gazowe, drewno.</li>
+    <li>Rój skarabeuszy, latające księgi i cztery rodzaje wrogów jako odlewy; mechanika pary z podziemi; ogień, szkło i regały z walki otoczeniem; przechodzenie przez ściany (wojownik z reliefu) dla Totemu nr 3; strażnik-sala (Planetarium) jako wzór dla Kartoteki.</li>
+    <li>Wszystkie zamki Piętra I plus jeden nowy (znak w UV).</li>
+  </ul>
+
+  <h3>Ryzyka</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Ryzyko</th><th>Odpowiedź</th></tr>
+    <tr><td>„Szare zaplecze”: monotonia i generyczny industrial, którego nie chcesz</td><td>epoka fundatorów zamiast betonu (cegła, mosiądz, drewniane regały, lampy gazowe); każdy dział ma własną paletę i światło; eksponaty pod pokrowcami jako sylwetki</td></tr>
+    <tr><td>Brak nieba, czyli znaku rozpoznawczego gry (księżyc przez kratownicę dachu)</td><td>jedna studnia światła w węźle jako świadomy wyjątek; reszta w świetle latarki, lamp gazowych i UV</td></tr>
+    <tr><td>Ciasne przestrzenie utrudniają areny, a wrogowie mogą się korkować w przejściach</td><td>areny strażników w największych salach (Hala gabarytów, Depozyt); przejścia szersze niż w podziemiach Piętra I</td></tr>
+    <tr><td>Ruchoma geometria (regały, suwnica) a siatka nawigacji</td><td>ustawienia regałów jako przełączane regiony nawigacji, tak jak bramy i drzwi nocy na Piętrze I; do sprawdzenia w specyfikacji</td></tr>
+    <tr><td>Za bardzo podobne do podziemi Piętra I</td><td>inna epoka, inna skala (wysoka hala zamiast korytarzy), eksponaty zamiast rur</td></tr>
+  </table>
+  </div>
+
+  <div class="effort">
+    <div class="size">M</div>
+    <p><strong>Ok. 0,6–0,7 Piętra I.</strong> Mniej sal (30–40 wobec 45–55), 4 strażników i finał zamiast 6 strażników i T-Reksa, połowa wrogów jako tanie warianty, jedno narzędzie zamiast trzech broni, 3 nowe zestawy architektury zamiast 7. Najdroższe będą suwnica i regały przesuwne (ruchoma geometria) oraz czterej strażnicy.</p>
+  </div>
+
+  <div class="decide">
+    <h4>Do decyzji właściciela</h4>
+    <ul>
+      <li>Czy na całym piętrze może nie być nieba, z wyjątkiem jednej studni światła?</li>
+      <li>Czy Rada Fundatorów może być finałem, czyli przeciwnikami, którzy być może mają rację?</li>
+      <li>Lampa UV jako nowe narzędzie czy jednak nowa broń?</li>
+      <li>Ile „inwentaryzacji” co noc: tylko skrzynie czy także przesunięte przejścia?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="variant vb" id="wariant-b">
+  <div class="vhead">
+    <div class="vletter">B</div>
+    <div>
+      <h2>Galerie Przyrody</h2>
+      <p class="vsub">Zamknięte sale historii naturalnej kolekcjonera Zawilskiego</p>
+    </div>
+  </div>
+
+  <div class="pitch">Pod Dziedzińcem leżą dawne sale przyrodnicze: zamknięte i zapomniane, ale wciąż urządzone. Są tu szkielety, dioramy, ptaki pod szkłem, minerały i szuflady z owadami. To najbardziej „muzealny” wariant: znowu sale publiczne, tylko z innej epoki, a eksponaty kiedyś naprawdę żyły.</div>
+
+  <div class="keyfacts">
+    <div><span>Struktura</span>węzeł + 5 skrzydeł (formuła Piętra I)</div>
+    <div><span>Noce</span>3–4 dla nowego gracza</div>
+    <div><span>Sale</span>ok. 40–50</div>
+    <div><span>Strażnicy</span>5 + finał w węźle</div>
+    <div><span>Losowość</span>„ekologia nocy”: stada i drapieżniki co noc gdzie indziej</div>
+    <div><span>Nakład</span>L (ok. 0,9–1,1 Piętra I)</div>
+  </div>
+
+  <h3>Idea i motyw</h3>
+  <p>Kanon daje tu punkt zaczepienia: Zawilski był kolekcjonerem zbiorów przyrodniczych i astronomicznych, a w skrzydle Oświecenia stoi już jego gabinet historii naturalnej. Wariant B rozwija to w całe piętro, na wzór XIX-wiecznego muzeum przyrodniczego. Nad wszystkim wisi szkielet wieloryba, a dookoła są galerie na antresolach. Przeciwnicy to zwierzęta, a nie posągi, więc zachowują się inaczej: stadami, z powietrza, rojem, zasadzką drapieżnika.</p>
+
+  <div class="fact">
+    <strong class="lbl">Fakt dla klimatu</strong>
+    <p>W latach 80. XIX wieku zbiory przyrodnicze British Museum przeniesiono do nowego gmachu w South Kensington, otwartego w 1881 roku (dziś Natural History Museum). U nas sale nie wyjechały, tylko zostały zamknięte pod ziemią <span class="b prop">propozycja</span>. Klasyka takich muzeów to dioramy z wypchanymi zwierzętami na tle malowanego krajobrazu, szkielety wielorybów pod stropem i dawne rekonstrukcje, czasem błędne. Gideon Mantell umieścił na przykład kolec z kciuka igwanodona na jego nosie.</p>
+  </div>
+
+  <h3>Struktura</h3>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 280" role="img" aria-label="Schemat wariantu B: Sala Wieloryba w środku i pięć skrzydeł dookoła">
+      <text class="sv-s" x="360" y="16" text-anchor="middle">schody spod krypty</text>
+      <line class="sv-line" x1="360" y1="22" x2="360" y2="92"/>
+      <line class="sv-line" x1="360" y1="140" x2="120" y2="64"/>
+      <line class="sv-line" x1="360" y1="140" x2="600" y2="64"/>
+      <line class="sv-line" x1="360" y1="140" x2="110" y2="220"/>
+      <line class="sv-line" x1="360" y1="140" x2="610" y2="220"/>
+      <line class="sv-line" x1="360" y1="140" x2="360" y2="250"/>
+      <rect class="sv-box" x="30" y="44" width="180" height="36" rx="4"/>
+      <text class="sv-t" x="120" y="67" text-anchor="middle">Dioramy</text>
+      <rect class="sv-box" x="510" y="44" width="180" height="36" rx="4"/>
+      <text class="sv-t" x="600" y="67" text-anchor="middle">Ptaki</text>
+      <rect class="sv-box" x="20" y="202" width="180" height="36" rx="4"/>
+      <text class="sv-t" x="110" y="225" text-anchor="middle">Minerały i meteoryty</text>
+      <rect class="sv-box" x="520" y="202" width="180" height="36" rx="4"/>
+      <text class="sv-t" x="610" y="225" text-anchor="middle">Owady i preparatornia</text>
+      <rect class="sv-box" x="270" y="238" width="180" height="36" rx="4"/>
+      <text class="sv-t" x="360" y="261" text-anchor="middle">Czas głęboki</text>
+      <ellipse class="sv-hub" cx="360" cy="140" rx="110" ry="46"/>
+      <text class="sv-tb" x="360" y="136" text-anchor="middle">Sala Wieloryba</text>
+      <text class="sv-s" x="360" y="154" text-anchor="middle">węzeł · finał</text>
+    </svg>
+    <figcaption>Ta sama formuła co na Piętrze I: węzeł ze skrzydłami, strażnik w każdym skrzydle, finał w węźle.</figcaption>
+  </figure>
+
+  <ul>
+    <li><strong>Sala Wieloryba (węzeł)</strong>: hala ze sklepieniem i dwiema galeriami dookoła. Pod stropem wisi szkielet kaszalota, który pasuje do kanonu: bosman Szczygieł widział w 1851 roku kaszalota z czerwonym światłem w brzuchu.</li>
+    <li><strong>Pięć skrzydeł</strong>, otwieranych jak na Piętrze I: strażnik w każdym, skróty od środka, przystań co dwa skrzydła.</li>
+    <li><strong>Noce:</strong> 3–4, z dowolną kolejnością po pierwszej nocy.</li>
+  </ul>
+
+  <h3>Nowe mechaniki (jedna na skrzydło)</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Skrzydło</th><th>Mechanika</th><th>Uczciwość i zapowiedź</th></tr>
+    <tr><td class="k">Dioramy</td><td><strong>Sceny za szkłem</strong>: eksponaty pozują w dioramach, więc widać je, zanim się obudzą. Rozbita szyba budzi całą scenę naraz, czyli zasadzkę zaczynasz na swoich warunkach. W jednej dioramie malowane tło okazuje się prawdziwą głębią: to jeden z 1–3 momentów niemożliwej architektury</td><td>wrogowie widoczni przed walką; scena budzi się dopiero po pęknięciu szyby</td></tr>
+    <tr><td class="k">Ptaki</td><td><strong>Cisza</strong>: śpiące stada zrywają się od hałasu i zasłaniają salę. Sala nagradza ciche bronie (paralizator, pięści) i cierpliwość</td><td>szelest i poruszenie stada przed zerwaniem; hałas działa przez obecny system słuchu</td></tr>
+    <tr><td class="k">Minerały i meteoryty</td><td><strong>Fluorescencja</strong>: w świetle UV minerały świecą i przez chwilę oświetlają salę. Odsłaniają drogę i wrogów, ale ciebie też</td><td>świecenie gaśnie stopniowo i widać, ile zostało</td></tr>
+    <tr><td class="k">Owady i preparatornia</td><td><strong>Szuflady</strong>: szafy entomologiczne. Otwarte szuflady wypuszczają roje, a zamknięcie ich (E) daje kontrolę nad salą; ogień</td><td>uchylone szuflady drżą i bzyczą</td></tr>
+    <tr><td class="k">Czas głęboki</td><td><strong>Składanie szkieletów</strong>: rozrzucone kości wędrują do najbliższego szkieletu, a zabicie jednego przyspiesza następny. Zabranie czaszki przerywa łańcuch</td><td>kości toczą się widocznie i z dźwiękiem</td></tr>
+  </table>
+  </div>
+
+  <p><strong>Nowe narzędzie albo broń:</strong> lampa UV z gabloty w Minerałach (jak w wariancie A) albo jedna broń epoki, na przykład garłacz. Obu naraz nie proponuję, bo wariant i tak jest najdroższy.</p>
+
+  <h3>Wrogowie</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Eksponat</th><th>Rola</th><th>Koszt</th></tr>
+    <tr><td class="k">Stado kopytnych (np. bizony z dioramy)</td><td>szarża grupowa, spychanie</td><td>średni (szarża jak u psa Fu, model bizona już jest)</td></tr>
+    <tr><td class="k">Niedźwiedź z dioramy</td><td>tank, nacisk</td><td>nowy chód czworonoga</td></tr>
+    <tr><td class="k">Ptaki</td><td>nękanie z powietrza, stado</td><td><strong>drogi</strong>: lot i stado to nowa technika</td></tr>
+    <tr><td class="k">Kryształowe twory</td><td>wieżyczka, odbicia</td><td>średni (nowy materiał rozpadu)</td></tr>
+    <tr><td class="k">Szkielety składane</td><td>przywoływacz, odradzanie</td><td>średni (kości jak u raptora)</td></tr>
+    <tr><td class="k">Roje owadów</td><td>rój</td><td>tani (rój skarabeuszy)</td></tr>
+  </table>
+  </div>
+
+  <h3>Strażnicy i finał</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Strażnik</th><th>Skrzydło</th><th>Pomysł na walkę</th></tr>
+    <tr><td class="k">Niedźwiedź jaskiniowy</td><td>Dioramy</td><td>walka wewnątrz największej dioramy, której tło raz jest ścianą, a raz nie</td></tr>
+    <tr><td class="k">Murmuracja</td><td>Ptaki</td><td>stado jako jeden strażnik, który układa się w kształty: ostrze, ścianę, lej. Każdy kształt ma swoją zapowiedź. To jeden przeciwnik, nie horda</td></tr>
+    <tr><td class="k">Druza</td><td>Minerały</td><td>geoda, która się otwiera; promienie odbijają się od kryształów sali</td></tr>
+    <tr><td class="k">Ćma atlas</td><td>Owady</td><td>olbrzymia ćma sypie oślepiającym pyłem ze skrzydeł (gra słów z walutą); światło ją wabi</td></tr>
+    <tr><td class="k">Megaterium</td><td>Czas głęboki</td><td>olbrzymi leniwiec naziemny: wolny, staje na tylnych łapach, zamachuje się pazurami</td></tr>
+    <tr><td class="k">Finał: Kaszalot</td><td>Sala Wieloryba</td><td>szkielet „płynie” w powietrzu wokół galerii; czerwone światło w brzuchu to słaby punkt. Odbicie finału z T-Reksem: wielki szkielet w węźle</td></tr>
+  </table>
+  </div>
+
+  <h3>Momenty do zapamiętania</h3>
+  <ul class="moments">
+    <li><strong>Pierwsze wejście do Sali Wieloryba.</strong> Snop latarki sunie po żebrach nad głową, a szkielet powoli odwraca czaszkę.</li>
+    <li><strong>Diorama bez końca.</strong> Za rozbitą szybą malowany step okazuje się prawdziwy.</li>
+    <li><strong>Sala ptaków w ciszy.</strong> Jeden strzał budzi wszystko naraz.</li>
+  </ul>
+
+  <h3>Jak rośnie losowość</h3>
+  <p>Układ jest stały, jak na Piętrze I. Nowością jest <strong>„ekologia nocy”</strong>: stada i drapieżniki mają co noc inne trasy i terytoria, a czasem polują na siebie nawzajem. Losowość rośnie w zachowaniu świata, nie w architekturze. To zgodne z decyzją z 25.09, ale krok w głąb jest najmniejszy z trzech wariantów.</p>
+
+  <h3>Co wraca z Piętra I</h3>
+  <ul>
+    <li>Cała formuła obszaru: węzeł, skrzydła, strażnicy, pieczęcie i odłamki, skróty, przystanie.</li>
+    <li>Wilk (trociny, szklane oczy), raptor i T-Rex (technika szkieletu), model bizona, rój skarabeuszy, gabinet przyrody z Oświecenia jako zalążek zestawu architektury.</li>
+  </ul>
+
+  <h3>Ryzyka</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Ryzyko</th><th>Odpowiedź</th></tr>
+    <tr><td>„Piętro I bis”: ta sama formuła w nowej skórce, mniejsze zaskoczenie</td><td>mechaniki skrzydeł mocno inne niż na Piętrze I (cisza, składanie, fluorescencja); węzeł w pionie</td></tr>
+    <tr><td>Animacja zwierząt jest najdroższą pracą w projekcie: chód czworonogów, lot, stada</td><td>ograniczyć nowych czworonogów do dwóch; ptaki jako stado sterowane razem</td></tr>
+    <tr><td>Powtórka z Piętra I: Oświecenie ma już gabinet przyrody, wilki i raptory, a lustra Heliosa w Grecji są bliskie fluorescencji</td><td>gabinet Oświecenia jako zapowiedź; inny czasownik w Minerałach (gaśnięcie, nie odbijanie)</td></tr>
+    <tr><td>Słabe poczucie zejścia: przyroda nie jest sama z siebie ani starsza, ani mroczniejsza</td><td>mrok przez martwe zwierzęta w ciemności; ale to zostaje słabą stroną wariantu</td></tr>
+    <tr><td>Wiarygodność wielkich sal pod ziemią</td><td>sale fundatorów zbudowane jako podziemne galerie; do opowiedzenia w notatkach</td></tr>
+  </table>
+  </div>
+
+  <div class="effort">
+    <div class="size">L</div>
+    <p><strong>Ok. 0,9–1,1 Piętra I.</strong> 5 strażników i finał, 5–6 nowych zestawów architektury, a większość wrogów porusza się w nowy sposób (czworonogi, lot, stada). Systemy i formuła są gotowe, ale oszczędność kończy się na kodzie. Treść i animacja trzeba zrobić prawie od zera.</p>
+  </div>
+
+  <div class="decide">
+    <h4>Do decyzji właściciela</h4>
+    <ul>
+      <li>Czy chcesz „drugie Piętro I” w nowym temacie, czyli sprawdzoną formułę?</li>
+      <li>Czy zwierzęta, które kiedyś żyły, pasują do tonu „mroczny z przymrużeniem oka”?</li>
+      <li>Czy historii naturalnej nie jest już dość w Oświeceniu?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section class="variant vc" id="wariant-c">
+  <div class="vhead">
+    <div class="vletter">C</div>
+    <div>
+      <h2>Warstwy</h2>
+      <p class="vsub">Zejście przez coraz starsze warstwy budynku do muzeum, które się śni</p>
+    </div>
+  </div>
+
+  <div class="pitch">Schody pod kryptą prowadzą „dalej, niż powinny”. Każda kondygnacja jest starsza od poprzedniej: najpierw ceglane sklepienia fundatorów, potem średniowieczne piwnice miasta, a na dnie muzeum, którego nikt nie zbudował, złożone z pamięci eksponatów. To najmroczniejszy i najbardziej losowy wariant. Wizję „losowość rośnie w głąb” realizuje dosłownie, nawet w obrębie jednego piętra.</div>
+
+  <div class="keyfacts">
+    <div><span>Struktura</span>3 warstwy w dół; pętle i skróty w górę</div>
+    <div><span>Noce</span>3–4; kolejne noce wyglądają inaczej</div>
+    <div><span>Sale</span>ok. 35–45 ręcznych modułów, część tasowana</div>
+    <div><span>Strażnicy</span>3 + Serce albo dalsze zejście</div>
+    <div><span>Losowość</span>połączenia (warstwa 2) i sale (warstwa 3) tasowane co noc</div>
+    <div><span>Nakład</span>M–L (ok. 0,7–1,0), największa niepewność</div>
+  </div>
+
+  <h3>Idea i motyw</h3>
+  <p>Na liście rozszerzonej przyjęto już, że „podziemia schodzą w coraz starsze warstwy budynku”. Wariant C robi z tego całe piętro. Kanon daje do tego najwięcej punktów zaczepienia: fundatorzy zbudowali muzeum nad starymi piwnicami, stukanie spod krypty brzmi jak zegar albo serce, staw płynie w dół, czerwona planeta krąży pod posadzką Planetarium, a totem nr 3 śpiewa pod podłogą. Najgłębsza warstwa to <strong>pamięć muzeum</strong>, czyli sale Piętra I, ale przeinaczone: zalany Egipt, Dziedziniec do góry nogami ze szklanym dachem pod stopami i księżycem w dole, fryz Partenonu, który nie ma końca.</p>
+
+  <div class="fact">
+    <strong class="lbl">Fakt dla klimatu</strong>
+    <p>Pod rynkami wielu polskich miast zachowały się dawne piwnice, dziś udostępniane jako trasy podziemne, na przykład w Sandomierzu i Rzeszowie. Pierwszą siedzibą British Museum był XVII-wieczny Montagu House, rozebrany w połowie XIX wieku, gdy powstawał obecny gmach. Do tego nawiązuje już mrugnięcie okiem w podziemiach Piętra I.</p>
+  </div>
+
+  <h3>Struktura</h3>
+  <figure class="diagram">
+    <svg viewBox="0 0 720 300" role="img" aria-label="Schemat wariantu C: trzy warstwy jedna pod drugą, coraz bardziej zmienne, a na dnie Serce">
+      <text class="sv-s" x="360" y="16" text-anchor="middle">schody spod krypty · latarnia Kopcia</text>
+      <line class="sv-line" x1="360" y1="22" x2="360" y2="36"/>
+      <rect class="sv-box" x="60" y="36" width="600" height="58" rx="6"/>
+      <text class="sv-tb" x="80" y="58">Warstwa 1 · Sklepienia fundatorów</text>
+      <text class="sv-s" x="80" y="78">układ stały, jak na Piętrze I · przystań · strażnik</text>
+      <line class="sv-line" x1="360" y1="94" x2="360" y2="108"/>
+      <rect class="sv-hub" x="100" y="108" width="520" height="62" rx="6"/>
+      <text class="sv-tb" x="120" y="130">Warstwa 2 · Piwnice miasta</text>
+      <text class="sv-s" x="120" y="150">stałe kotwice, połączenia tasowane co noc</text>
+      <rect class="sv-dash" x="440" y="120" width="34" height="22" rx="3"/>
+      <rect class="sv-dash" x="490" y="134" width="34" height="22" rx="3"/>
+      <rect class="sv-dash" x="540" y="118" width="34" height="22" rx="3"/>
+      <line class="sv-line" x1="360" y1="170" x2="360" y2="184"/>
+      <rect class="sv-hub" x="140" y="184" width="440" height="62" rx="6"/>
+      <text class="sv-tb" x="160" y="206">Warstwa 3 · Muzeum, które się śni</text>
+      <text class="sv-s" x="160" y="226">sale Piętra I przeinaczone, składane co noc</text>
+      <rect class="sv-dash" x="470" y="194" width="30" height="20" rx="3"/>
+      <rect class="sv-dash" x="510" y="214" width="30" height="20" rx="3"/>
+      <line class="sv-line" x1="360" y1="246" x2="360" y2="260"/>
+      <rect class="sv-end" x="270" y="260" width="180" height="32" rx="4"/>
+      <text class="sv-tb" x="360" y="281" text-anchor="middle">Serce albo dalej w dół</text>
+    </svg>
+    <figcaption>Losowość rośnie w obrębie piętra: warstwa 1 jest stała, warstwa 2 zmienia połączenia, warstwa 3 zmienia sale. Skróty prowadzą w górę.</figcaption>
+  </figure>
+
+  <ul>
+    <li><strong>Warstwa 1: Sklepienia fundatorów</strong> (lata 1868–1870 według kanonu): cegła, rury gazowe, lampy gazowe, zamurowane pokoje fundatorów i posterunek stróża z 1912 roku. Układ jest stały i ręczny.</li>
+    <li><strong>Warstwa 2: Piwnice miasta</strong>: średniowieczne piwnice kupieckie, studnie, fundamenty murów. Sale są robione ręcznie, a co noc zmienia się, które z nich łączą się ze sobą. Stałe zostają kotwice: przystań, arena i zejście.</li>
+    <li><strong>Warstwa 3: Muzeum, które się śni</strong>: przeinaczone sale Piętra I, składane co noc z puli ręcznie przygotowanych wersji.</li>
+    <li><strong>Dno</strong>: Serce, jeśli Piętro II ma być ostatnie; w przeciwnym razie kolejne schody.</li>
+  </ul>
+
+  <h3>Mechanika główna: latarnia i plan, które utrwalają</h3>
+  <p>Na schodach strażnik zabiera <strong>latarnię Kopcia</strong> (kanon). Sala oświetlona latarnią staje się <strong>kotwicą</strong>: zachowuje kształt i połączenia na stałe, a strażnik wrysowuje ją ołówkiem w stary plan fundatorów. Sale nieoświetlone mogą się zmienić następnej nocy. Kotwic jest mało, a z postępem przybywa ich (knoty i olej za sekrety i strażników). Z nocy na noc labirynt się więc stabilizuje: <strong>gracz sam oswaja losowość</strong>, a orientacja w terenie staje się formą postępu.</p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>Warstwa</th><th>Mechanika lokalna</th><th>Zasada uczciwości</th></tr>
+    <tr><td class="k">1 · Sklepienia</td><td><strong>Gaz</strong>: zawory lamp gazowych dają światło, ogień i wybuch (wzór: zawory pary z podziemi Piętra I)</td><td>syk i drżenie powietrza przed zapłonem</td></tr>
+    <tr><td class="k">2 · Piwnice</td><td><strong>Kotwice</strong> (latarnia) i <strong>studnie</strong>: hałas w studni słychać w sąsiednich piwnicach</td><td>zmiana nigdy na oczach gracza ani w sali, w której stoi; zawsze istnieje droga do przystani i do zejścia (test osiągalności dla każdego ziarna)</td></tr>
+    <tr><td class="k">3 · Pamięć</td><td><strong>Spojrzenia</strong>: cienie zwiedzających patrzą, a w ich spojrzeniu eksponaty są silniejsze. Rozpraszasz je światłem</td><td>spojrzenie widać jako snop; wzmocnienie ma limit</td></tr>
+  </table>
+  </div>
+
+  <h3>Wrogowie</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Eksponat</th><th>Rola</th><th>Koszt</th></tr>
+    <tr><td class="k">Echa</td><td>jak oryginał, ale w złym materiale: mumia z wosku, hoplita z papieru, lew z reliefu z lodu</td><td><strong>tani</strong>: istniejące zachowania, nowe materiały</td></tr>
+    <tr><td class="k">Cienie zwiedzających</td><td>wsparcie: wzmacniają innych spojrzeniem, same nie atakują</td><td>nowy, prosty</td></tr>
+    <tr><td class="k">Figury fundatorów z wosku</td><td>presja wręcz w warstwie 1</td><td>tani (figura woskowa)</td></tr>
+    <tr><td class="k">Coś ze studni</td><td>zasadzka spod podłogi</td><td>nowy</td></tr>
+  </table>
+  </div>
+
+  <h3>Strażnicy i finał</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Strażnik</th><th>Warstwa</th><th>Pomysł na walkę</th></tr>
+    <tr><td class="k">Woskowy Założyciel</td><td>1</td><td>w kanonie stoi już woskowy „założyciel” w piwnicy Montagu House. Tutaj walczy między lampami gazowymi: ogień go topi, ale też podpala salę</td></tr>
+    <tr><td class="k">Totem nr 3</td><td>2</td><td>zniknął w ścianie w 1931 roku (kanon). Przechodzi przez mury piwnic (technika wojownika z reliefu), a jego miejsce zdradza śpiew</td></tr>
+    <tr><td class="k">Czerwona planeta</td><td>3</td><td>„krąży pod posadzką, jej słońce głęboko” (kanon). Walka na orbicie w śnionym Planetarium, które kręci się wokół gracza</td></tr>
+    <tr><td class="k">Finał: Serce</td><td>dno</td><td>źródło przebudzeń. Tylko wtedy, gdy Piętro II jest ostatnie; w przeciwnym razie trzecia walka kończy piętro i otwiera schody</td></tr>
+  </table>
+  </div>
+
+  <h3>Momenty do zapamiętania</h3>
+  <ul class="moments">
+    <li><strong>Latarnia jeszcze ciepła.</strong> Pierwsze zejście w ceglane sklepienia przy lampach gazowych, w świetle latarni z 1912 roku.</li>
+    <li><strong>Dziedziniec do góry nogami.</strong> Idziesz po szklanym dachu, a księżyc jest pod stopami.</li>
+    <li><strong>Wczorajsza droga.</strong> Korytarz, który wczoraj prowadził do przystani, dziś kończy się ścianą, dopóki nie zapalisz latarni.</li>
+  </ul>
+
+  <h3>Jak rośnie losowość</h3>
+  <p>Najmocniej z trzech wariantów i stopniowo w obrębie piętra: warstwa 1 jest stała, warstwa 2 tasuje połączenia, warstwa 3 tasuje sale i połączenia. Sale są nadal robione ręcznie, a każda ma swoje zaprojektowane starcie. Tasowanie <strong>połączeń</strong> to jednak już „hybryda”, którą <strong>odrzucono 25 września</strong>, i stoi w sprzeczności z kilkoma regułami listy rozszerzonej („żadnego syndromu poziomu z generatora”, „najlepsze momenty ręcznie”, „1–3 momenty niemożliwej architektury, nie ciągły gadżet”). Ta sama specyfikacja zapowiada zarazem na kolejnych piętrach „rosnącą losowość układu” (lista „poza zakresem MVP”). Zapisane ustalenia ciągną więc w dwie strony. <span class="b ask">do decyzji</span> Ten wariant wymaga świadomego rozstrzygnięcia na rzecz losowości.</p>
+
+  <h3>Co wraca z Piętra I</h3>
+  <ul>
+    <li><strong>Sztuka w największym stopniu ze wszystkich wariantów:</strong> warstwa 3 to sale Piętra I, przetworzone (woda, odwrócenie, inna skala, inne światło). Poziom jest opisany danymi, więc da się to zrobić taniej niż budowę nowych sal. To jednak moje założenie, do sprawdzenia w kodzie.</li>
+    <li>Wrogowie jako echa (tanie warianty), figura woskowa, przechodzenie przez ściany, technika Planetarium, zawory pary, reżyser zdarzeń „nie z tego świata” (tu zdarzenia są normą).</li>
+    <li>Nawigacja per strefa łączona na stykach. Jeśli moduły będą miały ustandaryzowane przejścia, siatkę nawigacji da się wypiec dla każdego modułu z góry, zamiast co noc (do sprawdzenia).</li>
+  </ul>
+
+  <h3>Ryzyka</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Ryzyko</th><th>Odpowiedź</th></tr>
+    <tr><td>Gracz się gubi, choć ważna dla Ciebie jest nawigacja bez strzałek (#38)</td><td>stała warstwa 1, stałe kotwice, latarnia i plan; punkty orientacyjne w każdym module</td></tr>
+    <tr><td>„Syndrom generatora”: przejścia i zestawienia sal mniej kontrolowane niż na Piętrze I</td><td>moduły ręczne ze starciem w środku; tasowane są tylko połączenia, nigdy wnętrza</td></tr>
+    <tr><td>Warstwa 3 może wyglądać jak recykling treści zamiast jak sen</td><td>mocne przekształcenia (woda, grawitacja, skala) i inne światło; w razie wątpliwości mniej sal, ale dziwniejszych</td></tr>
+    <tr><td>Technika: tasowanie z ziarna, zapis układu nocy, test osiągalności dla wielu ziaren, bot, czas wczytywania</td><td>osobny wycinek techniczny na początku (prototyp tasowania na szarych modułach), zanim powstanie sztuka</td></tr>
+    <tr><td>Standardowe przejścia między modułami ograniczają architekturę (sale „na jedno kopyto”)</td><td>kilka rodzajów gniazd (drzwi, schody, studnia) i ręczne sale-kotwice bez ograniczeń</td></tr>
+    <tr><td>Ton: najmroczniejszy wariant, w którym humor może zniknąć całkiem</td><td>zgodne z zasadą „im głębiej, tym mroczniej”; Heniek przez trzeszczące radio jako ostatnia nuta humoru</td></tr>
+    <tr><td>Fabuła wymaga rozstrzygnięć, zanim cokolwiek powstanie (prawda autorska, los Kopcia)</td><td>pytanie 4 w rekomendacji</td></tr>
+  </table>
+  </div>
+
+  <div class="effort">
+    <div class="size">M–L</div>
+    <p><strong>Ok. 0,7–1,0 Piętra I, z największą niepewnością.</strong> Sztuka jest najtańsza: warstwa 3 przetwarza Piętro I, dochodzą 2 nowe zestawy (cegła, piwnice). Tani są też wrogowie (echa) i strażników jest tylko 3. Najdroższa i najmniej przewidywalna jest technika: tasowanie, kotwice, zapis, osiągalność, bot. Jeśli Piętro II ma być ostatnie, dochodzi finał Serca.</p>
+  </div>
+
+  <div class="decide">
+    <h4>Do decyzji właściciela</h4>
+    <ul>
+      <li>Czy otwierasz decyzję z 25.09 i dopuszczasz tasowanie połączeń między ręcznymi salami?</li>
+      <li>Czy niemożliwa architektura może być na tym piętrze normą, a nie 1–3 momentami?</li>
+      <li>Czy na dnie ma być Serce, czyli finał gry?</li>
+      <li>Czy dawni stróże (Kopeć, Pająk) i kustosz mogą się pojawić jako postacie, a nawet przeciwnicy?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<h2 id="porownanie"><span class="num">03</span>Porównanie</h2>
+
+<div class="table-wrap">
+<table class="cmp">
+  <tr><th>Cecha</th><th class="a">A · Zaplecze</th><th class="bb">B · Galerie Przyrody</th><th class="c">C · Warstwy</th></tr>
+  <tr><td>Przestrzeń</td><td>zaplecze niepubliczne: magazyny, pracownie, archiwum</td><td>znowu sale publiczne, z innej epoki</td><td>coraz starsze piwnice, potem niemożliwa architektura</td></tr>
+  <tr><td>Struktura</td><td>pionowy węzeł + 4 działy + Depozyt</td><td>węzeł + 5 skrzydeł (jak Piętro I)</td><td>3 warstwy w dół, skróty w górę</td></tr>
+  <tr><td>Noce (nowy gracz)</td><td>ok. 3</td><td>3–4</td><td>3–4, każda inna</td></tr>
+  <tr><td>Sale (szacunek)</td><td>30–40</td><td>40–50</td><td>35–45 modułów</td></tr>
+  <tr><td>Strażnicy + finał</td><td>4 + Rada Fundatorów</td><td>5 + Kaszalot</td><td>3 + Serce (albo bez)</td></tr>
+  <tr><td>Nowe narzędzia</td><td>lampa UV, nowy zamek</td><td>lampa UV albo broń epoki</td><td>latarnia Kopcia (kotwice)</td></tr>
+  <tr><td>Nowi wrogowie</td><td>6, z czego połowa to tanie warianty</td><td>6, prawie wszyscy z nowym ruchem</td><td>4, w tym echa jako tanie warianty</td></tr>
+  <tr><td>Nowy „czasownik”</td><td>układać drogę, przenosić, ujawniać</td><td>skradać się w ciszy, rozbierać, oświetlać</td><td>mapować, kotwiczyć, nie zgubić się</td></tr>
+  <tr><td>Losowość</td><td>ręczne warianty ustawień, zawartość skrzyń</td><td>trasy stad i drapieżników</td><td>połączenia i sale tasowane co noc</td></tr>
+  <tr><td>Wertykalność (#21)</td><td class="mark-best">wysoka: antresole, suwnica, szyb windy</td><td>wysoka: galerie wokół wieloryba, ptaki</td><td>średnia: schody, studnie</td></tr>
+  <tr><td>Nawigacja (#38)</td><td>czytelna: studnia światła, szyb, kolory działów</td><td class="mark-best">czytelna, jak na Piętrze I</td><td>najtrudniejsza; ratują ją latarnia i plan</td></tr>
+  <tr><td>Zgodność z ustaleniami</td><td class="mark-best">pełna</td><td class="mark-best">pełna</td><td>wymaga zmiany decyzji z 25.09 i reguł z listy rozszerzonej</td></tr>
+  <tr><td>Otwarte wątki fabuły (13 z biblii §7)</td><td>ok. 6 w pełni, 5 częściowo</td><td>ok. 2 w pełni, 3 częściowo</td><td class="mark-best">ok. 10 w pełni, 3 częściowo</td></tr>
+  <tr><td>Wykorzystanie Piętra I</td><td>wysokie: systemy, odlewy, zestaw podziemi</td><td>średnie: formuła i systemy; sztuka i zwierzęta nowe</td><td>sztuka: najwyższe; kod: nowy system tasowania</td></tr>
+  <tr><td>Główne ryzyko</td><td>szare zaplecze, brak nieba</td><td>„Piętro I bis”, koszt animacji zwierząt</td><td>zagubienie gracza, technika, syndrom generatora</td></tr>
+  <tr><td>Nakład wobec Piętra I</td><td class="mark-best">M · 0,6–0,7</td><td>L · 0,9–1,1</td><td>M–L · 0,7–1,0, najmniej pewny</td></tr>
+</table>
+</div>
+
+<p class="src">Skala nakładu: S do ok. 0,4 Piętra I, M ok. 0,5–0,75, L ok. 0,8–1,2. To szacunki względne z liczby sal, strażników, nowych zestawów architektury i nowych rodzajów ruchu, a nie z pomiaru. Pogrubienie oznacza najlepszy wynik w danym wierszu.</p>
+
+<!-- ============================================================ -->
+<h2 id="rekomendacja"><span class="num">04</span>Rekomendacja</h2>
+
+<div class="reco">
+  <div class="kicker">Moja rekomendacja</div>
+  <p class="big"><strong>Wariant A, „Zaplecze”, jako Piętro II</strong>, a wariant C, „Warstwy”, jako kierunek dla piętra po nim. Z wariantu B bierzemy jeden akcent: preparatornię i kolekcję mokrą, które w A już są.</p>
+</div>
+
+<h3>Dlaczego</h3>
+<ol>
+  <li><strong>Kanon i backlog wskazują właśnie tam.</strong> Poziom „−1” na starych planach, winda z zamalowanym przyciskiem, przyjęte „wiarygodne zaplecze, muzealne, nie industrial”, paczka i księga nadawcza. A wymaga najmniej wymyślania na nowo i najwięcej z kanonu domyka.</li>
+  <li><strong>Gra się w nim naprawdę inaczej przy najmniejszym ryzyku.</strong> Z oglądania sal przechodzimy do grzebania w zapleczu: regały, suwnica, skrzynie, UV. To zmienia sposób gry (#26), a nie tylko wygląd, i nie rusza żadnej przyjętej decyzji.</li>
+  <li><strong>Trafia w Twoje priorytety z backlogu:</strong> wertykalność (antresole, szyb), walka otoczeniem (suwnica, alkohol, regały), zapowiadanie wrogów (drgające skrzynie, manekiny pod pokrowcami), zmiany przy powrocie (inwentaryzacja), set-piece'y (zjazd windą, zwężający się korytarz, zamrażarka).</li>
+  <li><strong>Losowość rośnie po kolei przez całą grę:</strong> Piętro I jest stałe, Piętro II zmienia ustawienia w ręcznych salach, a Piętro III tasuje połączenia. Mocny krok z C, wymagający zmiany decyzji, czeka na moment, gdy gracz zna już zasady gry.</li>
+  <li><strong>Nakład M jest realny</strong>, zwłaszcza że Piętro I wciąż jest w szlifie, a backlog ma odłożone sprawy (trudność, przebudowa ulepszeń).</li>
+</ol>
+
+<div class="note">
+  <p><strong>Słabość, którą trzeba przyjąć:</strong> A traci niebo, czyli znak rozpoznawczy gry. Proponuję jedną studnię światła w węźle jako świadomy wyjątek i punkt orientacyjny. Jeśli to za mało, B jest jedynym wariantem, w którym da się zachować monumentalne sale.</p>
+  <p><strong>Jeśli gra ma mieć tylko dwa piętra</strong> (pytanie 1), rekomendacja zmienia się na: A, a pod Depozytem krótka, skondensowana warstwa z C prowadząca do Serca. To ok. +0,2 nakładu.</p>
+</div>
+
+<h3>Pytania przed specyfikacją</h3>
+<p>Te pięć odpowiedzi wystarczy, żebym napisał projekt Piętra II w tej samej formie co projekt Piętra I.</p>
+
+<ol class="qlist">
+  <li>
+    <span class="q">Ile pięter ma mieć cała gra?</span>
+    <span class="why">Od tego zależy, czy Piętro II kończy się źródłem przebudzeń i finałem gry, czy jest środkiem. To zmienia finał, długość i rekomendację.</span>
+    <span class="rec"><span class="b prop">propozycja</span> trzy piętra: I (stałe), II (Zaplecze), III (Warstwy z Sercem).</span>
+  </li>
+  <li>
+    <span class="q">Który kierunek: zaplecze (A), sale przyrodnicze (B) czy zejście „nie z tego świata” (C)?</span>
+    <span class="why">Możesz też połączyć wątki inaczej niż w mojej rekomendacji albo odrzucić wszystkie trzy.</span>
+    <span class="rec"><span class="b prop">propozycja</span> A.</span>
+  </li>
+  <li>
+    <span class="q">Jak daleko może pójść losowość układu na Piętrze II?</span>
+    <span class="why">Rejestr decyzji z 25 września mówi: poziomy ręczne, bez składania z sal i bez hybrydy. Lista „poza zakresem MVP” zapowiada jednak na kolejnych piętrach „rosnącą losowość układu”. A mieści się w pierwszym zapisie, a C wymaga rozstrzygnięcia na rzecz drugiego.</span>
+    <span class="rec"><span class="b prop">propozycja</span> na Piętrze II tylko ręczne warianty ustawień; tasowanie połączeń najwcześniej na Piętrze III, po prototypie.</span>
+  </li>
+  <li>
+    <span class="q">Czy zatwierdzasz „prawdę autorską” z biblii fabuły?</span>
+    <span class="why">Chodzi o to, że muzeum jest pokrywą, kamień budzi to, co pamięta, a gracz robi to, przed czym ostrzegał Zawilski. Od tego zależy, czy finał Piętra II może tworzyć Rada Fundatorów (przeciwnicy, którzy mają rację) i czy dawni stróże i kustosz mogą się pojawić jako postacie.</span>
+    <span class="rec"><span class="b prop">propozycja</span> zatwierdzić; ludzi (Kopeć, kustosz) pokazywać tylko przez ślady, nigdy jako przeciwników.</span>
+  </li>
+  <li>
+    <span class="q">Czy pod ziemią obowiązuje ten sam rytm: krótka noc, świt i metroidvania przez kilka nocy?</span>
+    <span class="why">Pod ziemią świtu nie widać. Można zostawić zegar bez zmian albo zmienić go w zjawisko (zegar zwalnia, „świt” to cisza na górze). To dotyczy całej pętli i ekonomii Pyłu.</span>
+    <span class="rec"><span class="b prop">propozycja</span> zostawić zegar i świt (pętla działa i jest przetestowana), a zmienić tylko to, jak świt widać i słychać.</span>
+  </li>
+</ol>
+
+<h3>Czego nie sprawdziłem</h3>
+<ul>
+  <li>Założenia techniczne są nieweryfikowane w kodzie: ruchome regały jako przełączane regiony nawigacji, przetwarzanie sal Piętra I opisanych danymi, wypiekanie nawigacji per moduł w C. To pierwsze rzeczy do sprawdzenia w specyfikacji.</li>
+  <li>Nakład to szacunek względny, a nie plan z godzinami.</li>
+  <li>Nazwy strażników i wrogów to robocze propozycje do Twojej oceny.</li>
+</ul>
+
+<p><strong>Następny krok po Twoich odpowiedziach:</strong> projekt Piętra II w formie projektu Piętra I (mapa, graf postępu, skrzydła lub działy, strażnicy, etapy budowy), a potem plany wykonawcze. Proponuję zacząć budowę dopiero po następnym teście Piętra I, żeby poprawki z niego weszły do wspólnych systemów, zanim powstanie drugie piętro <span class="b prop">propozycja</span>.</p>
+
+<!-- ============================================================ -->
+<h2 id="fakty"><span class="num">05</span>Fakty z prawdziwych muzeów użyte w dokumencie</h2>
+
+<p>Tak jak w biblii fabuły: prawdziwe fakty są prawdziwe i ogólne, a ludzie i miejsca gry są fikcyjne.</p>
+
+<div class="table-wrap">
+<table>
+  <tr><th>Fakt</th><th>Gdzie</th><th>Uwagi</th></tr>
+  <tr><td>Duże muzea wystawiają tylko niewielką część zbiorów; o British Museum podaje się zwykle ok. 1% z ok. 8 mln obiektów</td><td>A</td><td>fakt; liczby przybliżone, często cytowane</td></tr>
+  <tr><td>Regały przesuwne na szynach w magazynach muzeów i archiwów</td><td>A</td><td>fakt, ogólny</td></tr>
+  <tr><td>Zwalczanie szkodników zamrażaniem i w atmosferze beztlenowej</td><td>A</td><td>fakt, ogólny</td></tr>
+  <tr><td>Badanie w świetle UV ujawnia późniejsze retusze i uzupełnienia</td><td>A</td><td>fakt, ogólny</td></tr>
+  <tr><td>Kolekcje „mokre”: okazy w słojach z alkoholem (łatwopalnym)</td><td>A, B</td><td>fakt</td></tr>
+  <tr><td>Chrząszcze skórniki czyszczą szkielety w preparatorniach</td><td>A, B</td><td>fakt</td></tr>
+  <tr><td>Księga inwentarzowa i numery inwentarzowe obiektów</td><td>A</td><td>fakt, ogólny</td></tr>
+  <tr><td>Kolekcje odlewów gipsowych w XIX-wiecznych muzeach</td><td>A</td><td>fakt, ogólny</td></tr>
+  <tr><td>Poczta pneumatyczna w bibliotekach i urzędach XIX–XX w.</td><td>A</td><td>fakt, ogólny</td></tr>
+  <tr><td>Całe budowle przewożone do muzeów rozebrane na bloki (np. świątynia z Dendur w Metropolitan Museum)</td><td>A</td><td>fakt; nasz „Portal w skrzyniach” to fikcja</td></tr>
+  <tr><td>Zbiory przyrodnicze British Museum przeniesione w latach 80. XIX w. do South Kensington (gmach otwarty w 1881 r.)</td><td>B</td><td>fakt; u nas zamknięte pod ziemią to fikcja</td></tr>
+  <tr><td>Dioramy z wypchanymi zwierzętami na tle malowanego krajobrazu; szkielety wielorybów pod stropem sal</td><td>B</td><td>fakt, ogólny</td></tr>
+  <tr><td>Kolec z kciuka igwanodona umieszczony przez Mantella na nosie</td><td>B</td><td>fakt</td></tr>
+  <tr><td>Część minerałów świeci w UV (fluorescencja)</td><td>B</td><td>fakt</td></tr>
+  <tr><td>Ćma atlas: jedna z największych ciem świata; megaterium: wymarły olbrzymi leniwiec naziemny; murmuracja: stada szpaków układające się w kształty</td><td>B</td><td>fakt; zachowania strażników to fikcja</td></tr>
+  <tr><td>Dawne piwnice pod rynkami polskich miast udostępnione jako trasy podziemne (np. Sandomierz, Rzeszów)</td><td>C</td><td>fakt, ogólny</td></tr>
+  <tr><td>Pierwsza siedziba British Museum, Montagu House, rozebrana w połowie XIX w.</td><td>C</td><td>fakt</td></tr>
+</table>
+</div>
+
+<footer>
+  Źródła w repozytorium: <code>docs/superpowers/specs/2026-09-25-nocna-zmiana-design.html</code> (wizja), <code>docs/Nocna-Zmiana-specyfikacja.md</code> (rejestr decyzji §15), <code>docs/superpowers/specs/2026-10-02-pietro-1-projekt.md</code> (projekt Piętra I), <code>docs/backlog-pietro1.md</code> (Twoje uwagi i lista rozszerzona), <code>docs/fabula-pietro1.md</code> (biblia fabuły, wątki otwarte §7), plany w <code>docs/superpowers/plans/</code>, układ Piętra I w <code>src/level/floor1/</code>. Liczby Piętra I: model czasu W7, dziennik nocy 22/23.10, pomiar kodu 23.10.
+</footer>
+
+</main>
+</body>
+</html>

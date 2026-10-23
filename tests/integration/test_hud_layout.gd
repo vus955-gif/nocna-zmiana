@@ -11,8 +11,14 @@ const WINDOWS: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1600, 900), Vec
 ## Canvas sizes taken literally: narrower than the stretch ever gives.
 const CANVASES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1600, 900), Vector2i(1280, 1024), Vector2i(1280, 720)]
 const LANGUAGES: Array[String] = ["en", "pl"]
+## The HUD's size option (SettingsData.HUD_SCALE_MIN..MAX): the canvas the HUD
+## lays itself out on is the window's canvas divided by it (Hud.canvas_size).
+const SCALES: Array[float] = [0.75, 1.0, 1.25, 1.5]
 ## The goals with the longest text of a language are tried on every bar.
 const LONGEST_GOALS := 3
+## Frames the HUD gets to lay itself out after a boss wakes (the room's card
+## and the toast glide to their places under its block).
+const WAKE_FRAMES := 12
 
 ## Every guardian of the floor, and the T-Rex (the night's boss).
 var _bosses: Array[Node] = []
@@ -93,8 +99,8 @@ func _wake(boss: Node) -> void:
 		Events.guardian_awakened.emit(boss, (boss as Guardian).guardian_id)
 	else:
 		Events.boss_awakened.emit(boss)
-	await get_tree().process_frame
-	await get_tree().process_frame
+	for i in WAKE_FRAMES:
+		await get_tree().process_frame
 
 
 ## Every goal of the language now beside the bar of every boss on
@@ -128,11 +134,12 @@ func _check_every_goal_beside_every_bar(hud: Hud, canvas: Vector2, where: String
 func test_a_long_goal_keeps_clear_of_the_bar_in_any_window() -> void:
 	for language in LANGUAGES:
 		Settings.set_value(&"language", language, false)
-		for size in WINDOWS:
-			var hud := _hud_in_window(size)
-			var canvas := hud.get_viewport().get_visible_rect().size
-			await _check_every_goal_beside_every_bar(hud, canvas, "window %s" % size)
-			hud.get_viewport().queue_free()
+		for hud_scale in SCALES:
+			Settings.set_value(&"hud_scale", hud_scale, false)
+			for size in WINDOWS:
+				var hud := _hud_in_window(size)
+				await _check_every_goal_beside_every_bar(hud, hud.canvas_size(), "window %s, HUD size %s" % [size, hud_scale])
+				hud.get_viewport().queue_free()
 
 
 func test_a_long_goal_keeps_clear_of_the_bar_on_a_narrow_canvas() -> void:

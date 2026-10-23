@@ -8,9 +8,18 @@ extends Node
 ## and the power cut keep reading the truth - and a node made visible again
 ## by them (or by a graphics preset) is hidden again at once while its room
 ## is culled. Rooms inside another (a balcony) count as that room.
+## A change of the camera's room touches only the rooms whose state changes
+## (plan 2026-10-21-wydajnosc-cpu): the entered room and the rooms next to
+## it come on at once, nearest first (nothing pops in view); the rooms two
+## passages away coming on, then the rooms going off, follow a few a frame
+## (spread_budget_usec of work a frame, at least one room). update_from()
+## and refresh() switch everything at once (the menu's cuts, tests).
 
 ## Seconds between checks of the camera's room.
 const INTERVAL := 0.25
+## Rooms this many passages from the camera's (or nearer) come on in the
+## frame it walks in; the farther ones wait in the queue.
+const AT_ONCE_DEPTH := 1
 
 ## Passages from the camera's room that still count as near (GraphicsQuality
 ## "cull_depth"; 2 by the design).
@@ -22,8 +31,19 @@ var enabled: bool = true
 ## hall and Egypt's first rooms lit: every other room stays off wherever the
 ## camera is.
 var only_rooms: Dictionary = {}
+## Microseconds of queued switching a frame (after a room change); at least
+## one room a frame whatever it costs.
+var spread_budget_usec: int = 500
+## Rooms switched on or off by room changes so far (tests, the profile).
+var rooms_switched: int = 0
+## The longest a check of the camera's room took (us), with what it
+## switched at once, and how many changes of room there were (the profile).
+var worst_check_usec: int = 0
+var room_changes: int = 0
 
 var _layout: LevelLayout
+## Its rooms through a grid (the camera's room is looked up 4 times a second).
+var _rooms: RoomIndex
 ## Room -> rooms one passage away (guests and hosts at no distance).
 var _links: Dictionary = {}
 ## Room id -> {"render": [VisualInstance3D...], "motes": [GPUParticles3D...],
@@ -33,6 +53,12 @@ var _by_room: Dictionary = {}
 var _culled: Dictionary = {}
 var _camera_room: StringName = &""
 var _left: float = 0.0
+## Rooms still to switch after a room change: [room, on], those coming on
+## first.
+var _queue: Array = []
+## near() by room for _near_depth (the links never change after setup).
+var _near_cache: Dictionary = {}
+var _near_depth: int = -1
 
 
 ## Indexes what can be culled under [param roots] (lamps, motes, probes and
@@ -40,8 +66,11 @@ var _left: float = 0.0
 ## with meta "kit_room") and the room graph of [param layout].
 func setup(layout: LevelLayout, roots: Array[Node]) -> void:
 	_layout = layout
+	_rooms = RoomIndex.build(layout)
 	depth = int(GraphicsQuality.preset().get("cull_depth", 2))
 	_links.clear()
+	_near_cache.clear()
+	_queue.clear()
 	for room in layout.rooms:
 		_links[room.id] = []
 	for passage in layout.openings:
@@ -96,25 +125,34 @@ func _entry(room: StringName) -> Dictionary:
 
 
 func _process(delta: float) -> void:
+	if not _queue.is_empty():
+		_work_queue()
 	_left -= delta
 	if _left > 0.0 or not enabled:
 		return
 	_left = INTERVAL
 	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
-	if camera != null:
-		update_from(camera.global_position)
+	if camera == null or _layout == null:
+		return
+	var began := Time.get_ticks_usec()
+	var room := _rooms.room_at(camera.global_position)
+	if room == &"" or room == _camera_room:
+		return
+	_camera_room = room
+	room_changes += 1
+	_switch(_allowed(near(room)), true)
+	worst_check_usec = maxi(worst_check_usec, Time.get_ticks_usec() - began)
 
 
 ## Culls by the room at [param point] (a room nobody is in keeps the last
-## state). Returns the rooms kept on.
+## state), all at once. Returns the rooms kept on.
 func update_from(point: Vector3) -> Dictionary:
-	var room := _layout.room_at(point) if _layout != null else &""
+	var room := _rooms.room_at(point) if _rooms != null else &""
 	if room == &"" or room == _camera_room:
 		return _allowed(near(_camera_room)) if _camera_room != &"" else {}
 	_camera_room = room
 	var keep := _allowed(near(room))
-	for other: StringName in _by_room:
-		set_room(other, keep.has(other))
+	_switch(keep, false)
 	return keep
 
 
@@ -123,9 +161,51 @@ func update_from(point: Vector3) -> Dictionary:
 func refresh() -> void:
 	if _camera_room == &"":
 		return
-	var keep := _allowed(near(_camera_room))
-	for other: StringName in _by_room:
-		set_room(other, keep.has(other))
+	_switch(_allowed(near(_camera_room)), false)
+
+
+## Switches the rooms whose state differs from [param keep] (room ->
+## passages from the camera's room): those coming on nearest first. With
+## [param spread] only the ones within AT_ONCE_DEPTH now, the rest queued
+## (coming on before going off).
+func _switch(keep: Dictionary, spread: bool) -> void:
+	_queue.clear()
+	var coming: Array[StringName] = []
+	var going: Array[StringName] = []
+	for room: StringName in _by_room:
+		var on := keep.has(room)
+		if on == _culled.has(room):
+			if on:
+				coming.append(room)
+			else:
+				going.append(room)
+	coming.sort_custom(func(a: StringName, b: StringName) -> bool: return int(keep[a]) < int(keep[b]))
+	for room in coming:
+		if spread and int(keep[room]) > AT_ONCE_DEPTH:
+			_queue.append([room, true])
+		else:
+			_switch_room(room, true)
+	for room in going:
+		if spread:
+			_queue.append([room, false])
+		else:
+			_switch_room(room, false)
+
+
+## A frame's share of the queue: rooms until the budget is spent (one at
+## least).
+func _work_queue() -> void:
+	var began := Time.get_ticks_usec()
+	while not _queue.is_empty():
+		var entry: Array = _queue.pop_front()
+		_switch_room(entry[0], entry[1])
+		if Time.get_ticks_usec() - began >= spread_budget_usec:
+			return
+
+
+func _switch_room(room: StringName, on: bool) -> void:
+	rooms_switched += 1
+	set_room(room, on)
 
 
 ## [param rooms] (room -> distance) without the rooms outside only_rooms.
@@ -139,8 +219,21 @@ func _allowed(rooms: Dictionary) -> Dictionary:
 	return kept
 
 
-## Rooms at most [member depth] passages from [param room].
+## Rooms at most [member depth] passages from [param room] (room ->
+## passages; worked out once per room and depth - do not change it).
 func near(room: StringName) -> Dictionary:
+	if depth != _near_depth:
+		_near_depth = depth
+		_near_cache.clear()
+	var known: Variant = _near_cache.get(room)
+	if known != null:
+		return known
+	var dist := _near(room)
+	_near_cache[room] = dist
+	return dist
+
+
+func _near(room: StringName) -> Dictionary:
 	var dist := {room: 0}
 	var queue: Array[StringName] = [room]
 	while not queue.is_empty():
@@ -184,6 +277,35 @@ func set_room(room: StringName, on: bool) -> void:
 ## True while [param room] is culled.
 func is_culled(room: StringName) -> bool:
 	return _culled.has(room)
+
+
+## What the culling leaves on right now (the dev overlay): the rooms kept and
+## all of them, the lamps (and those casting shadows) in the kept rooms and
+## all of them, the reflection probes and the burning dust motes kept. A lamp
+## the power cut or a blackout turned off does not count as on.
+func light_stats() -> Dictionary:
+	var out := {"rooms": _by_room.size(), "rooms_on": 0, "lamps": 0, "lamps_on": 0, "shadows_on": 0, "probes_on": 0, "motes_on": 0}
+	for room: StringName in _by_room:
+		var on := not _culled.has(room)
+		if on:
+			out["rooms_on"] += 1
+		var entry: Dictionary = _by_room[room]
+		for node: Variant in entry["render"]:
+			if not is_instance_valid(node):
+				continue
+			if node is Light3D:
+				out["lamps"] += 1
+				if on and (node as Light3D).is_visible_in_tree():
+					out["lamps_on"] += 1
+					if (node as Light3D).shadow_enabled:
+						out["shadows_on"] += 1
+			elif node is ReflectionProbe and on and (node as ReflectionProbe).is_visible_in_tree():
+				out["probes_on"] += 1
+		if on:
+			for node: Variant in entry["motes"]:
+				if is_instance_valid(node) and (node as GPUParticles3D).emitting:
+					out["motes_on"] += 1
+	return out
 
 
 func _show(node: VisualInstance3D, on: bool) -> void:

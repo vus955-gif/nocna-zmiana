@@ -72,6 +72,8 @@ static func piece_look(spec: PieceSpec, index: int, layout: LevelLayout) -> Vari
 		&"shelf":
 			match spec.room:
 				&"enlightenment_library", &"enlightenment_library_gallery":
+					if _is_tool_case(spec):
+						return _tool_bookcase(size, spec.position.y > Enlightenment.UPPER * 0.5)
 					return _holder("Visual")   # the bookcase runs ([method dress])
 				&"enlightenment_cabinet":
 					if _by_rifle(spec, layout):
@@ -231,6 +233,76 @@ static func _bookcase_piece(size: Vector3) -> Node3D:
 	var bays := Enlightenment.bays(-size.x * 0.5, size.x * 0.5)
 	var frame := Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, size.z * 0.5))
 	_run(root, frame, bays, true, 3)
+	return root
+
+
+## True for the library's greybox shelf an env tool takes over (EnvCatalog:
+## a topple of a "shelf" piece; the tool finds it within a metre of its
+## "near", EnvToppleTool._piece_near).
+static func _is_tool_case(spec: PieceSpec) -> bool:
+	for entry in EnvCatalog.tools():
+		if entry.get("kit", &"") == spec.kit and entry.get("room", &"") == spec.room and entry.has("near"):
+			if spec.position.distance_to(entry["near"]) < 1.0:
+				return true
+	return false
+
+
+## The ranges along the library's long wall at [param wall_x] (WEST or
+## EAST) the env tools' bookcases take in [param upper]'s tier (the greybox
+## pieces they topple): each draws its own cases ([method _tool_bookcase]).
+static func tool_cases(wall_x: float, upper: bool) -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	var doors: Array = _doorways(wall_x, upper)
+	for entry in EnvCatalog.tools():
+		if entry.get("kit", &"") != &"shelf" or not entry.has("near"):
+			continue
+		if not [&"enlightenment_library", &"enlightenment_library_gallery"].has(entry.get("room", &"")):
+			continue
+		var near: Vector3 = entry["near"]
+		if absf(near.x - wall_x) > 1.0 or (near.y > Enlightenment.UPPER * 0.5) != upper:
+			continue
+		var span := Enlightenment.shelf_piece(doors, near.z)
+		if span != Vector2.ZERO:
+			out.append(span)
+	return out
+
+
+## What the runs of the long wall at [param wall_x] keep clear of in
+## [param upper]'s tier: its doorways and the env tools' bookcases.
+static func run_clear(wall_x: float, upper: bool) -> Array:
+	var out: Array = _doorways(wall_x, upper).duplicate()
+	out.append_array(tool_cases(wall_x, upper))
+	return out
+
+
+static func _doorways(wall_x: float, upper: bool) -> Array:
+	if absf(wall_x - WEST) < 1.0:
+		return Enlightenment.UP_CLEAR_WEST if upper else Enlightenment.LOW_CLEAR_WEST
+	return Enlightenment.UP_CLEAR_EAST if upper else Enlightenment.LOW_CLEAR_EAST
+
+
+## The look of a wall bookcase an env tool brings down: the run's cases
+## between the run's own end pilasters (the run is cut there,
+## [method run_clear]) and the pilasters between them, without the
+## gallery's iron consoles (they stay with the wall), and an oak back (the
+## run's cases are open behind: face down, its back is what shows). The
+## front of the piece is its -Z, its back on the wall.
+static func _tool_bookcase(size: Vector3, upper: bool) -> Node3D:
+	var root := _holder("Visual")
+	var half := size.x * 0.5 + Enlightenment.PILASTER
+	var bays := Enlightenment.bays(-half, half)
+	var pilasters: Array = bays["pilasters"]
+	bays["pilasters"] = pilasters.slice(1, pilasters.size() - 1)
+	var frame := Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, size.z * 0.5))
+	_run(root, frame, bays, upper, 0, 1.0, false, false)
+	var back := MeshInstance3D.new()
+	back.name = "Back"
+	var board := BoxMesh.new()
+	board.size = Vector3(size.x, 3.3 if upper else SLAB_UNDER, 0.03)
+	back.mesh = board
+	back.material_override = _oak_material()
+	back.position = Vector3(0.0, board.size.y * 0.5, size.z * 0.5 - 0.03)
+	root.add_child(back)
 	return root
 
 
@@ -635,8 +707,8 @@ static func bookcases(root: Node3D) -> void:
 	for tier in 2:
 		var upper := tier == 1
 		var y := Enlightenment.UPPER if upper else 0.0
-		var west := Enlightenment.UP_CLEAR_WEST if upper else Enlightenment.LOW_CLEAR_WEST
-		var east := Enlightenment.UP_CLEAR_EAST if upper else Enlightenment.LOW_CLEAR_EAST
+		var west := run_clear(WEST, upper)
+		var east := run_clear(EAST, upper)
 		for span in Enlightenment.shelf_spans(west):
 			_wall_run(root, Vector3(WEST, y, 0.0), -PI * 0.5, span, upper, 0)
 		for span in Enlightenment.shelf_spans(east):
@@ -663,8 +735,9 @@ static func _wall_run(root: Node3D, wall: Vector3, yaw: float, span: Vector2, up
 ## Places the pilasters and cases of [param bays] in [param frame] (the
 ## wall plane: model -Z into the room); a bay's coordinate c lies at
 ## frame.basis.x * c * [param flip]. The lower tier carries the ladder rail
-## and the gallery's consoles, the long walls' upper tier the busts.
-static func _run(root: Node3D, frame: Transform3D, bays: Dictionary, upper: bool, offset: int, flip: float = 1.0, long_wall: bool = false) -> void:
+## and the gallery's consoles (unless [param consoles] is false), the long
+## walls' upper tier the busts.
+static func _run(root: Node3D, frame: Transform3D, bays: Dictionary, upper: bool, offset: int, flip: float = 1.0, long_wall: bool = false, consoles: bool = true) -> void:
 	var lower_ids := ["lib_bookcase_a_2m", "lib_bookcase_b_2m", "lib_bookcase_c_2m"]
 	var upper_ids := ["lib_bookcase_up_a_2m", "lib_bookcase_up_b_2m"]
 	var pilaster := "lib_bookcase_pilaster_up" if upper else "lib_bookcase_pilaster_low"
@@ -695,7 +768,8 @@ static func _run(root: Node3D, frame: Transform3D, bays: Dictionary, upper: bool
 		ArtKit._add(root, pilaster, Transform3D(frame.basis, at))
 		if not upper:
 			# the iron console: its top under the slab, its back on the pilaster's face
-			ArtKit._add(root, "lib_walkway_bracket", Transform3D(frame.basis, at + frame.basis * Vector3(0.0, SLAB_UNDER - at.y, -0.6)))
+			if consoles:
+				ArtKit._add(root, "lib_walkway_bracket", Transform3D(frame.basis, at + frame.basis * Vector3(0.0, SLAB_UNDER - at.y, -0.6)))
 		elif long_wall and i % BUST_EVERY == BUST_EVERY / 2:
 			var bracket := ArtKit._add(root, "lib_bust_bracket", Transform3D(frame.basis, Vector3(at.x, BUST_Y, at.z)))
 			var spot := ArtLibrary.parts(bracket).get("bust_spot") as Node3D
@@ -789,7 +863,8 @@ static func _ladders(root: Node3D) -> void:
 static func extra_lights() -> Array:
 	var out: Array = []
 	for z: float in LOW_SCONCES_Z:
-		for wall: Array in [[WEST, Enlightenment.LOW_CLEAR_WEST, -PI * 0.5, 1.0], [EAST, Enlightenment.LOW_CLEAR_EAST, PI * 0.5, -1.0]]:
+		# (on the runs' pilasters: never on an env tool's bookcase, which falls)
+		for wall: Array in [[WEST, run_clear(WEST, false), -PI * 0.5, 1.0], [EAST, run_clear(EAST, false), PI * 0.5, -1.0]]:
 			var at := Enlightenment.nearest_pilaster(Enlightenment.shelf_spans(wall[1]), z)
 			var x: float = float(wall[0]) + float(wall[3]) * Enlightenment.SCONCE_OUT
 			out.append({"room": &"enlightenment_library", "position": Vector3(x, LOW_SCONCE_Y, at), "color": Enlightenment.WARM,

@@ -6,7 +6,10 @@ extends RefCounted
 ## greybox fallback (Pickup). Hues at least MIN_HUE_GAP apart, so seven
 ## kinds of ammo read apart under the moon, the lamps and the red emergency
 ## light; the shapes (SILHOUETTES) and the slot digits do the same job for
-## the colour-blind. The medkit is the one white pickup. The Blender side
+## the colour-blind. The option "colour_vision" swaps COLORS for a palette
+## made for deuteranopia, protanopia or tritanopia (ColourVision): the slot
+## and the rims follow it, the baked prints keep these. The medkit is the
+## one white pickup, in every palette. The Blender side
 ## reads the same palette from tools/art/models/_pickup_palette.py (a test
 ## keeps the two in step).
 
@@ -44,9 +47,10 @@ const MIN_HUE_GAP := 20.0
 const MAX_PICKUP_EMISSION := 1.2
 
 
-## The colour of weapon [param weapon] (white for an unknown id).
+## The colour of weapon [param weapon] in the player's colour-vision palette
+## (ColourVision; COLORS in the standard one), white for an unknown id.
 static func color(weapon: StringName) -> Color:
-	return COLORS.get(weapon, Color.WHITE)
+	return ColourVision.weapon(weapon, COLORS.get(weapon, Color.WHITE))
 
 
 ## The colour of the pickups of [param ammo]; the medkit's for &"medkit".

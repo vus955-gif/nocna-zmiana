@@ -23,15 +23,21 @@ const BODIES := {
 ## The physics layer of the stand-in bodies for the props' looks.
 const LOOK_LAYER := 1 << 17
 
+## The tests that change the level (blackouts, culling, quality presets, parts
+## taken away) build their own; all the others look at one built for the file
+## (TestCase.shared_fixture: the runner fails a test that changed it).
+const OWN_LEVEL: Array[StringName] = [
+	&"test_lanterns_hang_on_their_lights_and_the_asian_fires_go_out_in_a_blackout",
+	&"test_a_wings_door_leaf_is_an_optional_hook",
+	&"test_dust_embers_and_petals_in_the_east_wings",
+	&"test_the_assyrian_fires_go_out_in_a_blackout_and_the_moon_stays",
+]
+
 var level: MuseumFloorLevel
 
 
 func before_each() -> void:
-	MuseumFloorLevel.dress_default = true
-	level = MuseumFloorLevel.new()
-	level.bake_navigation = false
-	add_child(level)
-	level.build()
+	level = DressedFloor.build(self) if OWN_LEVEL.has(current_test) else await shared_fixture(&"dressed_floor", DressedFloor.build)
 
 
 func after_each() -> void:

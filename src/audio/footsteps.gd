@@ -230,6 +230,8 @@ func _play(set_name: StringName, level_db: float) -> void:
 	voice.set(&"stream", takes[pick])
 	voice.set(&"volume_db", level_db)
 	voice.set(&"pitch_scale", 1.0 + _rng.randf_range(-PITCH_JITTER, PITCH_JITTER))
+	if voice is AudioStreamPlayer3D and Ambience.enabled:
+		Ambience.acoustics.route_step(voice as AudioStreamPlayer3D, self)   # behind a wall: muffled
 	voice.call(&"play")
 
 

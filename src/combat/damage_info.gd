@@ -28,6 +28,10 @@ var weapon: StringName = &""
 ## A tick of damage over time (a flare burning on its host): it shows no
 ## hit marker and no shield clank, only the damage.
 var periodic: bool = false
+## A hurt that tells the target nothing (a beam of daylight, steam): it
+## takes the damage but is not alarmed - no wake, no notion of where the
+## guard stands - however often it ticks.
+var silent: bool = false
 ## False for a round fired without its impact effects (a gatling dresses
 ## only every other round with sparks: fourteen bursts a second would cost
 ## more than they show).

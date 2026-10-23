@@ -146,7 +146,7 @@ static func _crc32(text: String) -> int:
 
 func test_every_ogg_has_its_fixed_stream_serial() -> void:
 	var files: PackedStringArray = []
-	for dir_path in ["res://assets/music", "res://assets/ambience", "res://assets/ambience/oneshots",
+	for dir_path in ["res://assets/music", "res://assets/ambience", "res://assets/ambience/oneshots", "res://assets/ambience/tails",
 			"res://assets/voice/heniek", "res://assets/voice/system"]:
 		for file in DirAccess.get_files_at(dir_path):
 			if file.ends_with(".ogg"):

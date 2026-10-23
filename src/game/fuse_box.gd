@@ -28,6 +28,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	LevelKit.tag(self, &"fuse_box_front", Vector3(0.7, 0.9, 0.05), &"hall")
+	add_to_group(FuseBoxArt.BOX_GROUP)   # (the cabinet's look finds it there)
 	add_box(Vector3(0.9, 1.0, 0.45), Vector3(0.0, 0.45, -0.1))
 	var dark := Color(0.12, 0.13, 0.12)
 	for side in [-1.0, 1.0]:

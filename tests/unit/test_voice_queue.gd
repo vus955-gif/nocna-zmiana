@@ -69,6 +69,57 @@ func test_a_delay_holds_a_line_back() -> void:
 	assert_eq(_run(5.0), [&"D"] as Array[StringName])
 
 
+func test_a_line_with_an_expiry_is_dropped_once_it_waited_that_long() -> void:
+	queue.push(&"X", VoiceQueue.NORMAL, 0.0, 3.0)
+	_run(2.5, false)
+	assert_true(queue.has(&"X"), "still inside its 3 s")
+	_run(1.0, false)
+	assert_false(queue.has(&"X"), "its moment is gone")
+
+
+func test_an_expiry_counts_from_the_end_of_the_delay() -> void:
+	queue.push(&"X", VoiceQueue.NORMAL, 2.0, 3.0)
+	_run(4.5, false)
+	assert_true(queue.has(&"X"), "2 s of delay + 2.5 s waited")
+	_run(1.0, false)
+	assert_false(queue.has(&"X"), "2 s of delay + 3.5 s waited")
+
+
+func test_an_expiry_holds_for_every_priority() -> void:
+	queue.push(&"E", VoiceQueue.EVENT, 0.0, 3.0)
+	queue.push(&"N", VoiceQueue.NORMAL, 0.0, 3.0)
+	_run(3.5, false)
+	assert_false(queue.has(&"E") or queue.has(&"N"), "an event line's 10 s of patience is cut short too")
+
+
+func test_a_line_with_an_expiry_that_gets_its_turn_in_time_plays() -> void:
+	queue.calm_time = VoiceQueue.CALM_NEEDED
+	queue.push(&"X", VoiceQueue.NORMAL, 0.5, 3.0)
+	assert_eq(_run(1.0), [&"X"] as Array[StringName])
+
+
+func test_a_line_behind_the_gap_after_another_expires_too() -> void:
+	queue.calm_time = VoiceQueue.CALM_NEEDED
+	queue.since_line = 0.0
+	queue.push(&"X", VoiceQueue.NORMAL, 0.0, 3.0)
+	assert_eq(_run(3.5), [] as Array[StringName], "the 20 s of quiet outlast its 3 s")
+	assert_false(queue.has(&"X"))
+
+
+func test_without_an_expiry_a_normal_line_waits_on() -> void:
+	queue.push(&"N", VoiceQueue.NORMAL)
+	_run(120.0, false)
+	assert_true(queue.has(&"N"), "no expiry, not a side remark: it waits for calm as long as it takes")
+
+
+func test_an_interrupted_line_keeps_its_expiry() -> void:
+	queue.calm_time = VoiceQueue.CALM_NEEDED
+	queue.push(&"X", VoiceQueue.NORMAL, 0.0, 3.0)
+	_run(0.2)
+	assert_eq(queue.interrupt(), &"X")
+	assert_eq(float(queue.pending[0].get("expires", 0.0)), 3.0)
+
+
 func test_duplicates_are_ignored() -> void:
 	assert_true(queue.push(&"A", VoiceQueue.NORMAL))
 	assert_false(queue.push(&"A", VoiceQueue.NORMAL))

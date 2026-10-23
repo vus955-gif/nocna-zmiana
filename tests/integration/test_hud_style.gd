@@ -10,6 +10,8 @@ extends TestCase
 
 const WINDOWS: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(1280, 1024)]
 const LANGUAGES: Array[String] = ["en", "pl"]
+## The HUD's size option (see test_hud_layout).
+const SCALES: Array[float] = [0.75, 1.0, 1.25, 1.5]
 
 var _windows: Array[Window] = []
 
@@ -147,24 +149,30 @@ func test_the_top_middle_stacks_without_overlaps_in_every_window_and_language() 
 	for language in LANGUAGES:
 		Settings.set_value(&"language", language, false)
 		for size in WINDOWS:
-			var hud := _full_hud(_window(size))
-			await _settle()
-			var canvas := hud.get_viewport().get_visible_rect().size
-			var where := "%s, window %s" % [language, size]
-			var boss := hud._boss_box.get_global_rect()
-			var toast := hud._toast_plate.get_global_rect()
-			var room := hud._room_card.get_global_rect()
-			var card := hud._card.get_global_rect()
-			var goal := hud._night_plate.get_global_rect()
-			assert_true(hud.boss_bar_shown(), where)
-			assert_false(toast.intersects(boss), "the toast %s under the bar %s: %s" % [toast, boss, where])
-			assert_false(room.intersects(toast), "the room's card %s under the toast %s: %s" % [room, toast, where])
-			assert_false(room.intersects(boss), "the room's card under the bar: " + where)
-			assert_false(card.intersects(room), "the night's card %s under the room's %s: %s" % [card, room, where])
-			assert_false(goal.intersects(boss), "the night's plaque %s beside the bar %s: %s" % [goal, boss, where])
-			for piece in [toast, room, card, hud._hint.get_global_rect()]:
-				assert_almost_eq(piece.get_center().x, canvas.x * 0.5, 1.0, "centred %s: %s" % [piece, where])
-			assert_gt(hud.top_middle_bottom(), room.end.y - 1.0, "the stack's bottom is the room card's: " + where)
+			for hud_scale in SCALES:
+				await _check_top_middle(size, hud_scale, language)
+
+
+func _check_top_middle(size: Vector2i, hud_scale: float, language: String) -> void:
+	Settings.set_value(&"hud_scale", hud_scale, false)
+	var hud := _full_hud(_window(size))
+	await _settle()
+	var canvas := hud.canvas_size()
+	var where := "%s, window %s, HUD size %s" % [language, size, hud_scale]
+	var boss := hud._boss_box.get_global_rect()
+	var toast := hud._toast_plate.get_global_rect()
+	var room := hud._room_card.get_global_rect()
+	var card := hud._card.get_global_rect()
+	var goal := hud._night_plate.get_global_rect()
+	assert_true(hud.boss_bar_shown(), where)
+	assert_false(toast.intersects(boss), "the toast %s under the bar %s: %s" % [toast, boss, where])
+	assert_false(room.intersects(toast), "the room's card %s under the toast %s: %s" % [room, toast, where])
+	assert_false(room.intersects(boss), "the room's card under the bar: " + where)
+	assert_false(card.intersects(room), "the night's card %s under the room's %s: %s" % [card, room, where])
+	assert_false(goal.intersects(boss), "the night's plaque %s beside the bar %s: %s" % [goal, boss, where])
+	for piece in [toast, room, card, hud._hint.get_global_rect()]:
+		assert_almost_eq(piece.get_center().x, canvas.x * 0.5, 1.0, "centred %s: %s" % [piece, where])
+	assert_gt(hud.top_middle_bottom(), (room.end.y - 1.0) * hud_scale, "the stack's bottom (in canvas units) is the room card's: " + where)
 
 
 func test_the_corner_plaques_keep_to_their_corners() -> void:
@@ -236,20 +244,27 @@ func test_the_nights_card_keeps_under_a_discoverys_banner() -> void:
 	for language in LANGUAGES:
 		Settings.set_value(&"language", language, false)
 		for size in WINDOWS:
-			var window := _window(size)
-			var hud := _full_hud(window)
-			var world := WorldHud.new()
-			window.add_child(world)
-			world.top_source = hud.top_middle_bottom
-			hud.below_source = world.banner_bottom
-			world.banner(tr("SECRET_FOUND") % [3, 12], tr("PROMPT_SECRET_PLAQUE"), tr("HUD_HINT_FLOOR1_GOAL"))
-			await _settle()
-			var banner := world._banner.get_global_rect()
-			var card := hud._card.get_global_rect()
-			var where := "%s, window %s" % [language, size]
-			assert_false(card.intersects(banner), "the card %s under the banner %s: %s" % [card, banner, where])
-			assert_false(banner.intersects(hud._room_card.get_global_rect()), "the banner under the room's card: " + where)
-			assert_false(banner.intersects(hud._boss_box.get_global_rect()), "the banner under the bar: " + where)
+			for hud_scale in SCALES:
+				Settings.set_value(&"hud_scale", hud_scale, false)
+				var window := _window(size)
+				var hud := _full_hud(window)
+				var world := WorldHud.new()
+				window.add_child(world)
+				world.top_source = hud.top_middle_bottom
+				hud.below_source = world.banner_bottom
+				world.banner(tr("SECRET_FOUND") % [3, 12], tr("PROMPT_SECRET_PLAQUE"), tr("HUD_HINT_FLOOR1_GOAL"))
+				await _settle()
+				var banner := world._banner.get_global_rect()   # canvas units
+				var card := _in_canvas(hud._card.get_global_rect(), hud_scale)
+				var where := "%s, window %s, HUD size %s" % [language, size, hud_scale]
+				assert_false(card.intersects(banner), "the card %s under the banner %s: %s" % [card, banner, where])
+				assert_false(banner.intersects(_in_canvas(hud._room_card.get_global_rect(), hud_scale)), "the banner under the room's card: " + where)
+				assert_false(banner.intersects(_in_canvas(hud._boss_box.get_global_rect(), hud_scale)), "the banner under the bar: " + where)
+
+
+## A rectangle of the HUD (HUD units) in canvas units.
+func _in_canvas(rect: Rect2, hud_scale: float) -> Rect2:
+	return Rect2(rect.position * hud_scale, rect.size * hud_scale)
 
 
 func test_a_warning_turns_the_toast_red() -> void:

@@ -37,7 +37,7 @@ const KNOWN_UNDRAWN := {
 	"railing@greece_nereid_podium": [0.7, "the end of a balustrade by the podium's wall"],
 	"scaffold@assyria_nimrud": [0.7, "a scaffold of poles: one outline round them, nobody walks through the frame"],
 	"shelf@basement_reserve": [1.1, "the reserve's back-to-back racks: the crates on top in the racks' outline"],
-	"water_tank@roof_plant": [0.7, "the roof tank's legs: one outline under the tank, nobody fits under it"],
+	"water_tank@roof_plant": [1.0, "the roof tank's trestle: one outline round its braced legs, the ladder's foot and the feed pipe beyond them, nobody fits under the tank"],
 }
 ## A stair tower's invisible rails (no balustrade drawn: the walls close a
 ## service flight's sides): the lower flight's inner rail runs on by the

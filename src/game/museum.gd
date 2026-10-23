@@ -447,6 +447,7 @@ func _tune_exhibit(exhibit: Enemy) -> void:
 	DifficultyRules.tune(exhibit, game.difficulty)
 	if floor_level != null:
 		FloorEncounters.tune_from_layout(exhibit, floor_level.layout)
+		FloorScenarios.tune(exhibit, night, floor_level.layout, run)
 	if watch != null and watch.clock.is_witching():
 		NightWatch.boost(exhibit)
 

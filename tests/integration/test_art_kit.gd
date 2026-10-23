@@ -110,7 +110,9 @@ func test_every_kit_model_loads_dressed_within_budget() -> void:
 		var found := ArtLibrary.parts(node)
 		for part: String in ArtLibrary.KIT[id]:
 			assert_true(found.has(part), "%s has part %s" % [id, part])
-		assert_lt(_triangles(node), _budget(String(id)) + 1, "%s within its triangle budget" % id)
+		# the exhibit-sized props keep their own budgets (KIT_PROPS, test_art_props)
+		if not ArtLibrary.KIT_PROPS.has(id):
+			assert_lt(_triangles(node), _budget(String(id)) + 1, "%s within its triangle budget" % id)
 		node.queue_free()
 
 

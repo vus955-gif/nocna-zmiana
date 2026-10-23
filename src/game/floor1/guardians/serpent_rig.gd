@@ -340,7 +340,7 @@ func _uniforms(view: MeshInstance3D, slot: int, glow: float, awake: float, eyes_
 	if flash_changed or _sent_flash[slot] < 0.0:
 		if absf(_sent_flash[slot] - _flash) >= 0.005:
 			_sent_flash[slot] = _flash
-			view.set_instance_shader_parameter(&"flash", _flash)
+			view.set_instance_shader_parameter(&"flash", Flashing.hit_flash(_flash))
 
 
 # --- the greybox ---------------------------------------------------------------------

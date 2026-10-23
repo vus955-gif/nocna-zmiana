@@ -219,6 +219,11 @@ func _stirs_in_place() -> bool:
 	return true
 
 
+## It dozes once its hovering sway has settled too.
+func _may_doze() -> bool:
+	return absf(visual.rotation.z) < DOZE_STILL and _crack_energy == 0.0
+
+
 ## Keeps 8-14 m: approaches (base navigation) from afar or out of sight,
 ## backs off (angled, so it slides along walls instead of pinning itself)
 ## when crowded, circles slowly in between. The path is planned on in any
@@ -282,7 +287,9 @@ func _update_visuals(delta: float) -> void:
 		_inner_light.light_energy = windup * windup * 2.2
 	# a stunned bust tips over on the floor; hovering it sways a little
 	var tilt := 0.55 if brain.is_stunned() else (sin(_time * 1.3) * 0.05 if awake else 0.0)
-	visual.rotation.z = lerpf(visual.rotation.z, tilt, 1.0 - exp(-8.0 * delta))
+	var tilting := lerpf(visual.rotation.z, tilt, 1.0 - exp(-8.0 * delta))
+	if absf(tilting - visual.rotation.z) > 0.000001:
+		visual.rotation.z = tilting
 
 
 func _hovering() -> bool:

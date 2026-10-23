@@ -15,7 +15,8 @@ extends Node3D
 ##   chunk, a tracer, a bullet hole, a light flash), the weapons' (the
 ##   flare's sparks and trail, the gatling's smoke, the muzzles' flashes,
 ##   smoke and casings: MuzzleFx, a speck of Dust) and
-##   the wing guardians' (GuardianLooks: beams, sinews of light, marks).
+##   the wing guardians' (GuardianLooks: beams, sinews of light, marks),
+##   the museum's tools' red tags and a case's broken pane (EnvTag.warm_set).
 ## It removes itself after FRAMES frames. The camera sees it for that long:
 ## call it only while the screen is black.
 
@@ -143,6 +144,9 @@ func _warm_effects() -> void:
 			[Projectile._trail_mesh(), Projectile._additive_material(Flare.GLOW, 1.0)]]:
 		_add(pair[0], pair[1])
 	for material in GuardianLooks.warm_set():
+		_add(_box, material)
+	# the museum's tools' red tags (lit and spent) and a case's broken pane
+	for material in EnvTag.warm_set():
 		_add(_box, material)
 	# the weapons' muzzles: a fire star per flash colour, smoke, casings
 	for node in MuzzleFx.warm_set():

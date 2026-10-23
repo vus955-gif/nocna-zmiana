@@ -48,7 +48,9 @@ const RETURN_BUS := &"SFXReturn"
 const LAYERS: Array[StringName] = [&"hall_air", &"gallery_room", &"mains_hum", &"fluorescent", &"cctv", &"clock", &"hvac", &"dread",
 	# Floor I (tools/music/ambience_floor1.py)
 	&"glass_wind", &"city_hum", &"stone_deep", &"sand_trickle", &"crack_wind", &"cedar_creak", &"fire", &"airy_hall",
-	&"drips", &"clocks", &"library", &"chimes", &"garden", &"paper_rustle", &"far_drums", &"boiler", &"roof_wind"]
+	&"drips", &"clocks", &"library", &"chimes", &"garden", &"paper_rustle", &"far_drums", &"boiler", &"roof_wind",
+	# rain on some nights (tools/music/ambience_story.py; StoryLayer decides)
+	&"rain_glass", &"rain_open"]
 ## Layers that need power (silent in a blackout).
 const ELECTRIC: Array[StringName] = [&"mains_hum", &"fluorescent", &"cctv", &"hvac"]
 ## Zone -> {layer: gain dB}.
@@ -124,20 +126,26 @@ const ROOM_REVERB_DEFAULT := [ReverbZone.Preset.ROOM, 0.25]
 ## A room of Floor I that ROOM_REVERB does not name: a word in its id
 ## first (ROOM_WORD_REVERB), else its zone (ZONE_REVERB).
 const ROOM_WORD_REVERB := {"garden": [ReverbZone.Preset.GARDEN, 0.22], "corridor": [ReverbZone.Preset.CORRIDOR, 0.35],
-	"boiler": [ReverbZone.Preset.CONCRETE, 0.4], "stair": [ReverbZone.Preset.CORRIDOR, 0.4],
-	"library": [ReverbZone.Preset.LIBRARY, 0.3], "rotunda": [ReverbZone.Preset.VAST, 0.4]}
+	"boiler": [ReverbZone.Preset.STEEL, 0.4], "stair": [ReverbZone.Preset.CORRIDOR, 0.4],
+	"library": [ReverbZone.Preset.LIBRARY, 0.3], "rotunda": [ReverbZone.Preset.VAST, 0.4],
+	"store": [ReverbZone.Preset.STORE, 0.25], "cloak": [ReverbZone.Preset.STORE, 0.25], "cellar": [ReverbZone.Preset.STORE, 0.28],
+	"lodge": [ReverbZone.Preset.STORE, 0.25], "closet": [ReverbZone.Preset.STORE, 0.25]}
 const ZONE_REVERB := {
 	&"court": [ReverbZone.Preset.VAST, 0.5], &"entrance": [ReverbZone.Preset.HALL, 0.42], &"booth": [ReverbZone.Preset.ROOM, 0.25],
 	&"egypt": [ReverbZone.Preset.GALLERY, 0.45], &"assyria": [ReverbZone.Preset.GALLERY, 0.4],
 	&"greece": [ReverbZone.Preset.HALL, 0.45], &"enlightenment": [ReverbZone.Preset.LIBRARY, 0.3],
 	&"asia": [ReverbZone.Preset.ROOM, 0.3], &"americas": [ReverbZone.Preset.GALLERY, 0.38],
 	&"north_hall": [ReverbZone.Preset.CORRIDOR, 0.35], &"basement": [ReverbZone.Preset.CONCRETE, 0.38],
-	&"roof": [ReverbZone.Preset.GARDEN, 0.2],
+	&"roof": [ReverbZone.Preset.OPEN, 0.15],
 }
 ## One-shot kind -> number of takes (shot_<kind>_<n>.ogg).
 const SHOTS := {&"thud": 4, &"creak": 5, &"door": 3, &"fall": 4, &"pipe": 2, &"tinkle": 2, &"groan": 2, &"steps": 2,
 	&"glass": 3, &"sand": 3, &"stone": 3, &"beam": 2, &"drip": 3, &"page": 3, &"clock_strike": 3, &"chimes": 2,
-	&"bamboo": 2, &"bell": 2, &"drum": 3, &"ember": 2, &"steam": 2, &"pane": 2, &"car": 2}
+	&"bamboo": 2, &"bell": 2, &"drum": 3, &"ember": 2, &"steam": 2, &"pane": 2, &"car": 2,
+	# the ambient story (StoryLayer, data/audio/ambient_story.json; tools/music/ambience_story.py)
+	&"settle": 3, &"vent_knock": 3, &"vent_surge": 2, &"phantom_steps": 2, &"shift_stone": 2, &"shift_wood": 2,
+	&"shift_metal": 2, &"shift_soft": 2, &"whisper": 4, &"clock_chime": 2, &"clock_wind": 2, &"siren": 2, &"tram": 2,
+	&"radio_chatter": 3, &"thunder": 3}
 ## Zone -> {kind: weight}.
 const ZONE_SHOTS := {
 	&"grand_hall": {&"thud": 3, &"door": 2, &"fall": 1, &"creak": 1, &"tinkle": 1},
@@ -174,12 +182,18 @@ const SHOT_GAP := Vector2(10.0, 24.0)
 const BLACKOUT_GAP := Vector2(6.0, 15.0)
 ## How far from the listener one-shots sound (m).
 const SHOT_DISTANCE := Vector2(10.0, 26.0)
-const MAX_SHOTS := 4
+## Distant sounds at once (the zone's far sounds and the ambient story's).
+const MAX_SHOTS := 5
 ## Seconds of a zone crossfade.
 const FADE := 2.0
 const POLL := 0.25
 ## How fast the listener reverb follows (wet per second).
 const LISTENER_RATE := 0.4
+## dB per second the beds dip or come back (a haven, a sleeping guardian,
+## dead air: StoryLayer's silences).
+const DIP_RATE := 4.0
+## Seconds a bed hushed by a story (the clocks stopping) takes to go and to come back.
+const LAYER_HUSH_FADE := 0.12
 
 ## False in test runs until a test switches it on.
 var enabled: bool = true
@@ -199,6 +213,16 @@ var active: bool = false
 var rng := RandomNumberGenerator.new()
 ## The night in the lobby (reset with the scene unless it announced it).
 var night := NightMood.new()
+## Room acoustics: occlusion of positional sounds, the rooms' tails of shots
+## and blasts (a child made in _ready; data/audio/acoustics.json).
+var acoustics: Acoustics = null
+## The ambient story: rare storytelling sounds, rain, deliberate silences
+## (a child made in _ready; data/audio/ambient_story.json).
+var story_layer: StoryLayer = null
+## Rain tonight (StoryLayer decides; its beds join the rain's zones).
+var rain: bool = false
+## How far the beds are dipped now (dB; follows the story's silences).
+var dip_db: float = 0.0
 
 var _poll: float = 0.0
 var _shot_timer: float = 8.0
@@ -217,11 +241,22 @@ var _birds_in: float = -1.0
 ## only when announced while the scene set up).
 var _event_frame: int = -100
 var _birds: AudioStreamPlayer = null
+## Layer -> seconds it stays hushed (a story: the clocks stop).
+var _layer_hush: Dictionary = {}
+## Layer -> 0..1 how far it is hushed now.
+var _layer_mute: Dictionary = {}
 
 
 func _ready() -> void:
 	enabled = AudioContext.automatic()
 	rng.randomize()
+	Acoustics.ensure_buses()   # the reverb and occlusion buses, also in test runs
+	acoustics = Acoustics.new()
+	acoustics.name = "Acoustics"
+	add_child(acoustics)
+	story_layer = StoryLayer.new()
+	story_layer.name = "Story"
+	add_child(story_layer)
 	for layer in LAYERS:
 		levels[layer] = 0.0
 		targets[layer] = 0.0
@@ -291,10 +326,14 @@ func stop_all() -> void:
 			(child as AudioStreamPlayer3D).stop()
 			remove_child(child)
 			child.queue_free()
+	acoustics.stop_all()
 	if _birds != null:
 		_birds.stop()
 	_birds_in = -1.0
 	_cut_left = 0.0
+	dip_db = 0.0
+	_layer_hush.clear()
+	_layer_mute.clear()
 	_set_listener_wet(0.0)
 
 
@@ -302,6 +341,8 @@ func stop_all() -> void:
 ## listener reverb on the SFX bus, automation state reset.
 func reset() -> void:
 	night.reset()
+	story_layer.reset()
+	rain = false
 	event_zone = &""
 	_event_frame = -100
 	_forget_scene()
@@ -315,6 +356,7 @@ func _forget_scene() -> void:
 	active = false
 	blackout = false
 	_clear_auto_reverb()
+	acoustics.forget()
 	if _sfx_reverb != null:
 		var bus := AudioServer.get_bus_index(SFX_BUS)
 		for i in range(AudioServer.get_bus_effect_count(bus) - 1, -1, -1):
@@ -329,6 +371,12 @@ func listener_reverb() -> AudioEffectReverb:
 	return _sfx_reverb
 
 
+## The reverb zone the listener stands in, as last looked (every POLL s
+## while a scene with the guard runs); null when none or not looked.
+func listener_zone() -> ReverbZone:
+	return _listener_zone if _listener_zone != null and is_instance_valid(_listener_zone) else null
+
+
 func _process(delta: float) -> void:
 	if not enabled or _quitting:
 		return
@@ -341,19 +389,32 @@ func _process(delta: float) -> void:
 			_apply_zone(zone, true)   # same zone, other layers
 		refresh()
 		_update_listener_zone()
+		if active:
+			story_layer.tick(POLL)
+		if rain != (active and story_layer.raining):
+			rain = active and story_layer.raining
+			_apply_zone(zone, true)
 	advance(delta)
 	if _birds_in >= 0.0:
 		_birds_in -= delta
 		if _birds_in < 0.0:
 			play_dawn_birds()
 	if active and not night.dawn:
-		_shot_timer -= delta
-		if _shot_timer <= 0.0:
-			var gap := shot_gap()
-			_shot_timer = rng.randf_range(gap.x, gap.y)
-			var kind := pick_shot_kind()
-			if kind != &"":
-				play_shot(kind)
+		tick_shots(delta)
+
+
+## The zone's far sounds: one every shot_gap() s, unless the story keeps a
+## silence (a haven, a sleeping guardian, dead air, the voice): then that
+## one is skipped.
+func tick_shots(delta: float) -> void:
+	_shot_timer -= delta
+	if _shot_timer > 0.0:
+		return
+	var gap := shot_gap()
+	_shot_timer = rng.randf_range(gap.x, gap.y)
+	var kind := pick_shot_kind()
+	if kind != &"" and not story_layer.story.silent():
+		play_shot(kind)
 
 
 ## Seconds between one-shots (random in the range) right now.
@@ -379,7 +440,17 @@ func power_cut_in(zone_id: StringName) -> bool:
 ## Moves every bed toward its target (and the listener reverb). Right after
 ## the power cut falling layers fade within CUT_FADE s.
 func advance(delta: float) -> void:
+	acoustics.advance(delta)
 	_cut_left = maxf(_cut_left - delta, 0.0)
+	dip_db = move_toward(dip_db, story_layer.story.bed_dip_db() if active else 0.0, delta * DIP_RATE)
+	for layer: StringName in _layer_hush.keys():
+		_layer_hush[layer] = float(_layer_hush[layer]) - delta
+		if float(_layer_hush[layer]) <= 0.0:
+			_layer_hush.erase(layer)
+	for layer: StringName in _layer_mute.keys():
+		_layer_mute[layer] = move_toward(float(_layer_mute[layer]), 1.0 if _layer_hush.has(layer) else 0.0, delta / LAYER_HUSH_FADE)
+		if float(_layer_mute[layer]) <= 0.0 and not _layer_hush.has(layer):
+			_layer_mute.erase(layer)
 	for layer in LAYERS:
 		var fade := CUT_FADE if _cut_left > 0.0 and targets[layer] < levels[layer] else FADE
 		var level: float = move_toward(levels[layer], targets[layer], delta / fade)
@@ -389,7 +460,9 @@ func advance(delta: float) -> void:
 			player = _make_bed(layer)
 		if player == null:
 			continue
-		var level_db := linear_to_db(level) if level > 0.0001 else -80.0
+		var level_db := -80.0
+		if level > 0.0001:
+			level_db = maxf(linear_to_db(level) + dip_db - 70.0 * float(_layer_mute.get(layer, 0.0)), -80.0)
 		if player.volume_db != level_db:
 			player.volume_db = level_db
 		if level > 0.0 and not player.playing and player.stream != null:
@@ -427,13 +500,7 @@ func pick_shot_kind() -> StringName:
 ## [param at]). Returns the player, or null.
 func play_shot(kind: StringName, at: Variant = null) -> AudioStreamPlayer3D:
 	var takes := _shot_streams(kind)
-	if takes.is_empty() or _quitting:
-		return null
-	var count := 0
-	for child in get_children():
-		if child is AudioStreamPlayer3D:
-			count += 1
-	if count >= MAX_SHOTS:
+	if takes.is_empty() or _quitting or _shot_count() >= MAX_SHOTS:
 		return null
 	var where: Variant = at
 	if where == null:
@@ -443,14 +510,26 @@ func play_shot(kind: StringName, at: Variant = null) -> AudioStreamPlayer3D:
 		var angle := rng.randf() * TAU
 		var distance := rng.randf_range(SHOT_DISTANCE.x, SHOT_DISTANCE.y)
 		where = (ears as Vector3) + Vector3(cos(angle) * distance, rng.randf_range(-1.0, 4.0), sin(angle) * distance)
+	return _spawn_far(takes[rng.randi_range(0, takes.size() - 1)], where, SHOT_DB.get(kind, -8.0), rng.randf_range(0.92, 1.06), 14.0)
+
+
+func _shot_count() -> int:
+	var count := 0
+	for child in get_children():
+		if child is AudioStreamPlayer3D and not child.is_queued_for_deletion():
+			count += 1
+	return count
+
+
+func _spawn_far(stream: AudioStream, where: Vector3, db: float, pitch: float, unit: float) -> AudioStreamPlayer3D:
 	var player := AudioStreamPlayer3D.new()
-	player.stream = takes[rng.randi_range(0, takes.size() - 1)]
+	player.stream = stream
 	player.bus = BUS
-	player.volume_db = SHOT_DB.get(kind, -8.0)
-	player.unit_size = 14.0
-	player.max_distance = 90.0
+	player.volume_db = db
+	player.unit_size = unit
+	player.max_distance = 120.0
 	player.area_mask = 0   # the space is baked into the sound
-	player.pitch_scale = rng.randf_range(0.92, 1.06)
+	player.pitch_scale = pitch
 	player.position = where
 	add_child(player)
 	player.play()
@@ -482,11 +561,15 @@ func build_reverb(level: Node) -> Array[ReverbZone]:
 	return made
 
 
-## [preset, send] for a level room: ROOM_REVERB by id, then a word of
-## its id (ROOM_WORD_REVERB), then its Floor I zone (ZONE_REVERB).
+## [preset, send] for a level room: ROOM_REVERB by id, then the room
+## table of data/audio/acoustics.json (every room of Floor I), then a word
+## of its id (ROOM_WORD_REVERB), then its Floor I zone (ZONE_REVERB).
 static func reverb_for(room_id: StringName, room_zone: StringName = &"") -> Array:
 	if ROOM_REVERB.has(room_id):
 		return ROOM_REVERB[room_id]
+	var listed := Acoustics.room_reverb(room_id)
+	if not listed.is_empty():
+		return listed
 	if room_zone != &"":
 		for word: String in ROOM_WORD_REVERB:
 			if String(room_id).contains(word):
@@ -554,6 +637,45 @@ func _apply_zone(next: StringName, force: bool) -> void:
 	if dark and not night.dawn:
 		for layer: StringName in BLACKOUT_LAYERS:
 			targets[layer] = db_to_linear(float(BLACKOUT_LAYERS[layer]))
+	if rain:
+		var mix_rain := rain_mix(zone)
+		for layer: StringName in mix_rain:
+			targets[layer] = db_to_linear(float(mix_rain[layer]))
+
+
+## {layer: dB} of the rain heard in [param zone_id] (the rain's zones of
+## data/audio/ambient_story.json: the zone's own entry, else its parent
+## zone's - egypt_tomb takes egypt's).
+static func rain_mix(zone_id: StringName) -> Dictionary:
+	var zones: Dictionary = AmbientStory.data().get("rain", {}).get("zones", {})
+	var found: Variant = zones.get(String(zone_id))
+	if found == null:
+		found = zones.get(String(zone_id).get_slice("_", 0))
+	var mix := {}
+	if found is Dictionary:
+		for layer: String in found:
+			mix[StringName(layer)] = float(found[layer])
+	return mix
+
+
+## Hushes bed [param layer] for [param seconds] (quickly out, quickly back).
+func hush_layer(layer: StringName, seconds: float) -> void:
+	_layer_hush[layer] = seconds
+	if not _layer_mute.has(layer):
+		_layer_mute[layer] = 0.0
+
+
+## Plays a take of story sound [param kind] at [param at] on the Ambience
+## bus (distance baked in: no zone reverb), [param db] loud, at
+## [param pitch], heard as far as [param unit] makes it. Shares the far
+## sounds' MAX_SHOTS. Returns the player, or null.
+func play_story(kind: StringName, at: Vector3, db: float, pitch: float = 1.0, unit: float = 12.0) -> AudioStreamPlayer3D:
+	var takes := _shot_streams(kind)
+	if takes.is_empty() or _quitting or _shot_count() >= MAX_SHOTS:
+		return null
+	var player := _spawn_far(takes[rng.randi_range(0, takes.size() - 1)], at, db, pitch, unit)
+	player.set_meta(&"story", kind)
+	return player
 
 
 func _make_bed(layer: StringName) -> AudioStreamPlayer:
@@ -664,6 +786,7 @@ func _on_scene_changed() -> void:
 	var game := AudioContext.scene_kind(get_tree().current_scene) == AudioContext.GAME
 	if not night.claims(game):
 		night.reset()   # a scene without a night of its own
+		story_layer.reset()
 	_forget_scene()
 	active = game
 	_modifier_seen = RunState.modifier
@@ -684,8 +807,11 @@ func _has_own_reverb() -> bool:
 ## Sfx voices hear the reverb zones (their layer is not in the default
 ## area_mask).
 func _on_sfx_voice(voice: Node) -> void:
-	if enabled and voice is AudioStreamPlayer3D:
+	if not enabled:
+		return
+	if voice is AudioStreamPlayer3D:
 		(voice as AudioStreamPlayer3D).area_mask |= Layers.REVERB_ZONE
+	acoustics.on_voice(voice)
 
 
 func _on_quitting() -> void:

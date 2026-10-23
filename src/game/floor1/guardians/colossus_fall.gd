@@ -54,6 +54,10 @@ static func make(colossus: Colossus, info: DamageInfo) -> ColossusFall:
 	fall._pivot = Node3D.new()
 	fall._pivot.name = "Pivot"
 	fall.add_child(fall._pivot)
+	# his hit zones go with him (their receivers are freed with the guardian)
+	for hurtbox in model.find_children("*", "Hurtbox", true, false):
+		hurtbox.get_parent().remove_child(hurtbox)
+		hurtbox.queue_free()
 	model.get_parent().remove_child(model)
 	fall._pivot.add_child(model)
 	fall._model = model

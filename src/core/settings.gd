@@ -136,6 +136,38 @@ func reset_to_defaults(persist: bool = false) -> void:
 func apply_all() -> void:
 	for key in SettingsData.keys():
 		_apply(key)
+	GameInput.apply_bindings(data.bindings)
+
+
+## Gives a key or mouse button (KeyBindings code) to [param slot] of
+## [param action]: applied at once, announced as settings_changed(&"bindings"),
+## written with [param persist] or a moment later. Answers like
+## KeyBindings.assign(): {"result", "other"}.
+func bind(action: StringName, slot: int, code: int, persist: bool = false) -> Dictionary:
+	return _bindings_changed(data.bindings.assign(action, slot, code), persist)
+
+
+## Empties a place of an action (never its last key).
+func unbind(action: StringName, slot: int, persist: bool = false) -> Dictionary:
+	return _bindings_changed(data.bindings.clear(action, slot), persist)
+
+
+## All keys back to the defaults.
+func reset_bindings(persist: bool = false) -> void:
+	data.bindings.reset_all()
+	_bindings_changed({"result": KeyBindings.Result.OK, "other": &""}, persist)
+
+
+func _bindings_changed(answer: Dictionary, persist: bool) -> Dictionary:
+	var result: int = answer["result"]
+	if result == KeyBindings.Result.OK or result == KeyBindings.Result.SWAPPED or result == KeyBindings.Result.MOVED:
+		GameInput.apply_bindings(data.bindings)
+		settings_changed.emit(&"bindings")
+		if persist:
+			save()
+		else:
+			_schedule_save()
+	return answer
 
 
 ## F11: fullscreen <-> the windowed mode used before.
@@ -202,6 +234,9 @@ func _apply(key: StringName) -> void:
 			TranslationServer.set_locale(data.language)
 		&"graphics_quality":
 			GraphicsQuality.apply_all(get_tree() if is_inside_tree() else null, data.graphics_quality)
+		&"colour_vision":
+			# the pickups' rims; the HUD follows settings_changed itself
+			ArtLibrary.refresh_pickup_rims()
 
 
 func _apply_volume(key: StringName) -> void:

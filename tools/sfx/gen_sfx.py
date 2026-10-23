@@ -410,6 +410,35 @@ def espresso():
     return mix((hiss, 0.9), (pump, 0.5), (drips, 0.5), (clink, 0.6))
 
 
+
+# --- the museum's story (plan 2026-10-21-opowiesc-muzeum) ----------------------
+
+def dial_click():
+    """A brass dial or a clockwork key turned one notch: a light tick and a
+    tiny ring."""
+    return mix((crack(0.02, 4000, 0.003), 0.8), (clang(0.12, [3100, 4700, 6900], 0.025), 0.5))
+
+
+def automaton_song():
+    """The singing bird automaton: six short chirps, a breath, one long trill
+    (six planets, then the sun), the clockwork whirring under it all."""
+    def chirp(seconds, f0, f1):
+        length = n(seconds)
+        tone = osc(length, lambda t: f0 * (f1 / f0) ** (t / seconds) * (1.0 + 0.02 * math.sin(2.0 * math.pi * 38.0 * t)), "sine")
+        return mul(tone, env_hump(length, 0.25))
+    layers = []
+    for k in range(6):
+        layers.append((delay(chirp(0.13, 2700 + 60 * k, 3500 + 40 * k), 0.15 + 0.3 * k), 0.8))
+    trill_at, trill_len = 2.15, 1.5
+    length = n(trill_len)
+    trill = mul(osc(length, lambda t: 3100.0 + (350.0 if math.sin(2.0 * math.pi * 17.0 * t) > 0.0 else 0.0), "sine"), env_adsr(length, 0.05, 0.5))
+    layers.append((delay(trill, trill_at), 0.75))
+    whirr_len = n(trill_at + trill_len + 0.1)
+    whirr = mul(bandpass(noise(whirr_len), 700, 2500), mul(flutter(whirr_len, 14.0, 0.8), env_adsr(whirr_len, 0.05, 0.3)))
+    layers.append((whirr, 0.12))
+    return mix(*layers)
+
+
 # --- the night in the lobby: fuses, the grate, the crystal, the clock --------
 
 def relay():
@@ -892,6 +921,9 @@ SOUNDS = {
     "locker": locker,
     "cafe_flap": cafe_flap,
     "espresso": espresso,
+    # the museum's story: the curios
+    "dial_click": dial_click,
+    "automaton_song": automaton_song,
     # content: gatling, flare gun, raptor, portrait, upgrades
     "gatling_crank": gatling_crank,
     "gatling_spin": gatling_spin,
@@ -983,6 +1015,8 @@ LEVELS = {
     "locker": -5.0,
     "cafe_flap": -6.0,
     "espresso": -9.0,
+    "dial_click": -10.0,
+    "automaton_song": -6.0,
     "gatling_spin": -12.0,
     "gatling_crank": -5.0,
     "gatling_stop": -7.0,

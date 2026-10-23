@@ -44,6 +44,9 @@ const LEDS_AT := Vector3(1.98, 1.62, 0.0)
 const STATUS_SIZE := Vector2i(256, 192)
 ## Rooms listed by name on the status screen; past that, "+n more".
 const STATUS_ROOMS := 4
+## With a [member log_source] the status screen turns its page every this
+## many seconds: motion, then the shift's log (plan 2026-10-21-opowiesc-muzeum).
+const STATUS_PAGE := 5.0
 const SCREEN_SHADER := preload("res://src/world/cctv_screen.gdshader")
 ## The art's monitor bank stands on the rack at desk height, centred.
 const BANK_MODEL := &"cctv_bank"
@@ -84,9 +87,16 @@ var environment: Environment
 var active: bool = false
 ## Room id -> true while an exhibit is awake there.
 var motion_rooms: Dictionary = {}
+## -> the shift's log for the status screen's second page (PackedStringArray;
+## ShiftLog.lines); unset: the motion page only.
+var log_source: Callable = Callable()
+## room id -> true when the room's wing is at rest (its feed says so); unset: never.
+var calm_source: Callable = Callable()
 
 var _status: SubViewport
 var _status_lines: Label
+var _status_log: Label = null
+var _page_time: float = 0.0
 var _next: int = 0
 var _render_left: float = 0.0
 var _check_left: float = 0.0
@@ -173,6 +183,7 @@ func guard() -> Player:
 
 func _process(delta: float) -> void:
 	_time += delta
+	_page_time += delta
 	_check_left -= delta
 	if _check_left <= 0.0:
 		_check_left = CHECK_INTERVAL
@@ -195,6 +206,7 @@ func _process(delta: float) -> void:
 		_render_left = maxf(_render_left + interval, 0.0)
 		var feed := feeds[_next]
 		feed.set_motion(bool(motion_rooms.get(feed.spec.room, false)))
+		feed.set_calm(calm_source.is_valid() and bool(calm_source.call(feed.spec.room)))
 		feed.render_once(CctvCatalog.clock_text(night_seconds()))
 		_next = (_next + 1) % feeds.size()
 	for i in feeds.size():
@@ -369,6 +381,17 @@ func _build_status(wall: Node3D, front: float) -> void:
 	_status_lines.position = Vector2(14, 10)
 	_status_lines.size = Vector2(STATUS_SIZE) - Vector2(28, 20)
 	_status.add_child(_status_lines)
+	# the shift's log page: a size smaller, its eight lines fit the screen
+	var small := settings.duplicate() as LabelSettings
+	small.font_size = 15
+	small.line_spacing = 1.0
+	_status_log = Label.new()
+	_status_log.name = "Log"
+	_status_log.label_settings = small
+	_status_log.position = Vector2(14, 8)
+	_status_log.size = Vector2(STATUS_SIZE) - Vector2(28, 16)
+	_status_log.visible = false
+	_status.add_child(_status_log)
 	var housing := Vector3(0.6, 0.5, 0.28)
 	var middle := Vector3(STATUS_AT.x, STATUS_AT.y, front - housing.z * 0.5)
 	_box(wall, housing, middle, _solid(Color(0.19, 0.19, 0.2), 0.55, 0.1))
@@ -384,9 +407,21 @@ func _build_status(wall: Node3D, front: float) -> void:
 	_update_status()
 
 
-## Night, clock, cameras and the rooms where something moves.
+## Night, clock, cameras and the rooms where something moves; with a
+## [member log_source], every other STATUS_PAGE s the shift's log instead.
 func _update_status() -> void:
 	if _status_lines == null:
+		return
+	var log_page := showing_log()
+	if _status_log != null and _status_log.visible != log_page:
+		_status_log.visible = log_page
+		_status_lines.visible = not log_page
+		_status.render_target_update_mode = SubViewport.UPDATE_ONCE
+	if log_page:
+		var log_text := "\n".join(log_source.call() as PackedStringArray)
+		if log_text != _status_log.text:
+			_status_log.text = log_text
+			_status.render_target_update_mode = SubViewport.UPDATE_ONCE
 		return
 	var moving: Array[String] = []
 	for spec in cameras:
@@ -410,6 +445,18 @@ func _update_status() -> void:
 	if text != _status_lines.text:
 		_status_lines.text = text
 		_status.render_target_update_mode = SubViewport.UPDATE_ONCE
+
+
+## True while the status screen shows the shift's log page.
+func showing_log() -> bool:
+	return log_source.is_valid() and int(_page_time / STATUS_PAGE) % 2 == 1
+
+
+## The text on the status screen now.
+func status_text() -> String:
+	if showing_log() and _status_log != null:
+		return _status_log.text
+	return _status_lines.text if _status_lines != null else ""
 
 
 ## A rack of blinking indicator lamps on the left of the monitors.

@@ -11,7 +11,7 @@ extends RefCounted
 ## - [method piece_look]: the Temple of the Serpent's terraces (carved faces
 ##   set into their stone, corners, gaps for the flights), the altar house,
 ##   the altars, the fire bowls, basalt plinths; the North America hall's
-##   tipi, bison and kayak (procedural: the kit has none), the cases of masks,
+##   tipi, bison and kayak on its stand, the cases of masks,
 ##   feathers, ancestor figures, the turquoise serpent and bark cloth, the
 ##   totem poles, the moai on its plinth, the whaleboat, the whaling display
 ##   and the harpoon gun's stand, the war canoe hanging over the collapsed
@@ -41,6 +41,8 @@ const MODELS: Array[String] = [
 	"serpent_mosaic", "feather_case", "tapa_hanging", "totem_pole_memorial", "totem_pole_house",
 	"totem_pole_welcome", "totem_log", "moai", "war_canoe", "harpoon_stand", "whaling_rack", "pacific_post",
 	"turquoise_mask", "rock_a", "rock_b",
+	# props modelled in Blender in place of the procedural solids (plan 2026-10-21-modele-blender.md)
+	"bison", "kayak", "kayak_stand", "whaleboat", "tipi",
 ]
 ## The terraces' carved faces stand into their stone by this much (the
 ## talud's foot is 0.5 m deep: 0.26 m of it before the collision's face, so
@@ -130,12 +132,9 @@ const MAT_LIFT := 0.012
 const JAGUAR_MAT := 1.5
 const TOTEM_MAT := 0.9
 const TURQUOISE := Color(0.2, 0.65, 0.6)
-## Horn and hide of the procedural exhibits.
-const HORN := Color(0.12, 0.11, 0.1)
-const HIDE := Color(0.42, 0.32, 0.22)
-const BLACK := Color(0.04, 0.035, 0.03)
-## Whitewashed strakes of the whaleboat.
-const WHITEWASH := Color(0.86, 0.86, 0.8)
+## The greybox pedestal the kayak_stand model is built for (its cradles meet
+## the kayak's keel over its top).
+const KAYAK_STAND := Vector3(1.0, 0.9, 5.4)
 
 static var _basalt: Material = null
 static var _stone_local: Material = null
@@ -306,21 +305,6 @@ static func _wood() -> Material:
 	return _tile("asy_cedar")
 
 
-## A sphere of [param size] (its full extents) centred at [param at].
-static func _blob(parent: Node3D, at: Vector3, size: Vector3, material: Material) -> MeshInstance3D:
-	var mesh := SphereMesh.new()
-	mesh.radius = 0.5
-	mesh.height = 1.0
-	mesh.radial_segments = 24
-	mesh.rings = 12
-	var view := MeshInstance3D.new()
-	view.mesh = mesh
-	view.material_override = material
-	view.transform = Transform3D(Basis.from_scale(size), at)
-	parent.add_child(view)
-	return view
-
-
 ## A block of basalt filling [param size] with a brass plaque on its front.
 static func _plaqued_block(size: Vector3) -> Node3D:
 	var root := _basalt_block(size)
@@ -341,217 +325,43 @@ static func _moai(size: Vector3) -> Node3D:
 	return root
 
 
-## A tipi of painted hide filling its box: the cover a cone of bark-cloth
-## print over nine cedar poles crossing over its smoke hole, a dark door on
-## its front, two smoke flaps.
+## A Plains tipi filling its box, its door to the front (-Z): the tipi
+## model (a painted cover of smoked hide on its lodgepoles, smoke flaps on
+## their poles, the oval door, pegs round its foot).
 static func _tipi(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var base_r := minf(size.x, size.z) * 0.5 - 0.05
-	var top_r := 0.22
-	var cover_h := size.y - 0.5
-	var cone := CylinderMesh.new()
-	cone.bottom_radius = base_r
-	cone.top_radius = top_r
-	cone.height = cover_h
-	cone.radial_segments = 28
-	cone.rings = 2
-	cone.cap_top = false
-	cone.cap_bottom = false
-	var cover := MeshInstance3D.new()
-	cover.name = "Cover"
-	cover.mesh = cone
-	cover.material_override = _tile("am_tapa", Color(0.92, 0.84, 0.72))
-	cover.position = Vector3(0.0, cover_h * 0.5, 0.0)
-	root.add_child(cover)
-	var lean := atan2(base_r - top_r, cover_h)
-	var apex := Vector3(0.0, cover_h - 0.25, 0.0)
-	for k in 9:
-		var a := TAU * k / 9.0 + 0.17
-		var foot := Vector3(cos(a), 0.0, sin(a)) * (base_r - 0.04)
-		var tip := foot + (apex - foot) * (size.y / apex.y)
-		_rod(root, foot, tip, 0.035, _wood())
-	# the door: a dark opening in the cover on its front (-Z)
-	var door_y := 0.7
-	var r_door := base_r - (base_r - top_r) * door_y / cover_h
-	_solid(root, AABB(Vector3(-0.35, -0.65, -0.01), Vector3(0.7, 1.3, 0.02)), _plain(BLACK, 1.0)).transform = Transform3D(Basis(Vector3.RIGHT, lean), Vector3(0.0, door_y, -r_door - 0.012))
-	# the smoke flaps either side of the smoke hole, turned out
-	for side: float in [-1.0, 1.0]:
-		var a2 := PI * 0.5 + side * 0.45
-		var y := cover_h - 0.9
-		var r_flap := base_r - (base_r - top_r) * y / cover_h + 0.02
-		var at := Vector3(-cos(a2) * r_flap, y, -sin(a2) * r_flap)
-		var flap := _solid(root, AABB(Vector3(-0.22, -0.6, -0.01), Vector3(0.44, 1.2, 0.02)), cover.material_override)
-		# (tangent to the cover where it stands, flared out from its lean)
-		flap.transform = Transform3D(Basis(Vector3.UP, -side * 0.45) * Basis(Vector3.RIGHT, lean - 0.3), at)
+	Floor1Art.fit_model(root, "tipi", size)
 	return root
 
 
-## A plains bison filling its box, turned to the hall's shutter (its head
-## low to the front): the body, the hump and the shaggy forequarters, the
-## head with its beard and horns, four legs, a tail; short brown fur (a
-## speckled field, tinted) and a long darker shag (the thatch field).
+## A plains bison bull filling its box, an old museum mount (the bison
+## model), turned to the hall's shutter (its head low to +Z).
 static func _bison(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var k := Vector3(size.x / 1.5, size.y / 1.9, size.z / 3.0)
-	var body := _holder("Bison")
-	body.basis = Basis(Vector3.UP, PI).scaled(k)
-	root.add_child(body)
-	var fur := _tile("gravel_plain", Color(0.42, 0.3, 0.2))
-	var shag := _tile("thatch", Color(0.3, 0.2, 0.13))
-	var horn := _plain(HORN, 0.5)
-	var dz := 0.12
-	_blob(body, Vector3(0.0, 1.05, 0.35 + dz), Vector3(1.2, 0.95, 1.8), fur)
-	_blob(body, Vector3(0.0, 1.42, -0.35 + dz), Vector3(1.1, 0.95, 1.05), shag)
-	_blob(body, Vector3(0.0, 1.08, -0.62 + dz), Vector3(1.25, 1.15, 0.95), shag)
-	_blob(body, Vector3(0.0, 0.82, -1.18 + dz), Vector3(0.58, 0.62, 0.66), fur)
-	_blob(body, Vector3(0.0, 0.68, -1.45 + dz), Vector3(0.42, 0.36, 0.36), fur)
-	_rod(body, Vector3(0.0, 0.62, -1.3 + dz), Vector3(0.0, 0.32, -1.36 + dz), 0.12, shag, 0.03)
-	for side: float in [-1.0, 1.0]:
-		var root_h := Vector3(side * 0.24, 1.02, -1.2 + dz)
-		var bend := Vector3(side * 0.44, 1.06, -1.18 + dz)
-		_rod(body, root_h, bend, 0.05, horn, 0.035)
-		_rod(body, bend, Vector3(side * 0.5, 1.24, -1.24 + dz), 0.035, horn, 0.008)
-		for z: float in [-0.62, 0.92]:
-			# a tapering leg (thick at the shoulder, thin at the fetlock) on a dark hoof
-			_rod(body, Vector3(side * 0.33, 0.78, z + dz), Vector3(side * 0.31, 0.08, z + dz + 0.03), 0.11, shag if z < 0.0 else fur, 0.055)
-			_rod(body, Vector3(side * 0.31, 0.0, z + dz + 0.04), Vector3(side * 0.31, 0.09, z + dz + 0.03), 0.07, horn, 0.06)
-	_rod(body, Vector3(0.0, 1.22, 1.22 + dz), Vector3(0.0, 0.8, 1.36), 0.03, fur)
-	_blob(body, Vector3(0.0, 0.76, 1.37), Vector3(0.1, 0.18, 0.1), shag)
+	Floor1Art.fit_model(root, "bison", size, PI)
 	return root
 
 
-## The kayak's stand filling its greybox pedestal: a low basalt base with two
-## cedar trestles under the hull.
+## The kayak's stand filling its greybox pedestal: the kayak_stand model (a
+## low basalt plinth, two driftwood cradles padded with felt under the
+## kayak's keel, a label to the hall), built for the pedestal KAYAK_STAND.
 static func _kayak_stand(size: Vector3) -> Node3D:
-	var root := _holder("Visual")
-	var base := 0.25
-	_solid(root, AABB(Vector3(-size.x * 0.5, 0.0, -size.z * 0.5), Vector3(size.x, base, size.z)), basalt())
-	for z: float in [-size.z * 0.3, size.z * 0.3]:
-		for side: float in [-1.0, 1.0]:
-			_rod(root, Vector3(side * (size.x * 0.5 - 0.1), base, z), Vector3(side * 0.12, size.y - 0.04, z), 0.035, _wood())
-		_rod(root, Vector3(-0.32, size.y - 0.04, z), Vector3(0.32, size.y - 0.04, z), 0.04, _wood())
-	return root
+	return _fit("kayak_stand", size / KAYAK_STAND)
 
 
-## A dugout's hull along +Z ([param length] long, open side up, its gunwales
-## at y 0 rising at the ends, its keel [param depth] down): HookLock's canoe
-## shape with its inside drawn too (a second surface wound the other way).
-static func hull_mesh(length: float, beam: float, depth: float) -> ArrayMesh:
-	var stations := 18
-	var around := 9
-	var rings: Array[PackedVector3Array] = []
-	for i in stations + 1:
-		var t := float(i) / stations
-		var taper := pow(sin(PI * t), 0.55)
-		var lift := pow(absf(t - 0.5) * 2.0, 3.0) * depth * 0.9   # the ends rise
-		var ring := PackedVector3Array()
-		for k in around + 1:
-			var a := PI * float(k) / around   # one gunwale, through the keel, to the other
-			ring.append(Vector3(cos(a) * beam * 0.5 * taper, -sin(a) * depth * maxf(taper, 0.15) + lift, t * length))
-		rings.append(ring)
-	var mesh := ArrayMesh.new()
-	for inner in [false, true]:
-		var st := SurfaceTool.new()
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for i in stations:
-			for k in around:
-				var quad: Array[Vector3] = [rings[i][k], rings[i][k + 1], rings[i + 1][k + 1], rings[i + 1][k]]
-				var order := [0, 2, 1, 0, 3, 2] if inner else [0, 1, 2, 0, 2, 3]
-				for n: int in order:
-					st.set_uv(Vector2(quad[n].x, quad[n].z))
-					st.add_vertex(quad[n])
-		st.generate_normals()
-		st.commit(mesh)
-	return mesh
-
-
-## The flat deck of a kayak over its hull from the bow to the cockpit and on
-## from the cockpit to the stern ([param open] = the cockpit's share of the
-## length), following the gunwales' outline.
-static func _deck_mesh(length: float, beam: float, depth: float, open: Vector2) -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var stations := 18
-	for i in stations:
-		var t0 := float(i) / stations
-		var t1 := float(i + 1) / stations
-		if t1 > open.x and t0 < open.y:
-			continue
-		var pts: Array[Vector3] = []
-		for t: float in [t0, t1]:
-			var half := beam * 0.5 * pow(sin(PI * t), 0.55)
-			var lift := pow(absf(t - 0.5) * 2.0, 3.0) * depth * 0.9
-			pts.append(Vector3(-half, lift, t * length))
-			pts.append(Vector3(half, lift, t * length))
-		for p: Vector3 in [pts[0], pts[2], pts[1], pts[1], pts[2], pts[3]]:
-			st.set_uv(Vector2(p.x, p.z))
-			st.add_vertex(p)
-	st.generate_normals()
-	return st.commit()
-
-
-## An Arctic kayak filling its box (along z, on its stand): a sealskin hull
-## decked fore and aft, the cockpit's wooden coaming, a double paddle laid
-## across the deck.
+## An Arctic skin kayak filling its box on the stand (the kayak model: a
+## sealskin hull, the cockpit's coaming, thongs and a paddle on its deck).
 static func _kayak(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var depth := size.y - 0.02
-	var skin := _plain(HIDE, 0.65)
-	var hull := MeshInstance3D.new()
-	hull.mesh = hull_mesh(size.z, size.x, depth)
-	hull.material_override = skin
-	hull.position = Vector3(0.0, depth, -size.z * 0.5)
-	root.add_child(hull)
-	var deck := MeshInstance3D.new()
-	deck.mesh = _deck_mesh(size.z, size.x, depth, Vector2(0.41, 0.59))
-	deck.material_override = skin
-	deck.position = hull.position + Vector3(0.0, 0.004, 0.0)
-	root.add_child(deck)
-	var ring := TorusMesh.new()
-	ring.inner_radius = size.x * 0.36
-	ring.outer_radius = size.x * 0.44
-	ring.rings = 24
-	ring.ring_segments = 6
-	var coaming := MeshInstance3D.new()
-	coaming.mesh = ring
-	coaming.material_override = _wood()
-	coaming.transform = Transform3D(Basis.from_scale(Vector3(1.0, 0.8, 1.45)), Vector3(0.0, depth + 0.01, 0.0))
-	root.add_child(coaming)
-	var paddle_y := depth + 0.06
-	_rod(root, Vector3(-0.16, paddle_y, -1.4), Vector3(0.16, paddle_y, 1.4), 0.018, _wood())
-	for end: float in [-1.0, 1.0]:
-		var at := Vector3(end * 0.18, paddle_y, end * 1.57)
-		var blade := _solid(root, AABB(Vector3(-0.06, -0.005, -0.22), Vector3(0.12, 0.01, 0.44)), _wood())
-		blade.transform = Transform3D(Basis(Vector3.UP, atan2(0.32, 2.8)), at)
+	Floor1Art.fit_model(root, "kayak", size)
 	return root
 
 
-## A whaleboat on two trestles filling its box (along z): whitewashed
-## strakes, four thwarts, oars laid along the thwarts.
+## A New England whaleboat on two trestles filling its box (the whaleboat
+## model: white lapstrake hull, thwarts, oars, line tubs, irons at the bow).
 static func _whaleboat(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var trestle := 0.4
-	var depth := size.y - trestle
-	for z: float in [-size.z * 0.3, size.z * 0.3]:
-		for side: float in [-1.0, 1.0]:
-			_rod(root, Vector3(side * 0.6, 0.0, z), Vector3(side * 0.22, trestle + 0.06, z), 0.04, _wood())
-		_rod(root, Vector3(-0.5, trestle, z), Vector3(0.5, trestle, z), 0.05, _wood())
-	var hull := MeshInstance3D.new()
-	hull.mesh = hull_mesh(size.z, size.x, depth)
-	hull.material_override = _tile("boards", WHITEWASH)
-	hull.position = Vector3(0.0, size.y, -size.z * 0.5)
-	root.add_child(hull)
-	var board := _tile("boards")
-	for t: float in [0.24, 0.4, 0.6, 0.76]:
-		var half := size.x * 0.5 * pow(sin(PI * t), 0.55) - 0.12
-		var z := (t - 0.5) * size.z
-		_solid(root, AABB(Vector3(-half, size.y - 0.24, z - 0.12), Vector3(half * 2.0, 0.035, 0.24)), board)
-	for side: float in [-1.0, 1.0]:
-		var x := side * 0.32
-		var oar_y := size.y - 0.12
-		_rod(root, Vector3(x, oar_y, -size.z * 0.36), Vector3(x * 0.8, oar_y, size.z * 0.36), 0.025, _wood())
-		var blade := _solid(root, AABB(Vector3(-0.07, -0.01, -0.3), Vector3(0.14, 0.02, 0.6)), _wood())
-		blade.position = Vector3(x * 0.8, oar_y, size.z * 0.36 - 0.3)
+	Floor1Art.fit_model(root, "whaleboat", size)
 	return root
 
 

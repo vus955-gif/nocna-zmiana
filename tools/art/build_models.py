@@ -73,6 +73,9 @@ ALL = [
     # the voice (docs/superpowers/specs/2026-10-08-glos-projekt.md): the System's wall loudspeaker and
     # the audio-guide stand
     "loudspeaker", "audioguide_stand",
+    # Floor I props modelled in place of the art modules' procedural solids
+    # (docs/superpowers/plans/2026-10-21-modele-blender.md)
+    "bison", "asy_lion_pit", "americas_boats", "tipi", "garden_plants", "roof_water_tank", "roof_air_handler", "roof_chimneys", "roof_pigeon_loft", "asy_scaffold", "rr_dome_lantern",
 ]
 
 

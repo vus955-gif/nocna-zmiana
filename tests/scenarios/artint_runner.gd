@@ -6,6 +6,8 @@ extends Node
 ## a pose (their state set by hand, the rig posed frame by frame) so every
 ## shot is repeatable; kills and the T-Rex collapse run live.
 ## Usage: bash tools/run_artint.sh [--shots=exhibits,dark,gibs,trex,weapons,props] [--perf]
+## (--shots=fp: the first-person animation poses, frozen at their moments;
+## not in the default groups)
 ## --perf: ~30 exhibits chase a stand-in guard across the hall, measured
 ## with the models and again with the greybox (uncapped: --disable-vsync).
 
@@ -314,6 +316,101 @@ func _shots_weapons() -> void:
 	player.queue_free()
 	player = null
 	camera.current = true
+
+
+# --- first-person animation poses (plan 2026-10-21-animacje-fpp) ------------
+# Not in the default groups: --shots=fp. Each pose is caught at its moment
+# and frozen (Engine.time_scale 0) for the shot.
+
+func _shots_fp() -> void:
+	player = Player.new()
+	_stage.add_child(player)
+	player.respawn(Vector3(0.5, 0.05, 12.5), 0.15)
+	var holder := player.weapons
+	for id in [&"pistol", &"shotgun", &"gatling", &"flare", &"rifle_hunt"]:
+		holder.give(load("res://src/weapons/data/%s.tres" % id))
+	player.camera.current = true
+	holder.select_id(&"pistol")
+	await _seconds(0.8)
+	await _frozen_shot("fp_idle_pistol")
+	# the switch: the pistol going down, the shotgun coming up
+	holder.select_id(&"shotgun")
+	await _until(func() -> bool: return holder._switch.lower(&"pistol") >= 0.5)
+	await _frozen_shot("fp_switch_pistol_down")
+	await _until(func() -> bool: return holder._switch.holstering().is_empty() and holder._switch.lower(&"shotgun") <= 0.45)
+	await _frozen_shot("fp_switch_shotgun_up")
+	await _seconds(0.6)
+	# the run's carry per grip class
+	for id in [&"pistol", &"shotgun", &"gatling"]:
+		holder.select_id(id)
+		await _seconds(0.9)
+		Engine.time_scale = 0.0
+		holder._sprint_pose = 1.0
+		holder._sprint_pose_v = 0.0
+		holder._bob_time = PI * 0.5
+		await _shot("fp_sprint_%s" % id)
+		holder._sprint_pose = 0.0
+		Engine.time_scale = 1.0
+	# reloads at their keyed moments
+	for entry in [[&"pistol", 0.24, "tipped"], [&"pistol", 0.6, "seat"], [&"shotgun", 0.5, "open"], [&"shotgun", 0.84, "flick"], [&"flare", 0.5, "open"]]:
+		var id: StringName = entry[0]
+		holder.select_id(id)
+		await _seconds(0.9)
+		var state := holder.current_state()
+		state.magazine = 0
+		state.reserve = maxi(state.reserve, state.data.magazine_size * 2)
+		holder.try_reload()
+		var at: float = entry[1]
+		await _until(func() -> bool: return state.is_reloading() and state.reload_progress() >= at)
+		await _frozen_shot("fp_reload_%s_%s" % [id, entry[2]])
+		await _until(func() -> bool: return not state.is_reloading())
+	# blows at the hit, reaches at the hold
+	for entry in [[&"pistol", "jab", ViewmodelGesture.JAB_HIT_AT], [&"shotgun", "bash", 0.17], [&"gatling", "shove", 0.17]]:
+		holder.select_id(entry[0])
+		await _seconds(0.9)
+		holder.fists._cooldown = 0.0
+		holder.try_punch()
+		var hit: float = entry[2]
+		await _until(func() -> bool: return holder._gesture.t >= hit)
+		await _frozen_shot("fp_%s_%s" % [entry[1], entry[0]])
+		await _seconds(0.5)
+	for entry in [[&"pistol", 0.27], [&"shotgun", ViewmodelGesture.TWO_HAND_AT + 0.27]]:
+		holder.select_id(entry[0])
+		await _seconds(0.9)
+		holder.reach()
+		var hold: float = entry[1]
+		await _until(func() -> bool: return holder._gesture.t >= hold)
+		await _frozen_shot("fp_reach_%s" % entry[0])
+		await _seconds(1.0)
+	# the first look's two beats
+	for id in [&"pistol", &"shotgun", &"gatling"]:
+		holder.select_id(id)
+		await _seconds(0.9)
+		var rig := holder.view_of(id) as ViewmodelRig
+		rig.look_over()
+		var whole := rig.first_look_time()
+		for beat in [0.4, 0.8]:
+			await _until(func() -> bool: return rig.looking_over() <= whole * (1.0 - beat))
+			await _frozen_shot("fp_look_%s_%d" % [id, roundi(beat * 10.0)])
+		await _seconds(0.6)
+	player.queue_free()
+	player = null
+	camera.current = true
+
+
+## Steps frames until [param cond] holds (at most [param limit] s).
+func _until(cond: Callable, limit: float = 4.0) -> void:
+	var waited := 0.0
+	while not cond.call() and waited < limit:
+		await get_tree().process_frame
+		waited += get_process_delta_time()
+
+
+## A shot of the moment now, the game frozen for it.
+func _frozen_shot(shot_name: String) -> void:
+	Engine.time_scale = 0.0
+	await _shot(shot_name)
+	Engine.time_scale = 1.0
 
 
 # --- props --------------------------------------------------------------------

@@ -78,7 +78,7 @@ func test_a_fighting_serpent_gliding_costs_little_to_pose() -> void:
 		body.advance(Vector3(x[0], 0.0, 0.25 * sin(x[0] * 1.4)))   # (updates the joints)
 		rig.apply(body, pose, STEP)
 		return Time.get_ticks_usec() - started)
-	assert_lt(cost, BUDGET_MS, "gliding: %.3f ms a frame" % cost)
+	assert_lt(cost, BUDGET_MS * time_slack(), "gliding: %.3f ms a frame" % cost)
 	# the work was real: the chain whole, the rig on it
 	for j in range(1, body.count + 1):
 		assert_almost_eq(body.joints[j].distance_to(body.joints[j - 1]), SerpentBody.SPACING, 0.02, "joint %d" % j)
@@ -117,7 +117,7 @@ func test_a_serpent_lying_on_its_ring_under_travelling_arches_costs_little_to_po
 		body.update()
 		rig.apply(body, pose, STEP)
 		return Time.get_ticks_usec() - started)
-	assert_lt(cost, BUDGET_MS, "on the ring: %.3f ms a frame" % cost)
+	assert_lt(cost, BUDGET_MS * time_slack(), "on the ring: %.3f ms a frame" % cost)
 	var ground := body.ground_joints()
 	for j in range(ground.x + 1, ground.y + 1):
 		assert_almost_eq(body.joints[j].distance_to(body.joints[j - 1]), SerpentBody.SPACING, 0.02, "joint %d" % j)

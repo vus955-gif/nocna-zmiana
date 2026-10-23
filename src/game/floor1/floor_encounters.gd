@@ -8,7 +8,10 @@ extends Node
 ##   when the guard walks into its area or takes the pickup at its marker
 ##   (the mummies round the shotgun); once a night (RunState.used
 ##   "ambush_<id>", so a resumed night does not spring it again). Mummies
-##   of an ambush sleep in tombs (Mummy.entombed) and climb out of them.
+##   of an ambush sleep in tombs (Mummy.entombed) and climb out of them;
+##   the coffins they stand up at their posts are solid, so they join the
+##   walkable navigation's sources (the navmesh goes round them, as round a
+##   display's plinth; their sleepers still lie down in them, ARRIVE 1.2 m).
 
 const CHECK := 0.2
 const USED_PREFIX := "ambush_"
@@ -27,11 +30,28 @@ func setup(for_museum: Museum, pickups: FloorPickups) -> void:
 	layout = museum.floor_level.layout
 	run = museum.run
 	name = "Encounters"
+	# an ambush a room's scenario took over tonight plays as one of its beats
+	var absorbed: Array[StringName] = []
+	if museum.night != null:
+		absorbed = ScenarioCast.of(museum.night, layout).absorbed
 	for ambush in layout.ambushes:
-		if not run.is_used(used_id(ambush.id)):
+		if not run.is_used(used_id(ambush.id)) and not absorbed.has(ambush.id):
 			waiting.append(ambush)
 	if pickups != null:
 		pickups.taken.connect(_on_pickup_taken)
+	# the sleepers stand their coffins up just after they enter the tree
+	_adopt_tombs.call_deferred()
+
+
+## The coffins tonight's mummies stood up (among the exhibits) become
+## sources of the walkable navigation.
+func _adopt_tombs() -> void:
+	if not is_inside_tree() or museum == null or museum.floor_level == null or museum.floor_level.navigation == null:
+		return
+	for node in get_tree().get_nodes_in_group(MummyTomb.GROUP):
+		var tomb := node as MummyTomb
+		if tomb != null and museum.enemies_root.is_ancestor_of(tomb):
+			museum.floor_level.add_walk_source(tomb)
 
 
 static func used_id(ambush_id: StringName) -> StringName:

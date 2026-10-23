@@ -8,6 +8,9 @@ extends Interactable
 ## the model (tools/art/models/audioguide_stand.py).
 
 const MODEL := &"audioguide_stand"
+## Every stand of the level (it may live under the level's navigation
+## sources, not under WorldFeatures: the navmesh goes round it).
+const GROUP := &"audioguide_stands"
 ## Station -> stop number (plan 2026-10-19-glos-g2-kwestie, 2.6).
 const STOPS := {
 	&"rosetta": 1, &"ramesses": 2, &"lamassu": 3, &"flood": 4, &"metopes": 5, &"clocks": 6,
@@ -26,6 +29,7 @@ static func create(station_id: StringName, at: Transform3D) -> AudioguideStand:
 	stand.station = station_id
 	stand.transform = at
 	stand.prompt_key = "PROMPT_AUDIOGUIDE"
+	stand.add_to_group(GROUP)
 	return stand
 
 

@@ -57,6 +57,25 @@ func test_every_note_on_floor_one_has_its_text_in_both_languages() -> void:
 	assert_gt(checked, 60, "Floor I has its notes in both languages")
 
 
+## Notes stay short (the owner: less text, shorter notes; plan 2026-10-21-
+## opowiesc-muzeum): every Floor I note is at most NOTE_WORDS Polish words.
+const NOTE_WORDS := 120
+
+
+func test_every_floor_one_note_is_short() -> void:
+	var layout := Floor1Layout.create()
+	var words := RegEx.create_from_string("\\S+")
+	var checked := 0
+	for marker: StringName in layout.markers:
+		if not String(marker).begins_with(WorldFeatures.NOTE_PREFIX):
+			continue
+		var id: StringName = WorldFeatures.NOTE_ALIASES.get(marker, marker)
+		var count := words.search_all(tr(NoteCatalog.body_key(id))).size()
+		assert_true(count <= NOTE_WORDS, "%s: %d words (at most %d)" % [id, count, NOTE_WORDS])
+		checked += 1
+	assert_gt(checked, 30, "Floor I's notes were counted")
+
+
 ## A note on its own kind of paper is a note with a text (no paper for a
 ## marker that does not exist).
 func test_every_paper_belongs_to_a_note_with_a_text() -> void:

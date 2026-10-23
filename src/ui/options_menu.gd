@@ -13,6 +13,10 @@ extends Control
 signal closed
 
 var rows: Array[OptionRow] = []
+## The row that opens the keys' panel (not a setting: kept apart from
+## [member rows]) and the panel.
+var keys_row: OptionRow
+var keys_panel: KeyBindingsPanel
 ## The game's difficulty (not a setting: kept apart from [member rows]).
 var difficulty_row: OptionRow
 ## Opened from the pause menu: a night is in progress.
@@ -39,6 +43,7 @@ func open() -> void:
 	visible = true
 	for row in rows:
 		row.refresh()
+	keys_row.refresh()
 	_game_section.visible = in_night or GameState.has_save()
 	difficulty_row.refresh()
 	_refresh_note()
@@ -49,6 +54,8 @@ func open() -> void:
 func close() -> void:
 	if not visible:
 		return
+	if keys_panel.visible:
+		keys_panel.close()
 	Settings.flush()
 	visible = false
 	Sfx.play_ui(&"ui_back")
@@ -56,9 +63,10 @@ func close() -> void:
 
 
 func reset_to_defaults() -> void:
-	Settings.reset_to_defaults(true)
+	Settings.reset_to_defaults(true)   # the keys go back too
 	for row in rows:
 		row.refresh()
+	keys_row.refresh()
 	Sfx.play_ui(&"ui_confirm")
 
 
@@ -73,6 +81,7 @@ func _notification(what: int) -> void:
 		_texts.refresh()
 		for row in rows:
 			row.refresh()
+		keys_row.refresh()
 		if difficulty_row != null:
 			difficulty_row.refresh()
 			_refresh_note()
@@ -130,6 +139,10 @@ func _build() -> void:
 	_add(list, OptionRow.slider(&"fov", "OPT_FOV", SettingsData.FOV_MIN, SettingsData.FOV_MAX, 1.0, func(v: float) -> String: return "%d°" % roundi(v)))
 	_add(list, OptionRow.slider(&"screen_shake", "OPT_SCREEN_SHAKE", 0.0, 1.0, 0.05, _percent))
 	_add(list, OptionRow.slider(&"head_bob", "OPT_HEAD_BOB", 0.0, 1.0, 0.05, _percent))
+	_add(list, OptionRow.toggle(&"sprint_toggle", "OPT_SPRINT_TOGGLE"))
+	keys_row = OptionRow.action("OPT_KEYS", _keys_summary)
+	keys_row.activated.connect(open_keys)
+	list.add_child(keys_row)
 	_section(list, "OPT_SECTION_VIDEO")
 	_add(list, OptionRow.choice(&"window_mode", "OPT_WINDOW_MODE", [
 		[SettingsData.WindowMode.WINDOWED, "OPT_WINDOW_WINDOWED"],
@@ -170,6 +183,22 @@ func _build() -> void:
 	_add(list, OptionRow.choice(&"language", "OPT_LANGUAGE", [["pl", "LANG_PL"], ["en", "LANG_EN"]]))
 	_add(list, OptionRow.toggle(&"show_fps", "OPT_SHOW_FPS"))
 	_add(list, OptionRow.toggle(&"subtitles", "OPT_SUBTITLES"))
+	_add(list, OptionRow.toggle(&"dev_tools", "OPT_DEV_TOOLS"))
+	_section(list, "OPT_SECTION_ACCESS")
+	_add(list, OptionRow.slider(&"hud_scale", "OPT_HUD_SCALE", SettingsData.HUD_SCALE_MIN, SettingsData.HUD_SCALE_MAX, 0.05, _percent))
+	_add(list, OptionRow.choice(&"subtitle_size", "OPT_SUBTITLE_SIZE", [
+		[SettingsData.SubtitleSize.SMALL, "OPT_SUBTITLE_SIZE_SMALL"],
+		[SettingsData.SubtitleSize.MEDIUM, "OPT_SUBTITLE_SIZE_MEDIUM"],
+		[SettingsData.SubtitleSize.LARGE, "OPT_SUBTITLE_SIZE_LARGE"],
+	]))
+	_add(list, OptionRow.slider(&"subtitle_backing", "OPT_SUBTITLE_BACKING", 0.0, 1.0, 0.05, _percent))
+	_add(list, OptionRow.toggle(&"reduce_flashing", "OPT_REDUCE_FLASHING"))
+	_add(list, OptionRow.choice(&"colour_vision", "OPT_COLOUR_VISION", [
+		[SettingsData.ColourVisionMode.NORMAL, "OPT_COLOUR_VISION_NORMAL"],
+		[SettingsData.ColourVisionMode.DEUTERANOPIA, "OPT_COLOUR_VISION_DEUTERANOPIA"],
+		[SettingsData.ColourVisionMode.PROTANOPIA, "OPT_COLOUR_VISION_PROTANOPIA"],
+		[SettingsData.ColourVisionMode.TRITANOPIA, "OPT_COLOUR_VISION_TRITANOPIA"],
+	]))
 	_game_section = VBoxContainer.new()
 	_game_section.add_theme_constant_override("separation", 2)
 	list.add_child(_game_section)
@@ -203,6 +232,25 @@ func _build() -> void:
 	_back.pressed.connect(close)
 	footer.add_child(_back)
 	column.add_child(footer)
+	keys_panel = KeyBindingsPanel.new()
+	add_child(keys_panel)
+	keys_panel.closed.connect(_on_keys_closed)
+
+
+## The keys' panel opens over the options.
+func open_keys() -> void:
+	Sfx.play_ui(&"ui_confirm", -4.0)
+	keys_panel.open()
+
+
+func _on_keys_closed() -> void:
+	keys_row.refresh()
+	keys_row.grab_focus()
+
+
+func _keys_summary() -> Array:
+	var changed := not Settings.data.bindings.is_default()
+	return [tr("OPT_KEYS_CUSTOM") if changed else tr("OPT_KEYS_DEFAULT"), changed]
 
 
 func _section(list: VBoxContainer, key: String) -> void:

@@ -115,6 +115,11 @@ var rest_state: State = State.DORMANT
 ## Woken by a neighbour: no call-out, wakes nobody (until it rests again).
 var quiet := false
 var rng := RandomNumberGenerator.new()
+## Called first by every event from outside (wake, alarm, hear, flee, stun,
+## destroy, interrupt, cut_recovery, a new route, start_patrol), before
+## anything changes: a dozing exhibit catches up its sleep first
+## (Enemy.end_doze).
+var before_event: Callable = Callable()
 
 var _timer: float = 0.0
 var _struck: bool = false
@@ -151,6 +156,7 @@ func _init() -> void:
 ## The full alarm (a scripted wake, a summoned exhibit, an arena wave): it
 ## knows where the guard is and hunts after its suspicion.
 func wake() -> void:
+	_event()
 	match state:
 		State.DORMANT, State.PATROL, State.RETURN:
 			_saw()
@@ -171,6 +177,7 @@ func wake() -> void:
 
 ## A hit (not a stun) from [param point]: it knows where it came from.
 func alarm(point: Vector3) -> void:
+	_event()
 	match state:
 		State.DORMANT, State.PATROL, State.RETURN, State.SUSPICIOUS:
 			last_known = point
@@ -191,6 +198,7 @@ func alarm(point: Vector3) -> void:
 ## it may go and look; false when the point lies outside its bounds (it
 ## only turns its head).
 func hear(point: Vector3, follow: bool = true) -> void:
+	_event()
 	match state:
 		State.DORMANT, State.PATROL:
 			last_known = point
@@ -219,6 +227,7 @@ func hear(point: Vector3, follow: bool = true) -> void:
 ## fire): back to the hunt. A struck attack runs its recovery on; other
 ## states are left alone.
 func interrupt() -> void:
+	_event()
 	if state == State.ATTACK and not _struck:
 		_enter_hunt()
 
@@ -227,6 +236,7 @@ func interrupt() -> void:
 ## seconds (a charge that ended early: the run is over, only the skid and
 ## the turn-round are left). Other states are left alone.
 func cut_recovery(remaining: float) -> void:
+	_event()
 	if state == State.ATTACK and _struck:
 		_timer = minf(_timer, maxf(remaining, 0.0))
 
@@ -236,6 +246,7 @@ func cut_recovery(remaining: float) -> void:
 ## a hunter keeps hunting, and a relentless one (summoned into a fight:
 ## no home to go to) never runs.
 func flee(from: Vector3) -> void:
+	_event()
 	if relentless:
 		return
 	match state:
@@ -251,6 +262,7 @@ func flee(from: Vector3) -> void:
 
 
 func stun(duration: float) -> void:
+	_event()
 	if state == State.DESTROYED or duration <= 0.0:
 		return
 	if state == State.STUNNED:
@@ -261,12 +273,14 @@ func stun(duration: float) -> void:
 
 
 func destroy() -> void:
+	_event()
 	if state != State.DESTROYED:
 		_enter(State.DESTROYED)
 
 
 ## A (new) route to patrol: from its first point, now if it patrols already.
 func set_route(route: PackedVector3Array) -> void:
+	_event()
 	patrol = route
 	patrol_dwell.clear()
 	patrol_yaw.clear()
@@ -280,6 +294,7 @@ func set_route(route: PackedVector3Array) -> void:
 
 ## Awake on its post: it rests by patrolling (its route, or standing guard).
 func start_patrol() -> void:
+	_event()
 	rest_state = State.PATROL
 	if state == State.DORMANT:
 		_patrol_index = 0
@@ -288,6 +303,11 @@ func start_patrol() -> void:
 		_roaming = false
 		_begin_walk(patrol[0] if not patrol.is_empty() else home)
 		_enter(State.PATROL)
+
+
+func _event() -> void:
+	if before_event.is_valid():
+		before_event.call()
 
 
 # --- questions -----------------------------------------------------------------

@@ -36,6 +36,10 @@ var _holder: Node3D
 var _star: MeshInstance3D
 var _burst: MeshInstance3D
 var _flash_left: float = 0.0
+## Game seconds so far, and the gate that spaces the stars while flashing is
+## reduced (a fast gun then shows its star three times a second, and dimmer).
+var _clock: float = 0.0
+var _gate := Flashing.Gate.new()
 var _smoke: Array[GPUParticles3D] = []
 var _casings: Array[GPUParticles3D] = []
 var _next_smoke: int = 0
@@ -81,8 +85,11 @@ func _ready() -> void:
 ## A shot: the flash, the smoke, the profile's casings.
 func fire() -> void:
 	_follow()
-	if _star != null:
+	if _star != null and _gate.allow(_clock):
 		flashes += 1
+		var dim := (1.0 - Flashing.PULSE_SHARE) if Flashing.on() else 0.0
+		_star.transparency = dim
+		_burst.transparency = dim
 		_flash_left = profile.flash_time
 		var size := profile.flash_size * randf_range(0.8, 1.2)
 		_star.scale = Vector3.ONE * size
@@ -121,6 +128,7 @@ func flash_showing() -> bool:
 
 func _process(delta: float) -> void:
 	_follow()
+	_clock += delta
 	if _star == null:
 		return
 	_flash_left = maxf(_flash_left - delta, 0.0)

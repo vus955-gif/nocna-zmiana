@@ -129,7 +129,9 @@ func pose_part(part_name: String, euler: Vector3, shift: Vector3 = Vector3.ZERO)
 	if node == null:
 		return
 	var base: Transform3D = rest[part_name]
-	node.transform = Transform3D(base.basis * Basis.from_euler(euler), base.origin + shift)
+	var posed := Transform3D(base.basis * Basis.from_euler(euler), base.origin + shift)
+	if not posed.is_equal_approx(node.transform):
+		node.transform = posed   # (a set re-places the part and all below it: only when it moves)
 
 
 ## Where tracked [param hurtbox] belongs now (enemy space), for tests.
@@ -143,6 +145,12 @@ func tracked_position(hurtbox: Hurtbox) -> Vector3:
 ## Current shader uniforms (awake, glow, flash), for tests.
 func shading() -> Vector3:
 	return _shading
+
+
+## Asleep and eased into its rest pose: posing it changes nothing any more
+## (the enemy may doze, its rig with it).
+func settled() -> bool:
+	return _still_frames > DORMANT_SETTLE_FRAMES
 
 
 ## Called by Enemy._destroy(): particles, then every part of the model as
@@ -263,9 +271,12 @@ func _follow_parts() -> void:
 		if not is_instance_valid(hurtbox):
 			continue
 		var now := _to_enemy(entry[1]) * (entry[2] as Transform3D)
+		# (only when it moves: a zone moved is a body moved in the physics server)
 		if entry[3]:
-			hurtbox.transform = Transform3D(now.basis.orthonormalized(), now.origin)
-		else:
+			var placed := Transform3D(now.basis.orthonormalized(), now.origin)
+			if not placed.is_equal_approx(hurtbox.transform):
+				hurtbox.transform = placed
+		elif not now.origin.is_equal_approx(hurtbox.position):
 			hurtbox.position = now.origin
 
 
@@ -286,7 +297,7 @@ func _update_shading(delta: float) -> void:
 		if is_instance_valid(view):
 			view.set_instance_shader_parameter(&"awake", now.x)
 			view.set_instance_shader_parameter(&"glow", now.y)
-			view.set_instance_shader_parameter(&"flash", now.z)
+			view.set_instance_shader_parameter(&"flash", Flashing.hit_flash(now.z))
 
 
 ## Telegraph strength 0..1 (the windup by default).

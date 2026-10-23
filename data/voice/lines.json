@@ -139,6 +139,10 @@
     "VO_GUIDE_ASTROLABE_A": {"speaker": "system", "level": 2, "station": "astrolabe", "variant": "a", "once": false},
     "VO_GUIDE_ASTROLABE_B": {"speaker": "system", "level": 2, "station": "astrolabe", "variant": "b", "once": false, "after_witching": true},
     "VO_GUIDE_TREX_A": {"speaker": "system", "level": 2, "station": "trex", "variant": "a", "once": false},
-    "VO_GUIDE_TREX_B": {"speaker": "system", "level": 2, "station": "trex", "variant": "b", "once": false, "after_witching": true}
+    "VO_GUIDE_TREX_B": {"speaker": "system", "level": 2, "station": "trex", "variant": "b", "once": false, "after_witching": true},
+    "VO_SYSTEM_LAMPS_OUT": {"speaker": "system", "level": 2, "event": "uncanny_event", "kind": "lamp_out", "delay": 0.4, "expires": 3.0},
+    "VO_SYSTEM_PA_CLOSED": {"speaker": "system", "level": 2, "speed": 0.8, "event": "uncanny_event", "kind": "pa_click", "delay": 0.8, "expires": 3.0},
+    "VO_HENIEK_RADIO_NOT_ME": {"speaker": "heniek", "level": 1, "speed": 0.85, "event": "uncanny_event", "kind": "radio_breath", "delay": 1.8, "expires": 3.0},
+    "VO_HENIEK_EYES": {"speaker": "heniek", "event": "uncanny_event", "kind": "court_eyes", "delay": 1.0}
   }
 }

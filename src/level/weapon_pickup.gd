@@ -57,9 +57,12 @@ func interact(by: Node) -> void:
 	var for_game := game if game != null else GameState
 	var for_run := run if run != null else RunState
 	for_game.add_weapon(weapon_id)
+	var had := guard.weapons.has_weapon(weapon_id)
 	var state := Loadout.grant(guard, weapon_id, for_game)
 	if state != null:
 		guard.weapons.select_id(weapon_id)
+		if not had:
+			guard.weapons.found(weapon_id)   # new: looked over at the first calm moment
 	NightRules.save_progress(for_game, for_run)
 	Sfx.play(&"pickup")
 	super(by)

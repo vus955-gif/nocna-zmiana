@@ -189,6 +189,95 @@ const BELT_TUG := 0.007
 const FLASH_TIME := 0.045
 ## Flare gun: the barrel's break angle (muzzle down) for a reload.
 const FLARE_BREAK := -0.6
+## Reload poses (plan 2026-10-21-animacje-fpp) follow their keyed targets on
+## critically damped springs (ViewmodelMotion.follow) at this rate (1/s):
+## close, but a reload cut short eases back from where it was. The lift
+## that takes back the holder's reload dip (HOLDER_RELOAD_DROP) follows
+## the holder's own spring (WeaponHolder.RELOAD_OMEGA), so the two cancel
+## frame by frame.
+const RELOAD_OMEGA := 28.0
+## Break-actions (shotgun, flare gun), as fractions of the reload: broken
+## open by BREAK_OPEN, each round thumbed in at its fraction (a dip),
+## snapped shut between BREAK_SHUT's two with a flick of the wrist
+## (BREAK_FLICK: the gun jerks up as the barrels meet the breech), then
+## levelled back into the aim by the reload's end.
+const BREAK_OPEN := 0.22
+const BREAK_SHUT := Vector2(0.75, 0.89)
+const BREAK_FLICK := Vector2(0.8, 0.94)
+const SHOTGUN_SHELLS := [0.42, 0.56]
+const FLARE_ROUND := [0.46]
+## Pistol reload: tipped in (pitch, yaw, roll) and lifted back over the
+## holder's dip by PISTOL_TIP_IN, back from PISTOL_TIP_OUT; the empty
+## magazine shaken out and the new one slapped home between their two
+## fractions; the slide let go at PISTOL_RELEASE. (Seen in the window:
+## pitched up further and lifted, the pistol covered the crosshair - it is
+## rolled over to show the magazine well and kept low and to the right.)
+const PISTOL_TIP := Vector3(0.12, 0.1, 0.55)
+const PISTOL_LIFT := Vector3(-0.03, 0.1, -0.01)
+const PISTOL_TIP_IN := 0.18
+const PISTOL_TIP_OUT := 0.84
+const PISTOL_MAG_OUT := Vector2(0.2, 0.3)
+const PISTOL_MAG_IN := Vector2(0.55, 0.65)
+const PISTOL_RELEASE := 0.72
+## Hunting rifle: brought to its reload and back, and pushed by the bolt's
+## work, on springs (1/s).
+const RIFLE_OPEN_OMEGA := 16.0
+const RIFLE_BACK_OMEGA := 22.0
+const RIFLE_PUSH_OMEGA := 28.0
+## ... and the right hand following the bolt's knob (1/s). After a reload
+## the bolt cycle picks up at x (a share of it; the bolt still open, the
+## hand a moment to reach its knob before it runs home), y s for a whole
+## cycle.
+const RIFLE_KNOB_OMEGA := 40.0
+const RIFLE_CYCLE_AFTER_RELOAD := Vector2(0.5, 1.2)
+## Harpoon gun: tipped up for its reload and back down on springs (1/s).
+const HARPOON_TIP_OMEGA := 14.0
+const HARPOON_BACK_OMEGA := 20.0
+## Gatling: a new belt is hauled this far up into the hopper (m).
+const BELT_HAUL := 0.02
+## The first look at a found weapon (FirstLook): seconds, its keyed poses
+## per grip class (ViewmodelMotion.Grip) [share of the time, offset, turn] -
+## turned to show its left side, a beat, turned the other way to show the
+## other, a beat, back in the hands - and how long (s) a look cut short
+## takes to let go (eased, never a snap). A handgun is rolled right over in
+## the one hand; a two-handed weapon cannot be (rolled the other way, its
+## fore arm's elbow would swing up into the frame: measured), so it is
+## swung across instead, the heavy pieces more gently still, and both
+## take longer over it (FIRST_LOOK_TIMES: a long barrel swung across in a
+## third of a second would sweep its muzzle past the eye; measured).
+const FIRST_LOOK_TIME := 1.2
+const FIRST_LOOK_TIMES := {
+	ViewmodelMotion.Grip.ONE_HAND: 1.2,
+	ViewmodelMotion.Grip.LONG: 1.4,
+	ViewmodelMotion.Grip.HEAVY: 1.4,
+}
+const FIRST_LOOK := {
+	ViewmodelMotion.Grip.ONE_HAND: [
+		[0.0, Vector3.ZERO, Vector3.ZERO],
+		[0.28, Vector3(-0.05, 0.06, 0.05), Vector3(0.16, 0.7, 0.3)],
+		[0.46, Vector3(-0.055, 0.065, 0.055), Vector3(0.2, 0.78, 0.36)],
+		[0.72, Vector3(-0.03, 0.05, 0.04), Vector3(0.12, -0.18, -0.5)],
+		[0.84, Vector3(-0.03, 0.05, 0.04), Vector3(0.1, -0.22, -0.55)],
+		[1.0, Vector3.ZERO, Vector3.ZERO],
+	],
+	ViewmodelMotion.Grip.LONG: [
+		[0.0, Vector3.ZERO, Vector3.ZERO],
+		[0.28, Vector3(-0.05, 0.06, 0.05), Vector3(0.16, 0.64, 0.3)],
+		[0.46, Vector3(-0.055, 0.065, 0.055), Vector3(0.2, 0.7, 0.36)],
+		[0.72, Vector3(-0.02, 0.05, 0.04), Vector3(0.12, -0.22, -0.15)],
+		[0.84, Vector3(-0.02, 0.05, 0.04), Vector3(0.12, -0.25, -0.17)],
+		[1.0, Vector3.ZERO, Vector3.ZERO],
+	],
+	ViewmodelMotion.Grip.HEAVY: [
+		[0.0, Vector3.ZERO, Vector3.ZERO],
+		[0.28, Vector3(-0.04, 0.05, 0.05), Vector3(0.1, 0.55, 0.22)],
+		[0.46, Vector3(-0.045, 0.055, 0.055), Vector3(0.12, 0.6, 0.25)],
+		[0.72, Vector3(-0.02, 0.05, 0.04), Vector3(0.1, -0.15, 0.12)],
+		[0.84, Vector3(-0.02, 0.05, 0.04), Vector3(0.1, -0.18, 0.14)],
+		[1.0, Vector3.ZERO, Vector3.ZERO],
+	],
+}
+const LOOK_LET_GO := 0.3
 ## The guard's hands (and sleeves) keep their own look in the master finish.
 const HANDS_NOT_POLISHED: Array[String] = ["hand_r", "hand_l", "sleeve_r", "sleeve_l"]
 
@@ -252,6 +341,8 @@ var _bolt_sound := false
 var _bolt_open := 0.0
 var _knob_follow := 0.0
 var _bolt_push := 0.0
+var _bolt_push_v := 0.0
+var _knob_follow_v := 0.0
 var _reload_grips: Array[Transform3D] = []
 var _reload_elbows: Array[Vector3] = []
 var _clip_held := false
@@ -283,6 +374,31 @@ var _glow_base := MASTER_GLOW
 ## the mods' parts built so far (mod id -> its mesh, under the model).
 var _look: StringName = &""
 var _mod_parts: Dictionary = {}
+## The reload's eased pose on the model (offset, turn) and its velocities;
+## the pistol's reload started from an empty magazine (the slide is let go).
+var _reload_at := Vector3.ZERO
+var _reload_turn := Vector3.ZERO
+var _reload_at_v := Vector3.ZERO
+var _reload_turn_v := Vector3.ZERO
+## The springs' velocity of _open; the lift over the holder's reload dip
+## (0..1, HOLDER_RELOAD_DROP) and the model's tilt toward the eye for a
+## reload (0..1), with theirs.
+var _open_v := 0.0
+var _lift := 0.0
+var _lift_v := 0.0
+var _tilt := 0.0
+var _tilt_v := 0.0
+## A break-action's hinge: what is left of a jump (a reload cut short),
+## its velocity, and whether a reload ran last frame.
+var _hinge_off := 0.0
+var _hinge_off_v := 0.0
+var _hinge_running := false
+var _empty_reload := false
+## The first look at a found weapon: seconds left, cut short (and how long
+## ago: it lets go of the pose over LOOK_LET_GO).
+var _first_left := 0.0
+var _first_cut := false
+var _first_cut_t := 0.0
 
 
 ## The rig for weapon [param id] (&"pistol", &"taser", &"shotgun",
@@ -342,10 +458,40 @@ func _ready() -> void:
 	set_process(visible)
 
 
-## Only the weapon in hand animates (the holder hides the others).
+## Only the weapon in hand animates (the holder hides the others). Once
+## out of sight a weapon drops what it was half-way through (a reload's
+## pose, a first look), so it is drawn again at rest; while it goes down
+## it keeps its pose.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED:
 		set_process(visible)
+		if not visible:
+			_rest_poses()
+
+
+func _rest_poses() -> void:
+	_reload_at = Vector3.ZERO
+	_reload_turn = Vector3.ZERO
+	_reload_at_v = Vector3.ZERO
+	_reload_turn_v = Vector3.ZERO
+	_lift = 0.0
+	_lift_v = 0.0
+	_tilt = 0.0
+	_tilt_v = 0.0
+	_open = 0.0
+	_open_v = 0.0
+	_hinge_off = 0.0
+	_hinge_off_v = 0.0
+	_hinge_running = false
+	_bolt_push = 0.0
+	_bolt_push_v = 0.0
+	_knob_follow = 0.0
+	_knob_follow_v = 0.0
+	_first_left = 0.0
+	_first_cut = false
+	_first_cut_t = 0.0
+	if model != null:
+		model.transform = _framing_xform
 
 
 ## Part [param part_name] of the model (slide, barrels, led_1...), or null.
@@ -355,8 +501,10 @@ func part_node(part_name: StringName) -> Node3D:
 
 func _process(delta: float) -> void:
 	_time += delta
-	if _inspect_pending and weapon_id != &"fist" and GameInput.gameplay_input():
-		on_drawn()   # bought while in hand: look it over once the terminal lets go
+	# drawn (or bought while in hand): looked over once it is up in the hands
+	# and the terminal lets go
+	if _inspect_pending and weapon_id != &"fist" and GameInput.gameplay_input() and _up_in_hand():
+		on_drawn()
 	if DRIVEN_BY_HOLDER.has(model_id):
 		return
 	var state := _state()
@@ -450,8 +598,42 @@ func inspecting() -> float:
 	return _inspect_left
 
 
-## Called by WeaponHolder when this weapon is drawn: a new look is looked
-## over.
+## The first look at a found weapon (WeaponHolder starts it at a calm
+## moment, FirstLook): first_look_time() s, its side and then its other
+## side turned to the eye. Not on the fists.
+func look_over() -> void:
+	if weapon_id == &"fist":
+		return
+	_first_left = first_look_time()
+	_first_cut = false
+	_first_cut_t = 0.0
+
+
+## Seconds of the first look left (0: none).
+func looking_over() -> float:
+	return _first_left
+
+
+## How long this weapon's first look takes (s, by its grip class).
+func first_look_time() -> float:
+	return FIRST_LOOK_TIMES.get(ViewmodelMotion.grip_of(weapon_id), FIRST_LOOK_TIME)
+
+
+## A shot, a blow, a switch or a fight: the first look lets go within
+## LOOK_LET_GO s instead of snapping back.
+func cut_look() -> void:
+	if _first_left > 0.0:
+		_first_cut = true
+
+
+## True when this weapon is up in its holder's hands (WeaponHolder.drawn;
+## true outside a holder).
+func _up_in_hand() -> bool:
+	var holder := get_parent() as WeaponHolder
+	return holder == null or holder.drawn(weapon_id)
+
+
+## Once this weapon is up in the hands: a new look is looked over.
 func on_drawn() -> void:
 	if not _inspect_pending:
 		return
@@ -597,8 +779,6 @@ func on_hidden() -> void:
 	if _flash != null:
 		_flash_left = 0.0
 		_flash.visible = false
-	if model_id == &"vm_flare":
-		_open = 0.0
 
 
 ## The gatling's driver (sounds, heat, smoke, jolt); null on other rigs.
@@ -643,10 +823,105 @@ func _on_weapon_fired(id: StringName) -> void:
 			_eject_pending = true
 
 
+## The pistol: the slide kicks back on a shot and locks back when empty.
+## Its reload (PISTOL_*, fractions of the reload time; the right hand alone
+## shows, the left works under the frame): tipped in and lifted back into
+## view to show the grip, a jolt down as the empty magazine is shaken out, a
+## jolt up as the new one is slapped home, the slide let go (if it was
+## locked) with a snap, back to rest.
 func _animate_pistol(state: WeaponState, delta: float) -> void:
-	var locked := state != null and state.magazine == 0
+	var reloading := state != null and state.is_reloading()
+	var p := state.reload_progress() if reloading else 0.0
+	if reloading and not _was_reloading:
+		_empty_reload = state.magazine == 0
+	_was_reloading = reloading
+	var locked := state != null and state.magazine == 0 and not (reloading and p >= PISTOL_RELEASE)
 	_slide = ExhibitRig.ease_to(_slide, 1.0 if locked else 0.0, 12.0 if locked else 26.0, delta)
 	_pose_part(&"slide", Vector3.ZERO, Vector3(0.0, 0.0, SLIDE_TRAVEL * _slide))
+	var at := Vector3.ZERO
+	var turn := Vector3.ZERO
+	if reloading:
+		var tip := smoothstep(0.0, PISTOL_TIP_IN, p) * (1.0 - smoothstep(PISTOL_TIP_OUT, 1.0, p))
+		var out := ViewmodelMotion.bump(p, PISTOL_MAG_OUT.x, PISTOL_MAG_OUT.y)
+		var seat := ViewmodelMotion.bump(p, PISTOL_MAG_IN.x, PISTOL_MAG_IN.y)
+		var snap := ViewmodelMotion.bump(p, PISTOL_RELEASE, PISTOL_RELEASE + 0.08) if _empty_reload else 0.0
+		at = (PISTOL_LIFT - Vector3(0.0, HOLDER_RELOAD_DROP, 0.0)) * tip + Vector3(0.0, -0.012 * out + 0.016 * seat + 0.008 * snap, 0.0)
+		turn = PISTOL_TIP * tip + Vector3(-0.06 * out + 0.09 * seat + 0.05 * snap, 0.0, 0.0)
+	_ease_reload_pose(at, turn, delta)
+	_follow_lift(reloading, delta)
+	model.position = (FRAMING[model_id][0] as Vector3) + Vector3(0.0, HOLDER_RELOAD_DROP, 0.0) * _lift + _reload_at
+	model.rotation = _framing_turn() + _reload_turn
+
+
+## The reload's pose on the model (offset, turn) follows its keyed target
+## closely on a spring, so a reload cut short eases back instead of jumping.
+func _ease_reload_pose(at: Vector3, turn: Vector3, delta: float) -> void:
+	var moved: Array = ViewmodelMotion.follow3(_reload_at, _reload_at_v, at, RELOAD_OMEGA, delta)
+	_reload_at = moved[0]
+	_reload_at_v = moved[1]
+	var turned: Array = ViewmodelMotion.follow3(_reload_turn, _reload_turn_v, turn, RELOAD_OMEGA, delta)
+	_reload_turn = turned[0]
+	_reload_turn_v = turned[1]
+
+
+## The lift that takes back the holder's reload dip: on the holder's own
+## spring, so the model stays where it was shown.
+func _follow_lift(reloading: bool, delta: float) -> void:
+	var lift := ViewmodelMotion.follow(_lift, _lift_v, 1.0 if reloading else 0.0, WeaponHolder.RELOAD_OMEGA, delta)
+	_lift = lift.x
+	_lift_v = lift.y
+
+
+## _open on a spring toward [param target] at [param omega] (1/s).
+func _follow_open(target: float, omega: float, delta: float) -> void:
+	var open := ViewmodelMotion.follow(_open, _open_v, target, omega, delta)
+	_open = open.x
+	_open_v = open.y
+
+
+## A break-action's hinge (_open): its keys exactly while the reload runs
+## (they are smooth: the snap shut stays crisp); when a reload begins or
+## ends with the barrels elsewhere (cut short), the difference dies away on
+## a spring.
+func _follow_hinge(target: float, reloading: bool, delta: float) -> void:
+	if reloading != _hinge_running:
+		_hinge_running = reloading
+		_hinge_off = _open - target
+	var off := ViewmodelMotion.follow(_hinge_off, _hinge_off_v, 0.0, RELOAD_OMEGA, delta)
+	_hinge_off = off.x
+	_hinge_off_v = off.y
+	_open = target + _hinge_off
+
+
+## The model's reload tilt toward the eye on a spring.
+func _follow_tilt(target: float, delta: float) -> void:
+	var tilt := ViewmodelMotion.follow(_tilt, _tilt_v, target, RELOAD_OMEGA, delta)
+	_tilt = tilt.x
+	_tilt_v = tilt.y
+
+
+## How far a break-action is open at reload fraction [param p]: broken
+## open by BREAK_OPEN, snapped shut from BREAK_SHUT.x to BREAK_SHUT.y.
+static func _keyed_break(p: float) -> float:
+	return smoothstep(0.0, BREAK_OPEN, p) * (1.0 - smoothstep(BREAK_SHUT.x, BREAK_SHUT.y, p))
+
+
+## How far a break-action is tipped toward the eye at reload fraction
+## [param p]: as it opens, held while the barrels snap shut, levelled back
+## into the aim by the reload's end.
+static func _keyed_tilt(p: float) -> float:
+	return smoothstep(0.0, BREAK_OPEN, p) * (1.0 - smoothstep(BREAK_SHUT.y, 1.0, p))
+
+
+## The jolts of a break-action's reload: a dip as each round is thumbed in
+## ([param rounds] fractions), the flick of the wrist that snaps it shut.
+## [offset, turn].
+static func _break_jolts(p: float, rounds: Array) -> Array:
+	var press := 0.0
+	for at: float in rounds:
+		press += ViewmodelMotion.bump(p, at, at + 0.1)
+	var flick := ViewmodelMotion.bump(p, BREAK_FLICK.x, BREAK_FLICK.y)
+	return [Vector3(0.0, -0.006 * press + 0.018 * flick, 0.0), Vector3(-0.03 * press + 0.16 * flick, 0.0, 0.0)]
 
 
 func _animate_shotgun(state: WeaponState, delta: float) -> void:
@@ -656,7 +931,14 @@ func _animate_shotgun(state: WeaponState, delta: float) -> void:
 	_was_reloading = reloading
 	if state != null and state.magazine >= state.data.magazine_size:
 		_fired_in_load = 0
-	_open = ExhibitRig.ease_to(_open, 1.0 if reloading else 0.0, 11.0 if reloading else 16.0, delta)
+	# keyed on the reload: broken open, two shells thumbed in, snapped shut
+	# from the wrist before the reload ends
+	var p := state.reload_progress() if reloading else 0.0
+	_follow_hinge(_keyed_break(p) if reloading else 0.0, reloading, delta)
+	_follow_tilt(_keyed_tilt(p) if reloading else 0.0, delta)
+	_follow_lift(reloading, delta)
+	var jolts: Array = _break_jolts(p, SHOTGUN_SHELLS) if reloading else [Vector3.ZERO, Vector3.ZERO]
+	_ease_reload_pose(jolts[0], jolts[1], delta)
 	# broken open: the spent shells pop out over the shoulder
 	if not reloading:
 		_shells_out = false
@@ -679,8 +961,8 @@ func _animate_shotgun(state: WeaponState, delta: float) -> void:
 	# show the chambers: lift the gun back into view (the holder dips it),
 	# tip the breech up toward the eye and roll it in
 	var framing: Array = FRAMING[model_id]
-	model.position = (framing[0] as Vector3) + Vector3(-0.04, HOLDER_RELOAD_DROP + 0.03, 0.02) * _open
-	model.rotation = Vector3(0.3 * _open, 0.12 * _open, 0.42 * _open) + _framing_turn()
+	model.position = (framing[0] as Vector3) + Vector3(0.0, HOLDER_RELOAD_DROP, 0.0) * _lift + Vector3(-0.04, 0.03, 0.02) * _tilt + _reload_at
+	model.rotation = Vector3(0.3, 0.12, 0.42) * _tilt + _framing_turn() + _reload_turn
 
 
 func _animate_taser(state: WeaponState) -> void:
@@ -712,28 +994,40 @@ func _animate_gatling(state: WeaponState, delta: float) -> void:
 	if crank != null and knob != null and rest.has("hand_r"):
 		var knob_rest: Vector3 = (rest["crank"] as Transform3D) * knob.position
 		_pose_part(&"hand_r", Vector3.ZERO, crank.transform * knob.position - knob_rest)
-	# the belt: tugged up into the hopper by every round, swaying as it feeds
+	# the belt: tugged up into the hopper by every round, swaying as it feeds;
+	# a new belt is hauled in (a long pull up) and the gun settles with a jolt
 	_belt_tug = maxf(_belt_tug - delta / 0.06, 0.0)
+	var change := state.reload_progress() if state.is_reloading() else 0.0
+	var haul := ViewmodelMotion.bump(change, 0.1, 0.8)
+	var settle := ViewmodelMotion.bump(change, 0.7, 1.0)
 	var sway := sin(_time * 11.0) * 0.06 * speed + sin(_time * 1.7) * 0.015
-	_pose_part(&"belt", Vector3(sway * 0.6, 0.0, sway), Vector3(0.0, BELT_TUG * _belt_tug, 0.0))
+	_pose_part(&"belt", Vector3(sway * 0.6, 0.0, sway), Vector3(0.0, BELT_TUG * _belt_tug + BELT_HAUL * haul, 0.0))
+	_ease_reload_pose(Vector3(0.0, -0.01 * settle, 0.0), Vector3(-0.04 * settle, 0.0, 0.03 * haul), delta)
 	_driver.update(state, delta)
 	var glow := _driver.glow()
 	_set_heat(glow * glow * GATLING_GLOW_ENERGY)
 	var framing: Array = FRAMING[model_id]
-	model.position = (framing[0] as Vector3) + _driver.jolt
+	model.position = (framing[0] as Vector3) + _driver.jolt + _reload_at
+	model.rotation = _framing_turn() + _reload_turn
 	_flash_left = maxf(_flash_left - delta, 0.0)
 	_flash.visible = _flash_left > 0.0
 
 
 func _animate_flare(state: WeaponState, delta: float) -> void:
 	var reloading := state.is_reloading()
-	_open = ExhibitRig.ease_to(_open, 1.0 if reloading else 0.0, 11.0 if reloading else 16.0, delta)
+	# keyed like the shotgun's: broken open, the round thumbed in, snapped shut
+	var p := state.reload_progress() if reloading else 0.0
+	_follow_hinge(_keyed_break(p) if reloading else 0.0, reloading, delta)
+	_follow_tilt(_keyed_tilt(p) if reloading else 0.0, delta)
+	_follow_lift(reloading, delta)
+	var jolts: Array = _break_jolts(p, FLARE_ROUND) if reloading else [Vector3.ZERO, Vector3.ZERO]
+	_ease_reload_pose(jolts[0], jolts[1], delta)
 	_pose_part(&"barrel", Vector3(FLARE_BREAK * _open, 0.0, 0.0))
 	# lift the gun back into view (the holder dips it) and tip the breech
 	# up toward the eye
 	var framing: Array = FRAMING[model_id]
-	model.position = (framing[0] as Vector3) + Vector3(-0.03, HOLDER_RELOAD_DROP + 0.02, 0.02) * _open
-	model.rotation = Vector3(0.28 * _open, 0.1 * _open, 0.38 * _open) + _framing_turn()
+	model.position = (framing[0] as Vector3) + Vector3(0.0, HOLDER_RELOAD_DROP, 0.0) * _lift + Vector3(-0.03, 0.02, 0.02) * _tilt + _reload_at
+	model.rotation = Vector3(0.28, 0.1, 0.38) * _tilt + _framing_turn() + _reload_turn
 
 
 ## The gatling's own barrel material (it glows alone), its driver at the
@@ -827,8 +1121,8 @@ func _animate_rifle(state: WeaponState, delta: float) -> void:
 		return
 	var reloading := state.is_reloading()
 	if _was_reloading and not reloading and state.magazine > 0:
-		_cycle = 0.55
-		_cycle_length = 0.9
+		_cycle = RIFLE_CYCLE_AFTER_RELOAD.x   # the hand reaches the open bolt's knob first
+		_cycle_length = RIFLE_CYCLE_AFTER_RELOAD.y
 		_bolt_sound = true
 	_was_reloading = reloading
 	_cycle = minf(_cycle + delta / maxf(_cycle_length, 0.05), 1.0)
@@ -855,12 +1149,18 @@ func _animate_rifle(state: WeaponState, delta: float) -> void:
 	if knob != null and bolt != null and rest.has("hand_r") and rest.has("bolt"):
 		var knob_rest: Vector3 = (rest["bolt"] as Transform3D) * knob.position
 		var want := BOLT_HAND_FOLLOW * maxf(_smooth(lift), _smooth(back)) * (0.0 if reloading else 1.0)
-		_knob_follow = ExhibitRig.ease_to(_knob_follow, want, 30.0, delta)
+		var follow := ViewmodelMotion.follow(_knob_follow, _knob_follow_v, want, RIFLE_KNOB_OMEGA, delta)
+		_knob_follow = follow.x
+		_knob_follow_v = follow.y
 		_pose_part(&"hand_r", Vector3.ZERO, (bolt.transform * knob.position - knob_rest) * _knob_follow)
 	_reload_left_hand(state, reloading, delta)
-	_open = ExhibitRig.ease_to(_open, 1.0 if reloading else 0.0, 10.0 if reloading else 14.0, delta)
+	# springs: the reload's end hands over to the bolt's run home without a
+	# jump (the gun comes back from the reload while the bolt pushes it)
+	_follow_open(1.0 if reloading else 0.0, RIFLE_OPEN_OMEGA if reloading else RIFLE_BACK_OMEGA, delta)
 	var work := maxf(_smooth(lift), _smooth(back)) * (0.0 if reloading else 1.0)
-	_bolt_push = ExhibitRig.ease_to(_bolt_push, work, 18.0, delta)
+	var push := ViewmodelMotion.follow(_bolt_push, _bolt_push_v, work, RIFLE_PUSH_OMEGA, delta)
+	_bolt_push = push.x
+	_bolt_push_v = push.y
 	model.position = (FRAMING[model_id][0] as Vector3) + RIFLE_RELOAD_SHIFT * _open + BOLT_PUSH * _bolt_push
 	model.rotation = RIFLE_RELOAD_TURN * _open + _framing_turn()
 
@@ -976,9 +1276,13 @@ func _animate_harpoon(state: WeaponState, delta: float) -> void:
 	if reloading:
 		_reel_angle = wrapf(_reel_angle + REEL_SPIN * delta, 0.0, TAU)
 	_pose_part(&"reel_crank", Vector3(_reel_angle, 0.0, 0.0))
-	_open = ExhibitRig.ease_to(_open, 1.0 if reloading else 0.0, 9.0 if reloading else 14.0, delta)
-	model.position = (FRAMING[model_id][0] as Vector3) + Vector3(-0.02, HOLDER_RELOAD_DROP + 0.03, 0.03) * _open
-	model.rotation = Vector3(0.3 * _open, 0.06 * _open, 0.18 * _open) + _framing_turn()
+	_follow_open(1.0 if reloading else 0.0, HARPOON_TIP_OMEGA if reloading else HARPOON_BACK_OMEGA, delta)
+	_follow_lift(reloading, delta)
+	# the harpoon rammed home on its wad: the gun jolts back
+	var home := ViewmodelMotion.bump(progress, 0.86, 0.98) if reloading else 0.0
+	_ease_reload_pose(Vector3(0.0, 0.006 * home, 0.012 * home), Vector3(0.05 * home, 0.0, 0.0), delta)
+	model.position = (FRAMING[model_id][0] as Vector3) + Vector3(0.0, HOLDER_RELOAD_DROP, 0.0) * _lift + Vector3(-0.02, 0.03, 0.03) * _open + _reload_at
+	model.rotation = Vector3(0.3 * _open, 0.06 * _open, 0.18 * _open) + _framing_turn() + _reload_turn
 
 
 ## One arrow per tube, as many as a volley has; each one fired is gone
@@ -1007,8 +1311,15 @@ func _animate_hwacha(state: WeaponState, delta: float) -> void:
 	if _ember != null:
 		_ember.light_energy = 0.35 + 0.12 * sin(_time * 17.0) + 0.08 * sin(_time * 29.0 + 1.1)
 	_open = ExhibitRig.ease_to(_open, 1.0 if reloading else 0.0, 8.0 if reloading else 12.0, delta)
-	model.position = (FRAMING[model_id][0] as Vector3) + Vector3(0.0, HOLDER_RELOAD_DROP * 0.8, 0.02) * _open
-	model.rotation = Vector3(-0.25 * _open, 0.0, 0.12 * _open) + _framing_turn()
+	# every arrow pushed home jolts the chest a little (its weight in the hands)
+	var seat := 0.0
+	if reloading:
+		for i in count:
+			var back_at := 0.25 + 0.65 * float(i) / float(count)
+			seat += ViewmodelMotion.bump(progress, back_at + 0.02, back_at + 0.1)
+	_ease_reload_pose(Vector3(0.0, -0.007 * seat, 0.0), Vector3(-0.035 * seat, 0.0, 0.0), delta)
+	model.position = (FRAMING[model_id][0] as Vector3) + Vector3(0.0, HOLDER_RELOAD_DROP * 0.8, 0.02) * _open + _reload_at
+	model.rotation = Vector3(-0.25 * _open, 0.0, 0.12 * _open) + _framing_turn() + _reload_turn
 
 
 ## The slow match's ember: a tiny warm light on the first-person layer.
@@ -1047,8 +1358,28 @@ func _finish_pose(delta: float) -> void:
 	if _glint != null and _glint.visible:
 		_glint.scale = _glint.scale.move_toward(Vector3.ZERO, delta * 3.0)
 		_glint.visible = _glint.scale.x > 0.01
+	_first_look_pose(delta)
 	_aim_arms()
 	_place_muzzle()
+
+
+## The first look at a found weapon, over the weapon's own pose (it waits
+## for an upgrade's inspection to end): keyed (FIRST_LOOK), eased from key
+## to key; cut short, its weight lets go within a few frames.
+func _first_look_pose(delta: float) -> void:
+	if _first_left <= 0.0 or _inspect_left > 0.0:
+		return
+	_first_left = maxf(_first_left - delta, 0.0)
+	var weight := 1.0
+	if _first_cut:
+		_first_cut_t += delta
+		weight = 1.0 - smoothstep(0.0, LOOK_LET_GO, _first_cut_t)
+		if _first_cut_t >= LOOK_LET_GO:
+			_first_left = 0.0
+	var keys: Array = FIRST_LOOK[ViewmodelMotion.grip_of(weapon_id)]
+	var pose: Array = ViewmodelMotion.keyed(keys, 1.0 - _first_left / first_look_time())
+	var turn := Transform3D(Basis.from_euler((pose[1] as Vector3) * weight), (pose[0] as Vector3) * weight)
+	model.transform = turn * model.transform
 
 
 ## The arms of a two-handed model: their parts and markers, their rest.

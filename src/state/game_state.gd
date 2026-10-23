@@ -83,6 +83,9 @@ var difficulty: StringName = DEFAULT_DIFFICULTY
 ## Secrets whose reward the guard has claimed (SecretRewards; the pouch of
 ## Dust taken, the bonus, finish or mod his). Missing in older saves.
 var secret_rewards: Array[StringName] = []
+## Uncanny moments of the museum seen once per game (UncannyDirector; plan
+## 2026-10-21-eskalacja-nocy). Missing in older saves.
+var uncanny_seen: Array[StringName] = []
 ## Save file; "" = SavePaths.save_file() (tests pass their own).
 var file_path: String = ""
 ## Why the last load_game() failed: "" (it did not), "missing", "corrupt"
@@ -130,6 +133,7 @@ func reset() -> void:
 	voice_state = {}
 	difficulty = DEFAULT_DIFFICULTY
 	secret_rewards = []
+	uncanny_seen = []
 	last_load_error = ""
 
 
@@ -312,6 +316,15 @@ static func _add_once(list: Array[StringName], entry: StringName) -> bool:
 	return true
 
 
+## The uncanny moment [param id] is seen (once per game); true the first time.
+func see_uncanny(id: StringName) -> bool:
+	return _add_once(uncanny_seen, id)
+
+
+func has_seen_uncanny(id: StringName) -> bool:
+	return uncanny_seen.has(id)
+
+
 ## The saved progress when it belongs to the current night, else {}.
 func current_progress() -> Dictionary:
 	return night_progress if int(night_progress.get("night", 0)) == night else {}
@@ -360,6 +373,7 @@ func to_dict() -> Dictionary:
 		"voice_state": voice_state.duplicate(),
 		"difficulty": String(difficulty),
 		"secret_rewards": _strings(secret_rewards),
+		"uncanny_seen": _strings(uncanny_seen),
 	}
 
 
@@ -415,6 +429,7 @@ func from_dict(data: Dictionary) -> void:
 	if (level is String or level is StringName) and DIFFICULTIES.has(StringName(level)):
 		difficulty = StringName(level)
 	secret_rewards = _names(data.get("secret_rewards"))
+	uncanny_seen = _names(data.get("uncanny_seen"))
 
 
 ## [param progress] with only well-formed entries, or {} when it is not a

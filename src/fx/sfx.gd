@@ -73,6 +73,9 @@ const SOUNDS: Array[StringName] = [
 	&"radio_click_in", &"radio_click_out",
 	# the court café (plan 2026-10-10-kawiarnia-zmeczenie): the counter flap, a coffee poured
 	&"cafe_flap", &"espresso",
+	# the museum's story (plan 2026-10-21-opowiesc-muzeum): a brass dial or a
+	# clockwork key turned a notch, the singing bird automaton's song
+	&"dial_click", &"automaton_song",
 ]
 ## Floor I sounds that loop (their .import sets loop_mode forward): Sfx.play
 ## would cut them after one pass, so they go on a player of their own.

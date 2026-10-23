@@ -59,10 +59,12 @@ func _init() -> void:
 func _enter_tree() -> void:
 	if not _active.has(self):
 		_active.append(self)
+	PerceptionWorld.shelters_changed()
 
 
 func _exit_tree() -> void:
 	_active.erase(self)
+	PerceptionWorld.shelters_changed()
 
 
 func _ready() -> void:
@@ -84,6 +86,7 @@ func contains(point: Vector3) -> bool:
 ## and its walls stop no exhibit.
 func set_active(flag: bool) -> void:
 	active = flag
+	PerceptionWorld.shelters_changed()   # (the exhibits ask once a frame)
 	if _walls != null:
 		_walls.collision_layer = Layers.ENEMY_BLOCK if flag else 0
 

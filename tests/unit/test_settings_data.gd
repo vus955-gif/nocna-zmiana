@@ -94,3 +94,73 @@ func test_nan_and_infinity_are_rejected() -> void:
 	data.from_config(config)
 	assert_eq(data.fov, 70.0, "a hand-edited nan keeps the default")
 	assert_eq(data.render_scale, 1.0)
+
+
+## Accessibility options (plan 2026-10-21-dostepnosc): defaults leave the
+## game as it was designed, ranges are clamped, an old settings.cfg without
+## them loads the defaults, and a new file keeps them.
+func test_accessibility_defaults_leave_the_game_as_designed() -> void:
+	var data := SettingsData.new()
+	assert_eq(data.hud_scale, 1.0)
+	assert_eq(data.subtitle_size, SettingsData.SubtitleSize.MEDIUM)
+	assert_eq(data.subtitle_backing, 0.0)
+	assert_false(data.reduce_flashing)
+	assert_eq(data.colour_vision, SettingsData.ColourVisionMode.NORMAL)
+	assert_false(data.sprint_toggle)
+
+
+func test_accessibility_values_are_clamped_to_their_ranges() -> void:
+	var data := SettingsData.new()
+	data.set_value(&"hud_scale", 3.0)
+	assert_eq(data.hud_scale, SettingsData.HUD_SCALE_MAX)
+	data.set_value(&"hud_scale", 0.1)
+	assert_eq(data.hud_scale, SettingsData.HUD_SCALE_MIN)
+	data.set_value(&"hud_scale", 1.23)
+	assert_almost_eq(data.hud_scale, 1.25, 0.0001, "snapped to 5 % steps")
+	data.set_value(&"subtitle_size", 9)
+	assert_eq(data.subtitle_size, SettingsData.SubtitleSize.MEDIUM)
+	data.set_value(&"subtitle_backing", 4.0)
+	assert_eq(data.subtitle_backing, 1.0)
+	data.set_value(&"subtitle_backing", -1.0)
+	assert_eq(data.subtitle_backing, 0.0)
+	data.set_value(&"colour_vision", -2)
+	assert_eq(data.colour_vision, SettingsData.ColourVisionMode.NORMAL)
+	assert_false(data.set_value(&"reduce_flashing", 1), "a switch takes a bool")
+	assert_false(data.set_value(&"sprint_toggle", "yes"))
+
+
+func test_an_old_settings_file_loads_the_accessibility_defaults() -> void:
+	var config := ConfigFile.new()
+	config.set_value(SettingsData.SECTION, "fov", 90.0)
+	config.set_value(SettingsData.SECTION, "subtitles", false)
+	var data := SettingsData.new()
+	data.from_config(config)
+	assert_eq(data.fov, 90.0, "what the file has is read")
+	assert_eq(data.hud_scale, 1.0)
+	assert_eq(data.subtitle_size, SettingsData.SubtitleSize.MEDIUM)
+	assert_eq(data.subtitle_backing, 0.0)
+	assert_false(data.reduce_flashing)
+	assert_eq(data.colour_vision, SettingsData.ColourVisionMode.NORMAL)
+	assert_false(data.sprint_toggle)
+
+
+func test_accessibility_values_survive_the_config_round_trip() -> void:
+	var data := SettingsData.new()
+	data.set_value(&"hud_scale", 1.35)
+	data.set_value(&"subtitle_size", SettingsData.SubtitleSize.LARGE)
+	data.set_value(&"subtitle_backing", 0.6)
+	data.set_value(&"reduce_flashing", true)
+	data.set_value(&"colour_vision", SettingsData.ColourVisionMode.PROTANOPIA)
+	data.set_value(&"sprint_toggle", true)
+	var config := ConfigFile.new()
+	data.to_config(config)
+	var parsed := ConfigFile.new()
+	assert_eq(parsed.parse(config.encode_to_text()), OK)
+	var loaded := SettingsData.new()
+	loaded.from_config(parsed)
+	assert_almost_eq(loaded.hud_scale, 1.35, 0.0001)
+	assert_eq(loaded.subtitle_size, SettingsData.SubtitleSize.LARGE)
+	assert_almost_eq(loaded.subtitle_backing, 0.6, 0.0001)
+	assert_true(loaded.reduce_flashing)
+	assert_eq(loaded.colour_vision, SettingsData.ColourVisionMode.PROTANOPIA)
+	assert_true(loaded.sprint_toggle)

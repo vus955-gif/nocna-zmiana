@@ -145,6 +145,12 @@ func _build_greybox() -> void:
 
 # --- what the rig reads -------------------------------------------------------
 
+## Not while it climbs out, mends in its tomb (its health counts up every
+## frame), or a missed lash is still to slap the floor.
+func _may_doze() -> bool:
+	return not rising() and not (in_tomb() and health.current < health.max_health) and _slap_in < 0.0
+
+
 ## In its tomb and not out of it yet (asleep or climbing out).
 func in_tomb() -> bool:
 	return tomb != null and not _risen

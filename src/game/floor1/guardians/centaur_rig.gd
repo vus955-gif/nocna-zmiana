@@ -319,7 +319,7 @@ func _glow(p: Pose, delta: float) -> void:
 			glow = p.hoof_glint[1]
 		_set_uniform(view, index * 3, &"glow", glow)
 		_set_uniform(view, index * 3 + 1, &"awake", clampf(p.eyes, 0.0, 1.0))
-		_set_uniform(view, index * 3 + 2, &"flash", _flash)
+		_set_uniform(view, index * 3 + 2, &"flash", Flashing.hit_flash(_flash))
 
 
 func _set_uniform(view: MeshInstance3D, slot: int, uniform: StringName, value: float) -> void:

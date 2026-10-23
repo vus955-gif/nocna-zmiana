@@ -36,7 +36,7 @@ func test_carve_takes_the_kept_carving() -> void:
 	var boxes := ShellCarver.carve(volumes)
 	var msec := Time.get_ticks_msec() - started
 	assert_eq(boxes.size(), ShellCarver._carve(volumes).size())
-	assert_lt(msec, 200, "read, not carved (%d ms)" % msec)
+	assert_lt(msec, 200 * time_slack(), "read, not carved (%d ms)" % msec)
 
 
 func test_the_shipped_caches_are_reported() -> void:

@@ -21,11 +21,19 @@ extends CanvasLayer
 ## it. Under the boss's block the top middle stacks the toast and the
 ## room's card (each slides down below what stands above it), and the
 ## night's card keeps clear of a discovery's banner (below_source).
+## The HUD's size is an option (hud_scale, 0.75..1.5; plan
+## 2026-10-21-dostepnosc): the layer is scaled and its root piece covers the
+## canvas divided by the scale, so everything inside is laid out in HUD units
+## (canvas_size()) as before; what other layers read from the HUD
+## (top_left_bottom, top_middle_bottom, hint_clearance, bottom_clearance) is
+## given back in canvas units.
 
-const HIT_COLOR := Color(1.0, 1.0, 1.0)
-const WEAK_POINT_COLOR := Color(1.0, 0.8, 0.2)
-const KILL_COLOR := Color(1.0, 0.25, 0.2)
-const BLOCKED_COLOR := Color(0.6, 0.6, 0.6)
+## The hit markers' colours in the standard palette (the player's own:
+## ColourVision.role(&"hit..."); Crosshair gives each its shape too).
+const HIT_COLOR: Color = ColourVision.STANDARD_ROLES[&"hit"]
+const WEAK_POINT_COLOR: Color = ColourVision.STANDARD_ROLES[&"hit_weak_point"]
+const KILL_COLOR: Color = ColourVision.STANDARD_ROLES[&"hit_kill"]
+const BLOCKED_COLOR: Color = ColourVision.STANDARD_ROLES[&"hit_blocked"]
 const DUST_COLOR := Color(1.0, 0.84, 0.5)
 ## Seconds the "+n" of a Dust gain stays up (it fades in the last half).
 const GAIN_TIME := 1.6
@@ -40,7 +48,7 @@ const CARD_FADE_OUT := 1.2
 ## Seconds a hint line stays up by default (it fades in the last 0.6 s).
 const HINT_TIME := 6.0
 const OBJECTIVE_COLOR := Color(0.93, 0.9, 0.84, 0.95)
-const BOSS_COLOR := UiTheme.EMERGENCY
+const BOSS_COLOR := UiTheme.EMERGENCY   # standard palette (ColourVision.role(&"boss"))
 ## Health fractions where the boss's phases change (notches on its bar).
 const BOSS_PHASES: Array[float] = [0.66, 0.33]
 ## The boss's bar and name are at most this much of the canvas's width (a
@@ -79,16 +87,24 @@ const STACK_GAP := 10.0
 ## kept under a discovery's banner.
 const CARD_RISE := 120.0
 const CARD_GAP := 18.0
-## The hint strip's bottom edge above the screen's bottom.
+## The hint strip's bottom edge above the screen's bottom; the air kept
+## over a corner plaque the strip would otherwise run into (a canvas
+## narrow for the strip: a big HUD size).
 const HINT_BOTTOM := 170.0
+const HINT_LIFT := 12.0
 ## No text of the HUD is smaller (canvas units: 13 px in a 1280x1024 window).
 const MIN_TEXT := 20
 ## Health under this share pulses its bar's mount.
 const LOW_HEALTH := 0.3
+## The heart beside the health number: the health bar's red, this much lighter.
+const HEART_LIGHTEN := 0.12
 ## Width of the instrument bars.
 const BAR_WIDTH := 300.0
 ## The group of the HUD (the subtitles keep above its hint strip).
 const GROUP := &"hud"
+## The size the stretch (canvas_items, expand, 1920x1080 base) gives a
+## 1920x1080 canvas; HUD sizes are designed in these units.
+const DESIGN_CANVAS := Vector2(1920.0, 1080.0)
 
 var player: Player
 ## Translation keys of the F1 help panel, one paragraph each (the sandbox
@@ -104,8 +120,14 @@ var night: int = 0
 ## the top edge (WorldHud.banner_bottom; 0 when nothing): the night's card
 ## keeps under it.
 var below_source: Callable = Callable()
+## The size option now (SettingsData.hud_scale): how many canvas units one
+## HUD unit takes.
+var ui_scale: float = 1.0
+
+var _root: Control
 
 var _health_label: Label
+var _heart_icon: UiIcons
 var _health_bar: HudGauge
 var _stamina_bar: StaminaBar
 ## The vitals' plaque and its state icons (caffeine, fatigue).
@@ -181,10 +203,24 @@ var _shards_label: Label = null
 
 
 ## Two small fuses under the night's goal: outlined while missing, amber
-## in the guard's pocket, glowing green once in the fuse box.
+## and striped across in the guard's pocket, glowing green and solid with a
+## bright filament down its middle once in the fuse box (the colours of the
+## player's palette, ColourVision; the stripes and the filament tell the
+## two apart without them).
 class FuseIcons extends Control:
 	const SIZE := Vector2(12, 26)
 	const GAP := 8.0
+	## A carried fuse's dark bands: every STRIPE_STEP px, STRIPE px thick.
+	const STRIPE_STEP := 4.0
+	const STRIPE := 1.5
+	const STRIPE_COLOR := Color(0.0, 0.0, 0.0, 0.55)
+	## The filament of a fuse in the box: FILAMENT px wide, on a dark edge
+	## FILAMENT_EDGE_WIDTH px each side (white alone on the pale green was
+	## barely 1.3:1).
+	const FILAMENT := 2.0
+	const FILAMENT_COLOR := Color(1.0, 1.0, 1.0, 0.95)
+	const FILAMENT_EDGE := Color(0.04, 0.06, 0.04, 0.85)
+	const FILAMENT_EDGE_WIDTH := 1.0
 	var carried: int = 0
 	var inserted: int = 0
 
@@ -197,17 +233,35 @@ class FuseIcons extends Control:
 		inserted = in_box
 		queue_redraw()
 
+	## How fuse [param i] (0, 1) is drawn: &"inserted" (solid with the
+	## filament), &"carried" (striped) or &"missing" (an outline).
+	func look(i: int) -> StringName:
+		if i < inserted:
+			return &"inserted"
+		if i < inserted + carried:
+			return &"carried"
+		return &"missing"
+
 	func _draw() -> void:
 		for i in 2:
 			var rect := Rect2(Vector2(i * (SIZE.x + GAP), (size.y - SIZE.y) * 0.5), SIZE)
 			var body := rect.grow_individual(0, -4, 0, -4)
-			if i < inserted:
-				draw_rect(body, Color(0.35, 1.0, 0.5, 0.95))
-			elif i < inserted + carried:
-				draw_rect(body, Color(1.0, 0.72, 0.35, 0.95))
-			else:
-				draw_rect(body, Color(0.0, 0.0, 0.0, 0.35))
-				draw_rect(body, Color(0.93, 0.9, 0.84, 0.55), false, 1.5)
+			match look(i):
+				&"inserted":
+					draw_rect(body, Color(ColourVision.role(&"fuse_inserted"), 0.95))
+					var mid := body.get_center().x
+					var filament := Rect2(mid - FILAMENT * 0.5, body.position.y + 2.0, FILAMENT, body.size.y - 4.0)
+					draw_rect(filament.grow_individual(FILAMENT_EDGE_WIDTH, 0.0, FILAMENT_EDGE_WIDTH, 0.0), FILAMENT_EDGE)
+					draw_rect(filament, FILAMENT_COLOR)
+				&"carried":
+					draw_rect(body, Color(ColourVision.role(&"fuse_carried"), 0.95))
+					var y := body.position.y + STRIPE_STEP - STRIPE
+					while y < body.end.y - 0.5:
+						draw_rect(Rect2(body.position.x, y, body.size.x, minf(STRIPE, body.end.y - y)), STRIPE_COLOR)
+						y += STRIPE_STEP
+				_:
+					draw_rect(body, Color(0.0, 0.0, 0.0, 0.35))
+					draw_rect(body, Color(0.93, 0.9, 0.84, 0.55), false, 1.5)
 			for cap in [rect.position.y, rect.end.y - 4.0]:
 				draw_rect(Rect2(rect.position.x + 2.0, cap, SIZE.x - 4.0, 4.0), Color(0.78, 0.62, 0.3, 0.9))
 
@@ -217,15 +271,20 @@ class FuseIcons extends Control:
 ## share fatigue took eaten from the right (a hatched slate segment:
 ## blocked, not empty), the fill in a pulsing crema cream while caffeine
 ## lasts - pale and bright against the exhausted red (an orange copper was
-## the red's twin at 8 px, and as bright).
+## the red's twin at 8 px, and as bright). While exhausted the fill is also
+## hatched (back-slanted, unlike fatigue's segment), so exhaustion reads
+## without its colour; the colours are the player's palette's (ColourVision;
+## these constants are the standard ones).
 class StaminaBar extends Control:
-	const FILL := Color(0.95, 0.8, 0.3)
-	const EXHAUSTED := Color(1.0, 0.43, 0.33)
+	const FILL: Color = ColourVision.STANDARD_ROLES[&"stamina_fill"]
+	const EXHAUSTED: Color = ColourVision.STANDARD_ROLES[&"stamina_exhausted"]
 	## The pulse of the caffeinated fill runs between these two.
-	const CAFFEINE := Color(0.96, 0.89, 0.72)
-	const CAFFEINE_PEAK := Color(1.0, 0.97, 0.88)
+	const CAFFEINE: Color = ColourVision.STANDARD_ROLES[&"stamina_caffeine"]
+	const CAFFEINE_PEAK: Color = ColourVision.STANDARD_ROLES[&"stamina_caffeine_peak"]
 	const TIRED := Color(0.42, 0.38, 0.5, 0.85)
 	const HATCH := Color(0.08, 0.07, 0.1, 0.55)
+	## The exhausted fill's hatching (darker lines, the other slant).
+	const EXHAUSTED_HATCH := Color(0.05, 0.03, 0.03, 0.6)
 	const BACKGROUND := Color(0.0, 0.0, 0.0, 0.5)
 	const HATCH_STEP := 6.0
 	## Stamina (of the full maximum), the usable share, the state.
@@ -265,9 +324,13 @@ class StaminaBar extends Control:
 
 	func fill_color() -> Color:
 		if exhausted:
-			return EXHAUSTED
-		var cream := CAFFEINE.lerp(CAFFEINE_PEAK, 0.5 + 0.5 * sin(_pulse * 2.4))
-		return FILL.lerp(cream, caffeine)
+			return ColourVision.role(&"stamina_exhausted")
+		var cream := ColourVision.role(&"stamina_caffeine").lerp(ColourVision.role(&"stamina_caffeine_peak"), 0.5 + 0.5 * sin(_pulse * 2.4))
+		return ColourVision.role(&"stamina_fill").lerp(cream, caffeine)
+
+	## Is the fill hatched now (exhausted).
+	func hatched() -> bool:
+		return exhausted
 
 	func _draw() -> void:
 		draws += 1
@@ -276,6 +339,8 @@ class StaminaBar extends Control:
 		var h := channel.size.y
 		var origin := channel.position
 		HudGauge.draw_fill(self, Rect2(origin, Vector2(w * value, h)), fill_color())
+		if hatched():
+			_hatch_fill(Rect2(origin, Vector2(w * value, h)))
 		HudGauge.draw_scale(self, channel, 4)
 		if cap >= 0.999:
 			return
@@ -291,16 +356,63 @@ class StaminaBar extends Control:
 			x += HATCH_STEP
 		draw_rect(Rect2(origin.x + usable - 1.0, origin.y, 1.0, h), Color(0.0, 0.0, 0.0, 0.7))
 
+	## Back-slanted lines over the exhausted fill [param rect] (top left to
+	## bottom right, clipped to it).
+	func _hatch_fill(rect: Rect2) -> void:
+		var h := rect.size.y
+		var x := rect.position.x - h
+		while x < rect.end.x:
+			var from := Vector2(x, rect.position.y)
+			var to := Vector2(x + h, rect.end.y)
+			if from.x < rect.position.x:
+				from = Vector2(rect.position.x, rect.position.y + (rect.position.x - from.x))
+			if to.x > rect.end.x:
+				to = Vector2(rect.end.x, rect.end.y - (to.x - rect.end.x))
+			if to.x > from.x:
+				draw_line(from, to, EXHAUSTED_HATCH, 1.5, true)
+			x += HATCH_STEP
 
+
+## The dot and the hit markers. Each kind of hit has its own colour (the
+## player's palette, ColourVision) and its own shape, so it reads without
+## the colour: a hit = four slanted ticks; a weak point = the same, longer
+## and thicker; a kill = the slanted ticks and an upright cross of four
+## more; blocked = the upright cross alone.
 class Crosshair extends Control:
 	const MARKER_TIME := 0.2
+	const DIAGONALS: Array[Vector2] = [Vector2(1, 1), Vector2(-1, 1), Vector2(1, -1), Vector2(-1, -1)]
+	const UPRIGHT: Array[Vector2] = [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]
 	var marker_time: float = 0.0
 	var marker_color: Color = Color.WHITE
+	## &"hit", &"weak_point", &"kill" or &"blocked".
+	var marker_kind: StringName = &"hit"
 
-	func show_marker(color: Color) -> void:
+	func show_marker(color: Color, kind: StringName = &"hit") -> void:
 		marker_color = color
+		marker_kind = kind
 		marker_time = MARKER_TIME
 		queue_redraw()
+
+	## The ticks of a marker of [param kind]: [direction, from, to, width]
+	## each (distances from the centre in px).
+	static func ticks(kind: StringName) -> Array:
+		var out: Array = []
+		match kind:
+			&"weak_point":
+				for d in DIAGONALS:
+					out.append([d.normalized(), 9.0, 27.0, 4.5])
+			&"kill":
+				for d in DIAGONALS:
+					out.append([d.normalized(), 9.0, 21.0, 3.0])
+				for d in UPRIGHT:
+					out.append([d, 8.0, 16.0, 2.5])
+			&"blocked":
+				for d in UPRIGHT:
+					out.append([d, 8.0, 18.0, 3.0])
+			_:
+				for d in DIAGONALS:
+					out.append([d.normalized(), 9.9, 21.2, 3.0])
+		return out
 
 	func _process(delta: float) -> void:
 		if marker_time > 0.0:
@@ -314,15 +426,20 @@ class Crosshair extends Control:
 		if marker_time <= 0.0:
 			return
 		var color := Color(marker_color, marker_time / MARKER_TIME)
-		for corner in [Vector2(1, 1), Vector2(-1, 1), Vector2(1, -1), Vector2(-1, -1)]:
-			draw_line(center + corner * 7.0, center + corner * 15.0, color, 3.0, true)
+		for tick: Array in ticks(marker_kind):
+			var dir: Vector2 = tick[0]
+			draw_line(center + dir * float(tick[1]), center + dir * float(tick[2]), color, float(tick[3]), true)
 
 
 func _ready() -> void:
 	layer = 10
 	add_to_group(GROUP)
 	var root := Control.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_root = root
+	ui_scale = Settings.data.hud_scale
+	scale = Vector2.ONE * ui_scale
+	root.set_anchors_preset(Control.PRESET_TOP_LEFT)   # sized to the canvas / scale (_fit_root)
+	root.size = canvas_size()
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 	_vignette = _make_vignette()
@@ -381,6 +498,8 @@ func _ready() -> void:
 	Events.player_damaged.connect(_on_player_damaged)
 	Events.hit_landed.connect(_on_hit_landed)
 	Events.hint_requested.connect(_on_hint_requested)
+	Settings.settings_changed.connect(_on_settings_changed)
+	get_viewport().size_changed.connect(_fit_root)
 
 
 ## The vitals' plaque: the heart and the health number (the state icons
@@ -395,7 +514,8 @@ func _build_vitals(root: Control) -> void:
 	_vitals.add_child(column)
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 10)
-	head.add_child(UiIcons.make(UiIcons.Kind.HEART, UiTheme.EMERGENCY.lightened(0.12), 1.15))
+	_heart_icon = UiIcons.make(UiIcons.Kind.HEART, ColourVision.role(&"health").lightened(HEART_LIGHTEN), 1.15)
+	head.add_child(_heart_icon)
 	_health_label = _label(40, UiTheme.TEXT, UiTheme.number_font())
 	_health_label.custom_minimum_size.y = 44.0
 	_health_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -404,14 +524,14 @@ func _build_vitals(root: Control) -> void:
 	spring.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spring.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	head.add_child(spring)
-	_caffeine_icon = UiIcons.make(UiIcons.Kind.CUP, StaminaBar.CAFFEINE, 1.3)
+	_caffeine_icon = UiIcons.make(UiIcons.Kind.CUP, ColourVision.role(&"stamina_caffeine"), 1.3)
 	_caffeine_icon.modulate.a = 0.0
 	head.add_child(_caffeine_icon)
 	_tired_icon = UiIcons.make(UiIcons.Kind.TIRED, StaminaBar.TIRED.lightened(0.45), 1.3)
 	_tired_icon.modulate.a = 0.0
 	head.add_child(_tired_icon)
 	column.add_child(head)
-	_health_bar = HudGauge.make(Vector2(BAR_WIDTH, 18), UiTheme.EMERGENCY, 10)
+	_health_bar = HudGauge.make(Vector2(BAR_WIDTH, 18), ColourVision.role(&"health"), 10)
 	_health_bar.low_pulse = LOW_HEALTH
 	column.add_child(_health_bar)
 	_stamina_bar = StaminaBar.new()
@@ -442,7 +562,7 @@ func _build_arms(root: Control) -> void:
 	_slots.add_theme_constant_override("separation", 9)
 	for i in WeaponHolder.SLOT_ORDER.size():
 		var slot := _label(MIN_TEXT, SLOT_EMPTY, UiTheme.number_font())
-		slot.text = str(i + 1)
+		slot.text = GameInput.key_label(StringName("weapon_%d" % (i + 1)))
 		slot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		slot.custom_minimum_size.x = 14.0
 		_slots.add_child(slot)
@@ -545,7 +665,7 @@ func _build_boss(root: Control) -> void:
 	_boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_boss_plate.add_child(_boss_name)
 	_boss_box.add_child(_boss_plate)
-	_boss_bar = HudGauge.make(Vector2(BOSS_BAR_WIDTH, 22), BOSS_COLOR, 0)
+	_boss_bar = HudGauge.make(Vector2(BOSS_BAR_WIDTH, 22), ColourVision.role(&"boss"), 0)
 	_boss_bar.marks = BOSS_PHASES
 	_boss_bar.finials = true
 	_boss_bar.trail = true
@@ -657,6 +777,27 @@ func hide_help() -> void:
 	_help.visible = false
 
 
+## The canvas in HUD units: the viewport's visible rectangle divided by the
+## size option. The corners, the middle and the edges of the HUD are these.
+func canvas_size() -> Vector2:
+	var viewport := get_viewport()
+	return (viewport.get_visible_rect().size if viewport != null else DESIGN_CANVAS) / ui_scale
+
+
+## Sets the HUD's size to [param value] (a share of the designed size,
+## clamped to the option's range) and lays the root piece over the canvas.
+func apply_scale(value: float) -> void:
+	ui_scale = clampf(value, SettingsData.HUD_SCALE_MIN, SettingsData.HUD_SCALE_MAX)
+	scale = Vector2.ONE * ui_scale
+	_fit_root()
+
+
+## The root piece as large as the canvas is in HUD units.
+func _fit_root() -> void:
+	if _root != null and _root.size != canvas_size():
+		_root.size = canvas_size()
+
+
 ## Bottom edge (canvas units) of what stands in the top left corner right
 ## now: the night's plaque (night, clock, goal and help line), or the F1
 ## help over it (the world's row of artifacts goes under it).
@@ -665,7 +806,7 @@ func top_left_bottom() -> float:
 	for block: Control in [_night_plate, _help]:
 		if block != null and block.is_visible_in_tree():
 			bottom = maxf(bottom, block.position.y + block.get_combined_minimum_size().y)
-	return bottom
+	return bottom * ui_scale
 
 
 ## Bottom edge (canvas units) of the top middle's stack right now: the
@@ -679,7 +820,13 @@ func top_middle_bottom() -> float:
 		bottom = maxf(bottom, _toast_plate.offset_top + _height(_toast_plate))
 	if _room_card != null and _room_card.visible:
 		bottom = maxf(bottom, _room_card.offset_top + _height(_room_card))
-	return bottom
+	return bottom * ui_scale
+
+
+## The bottom edge of the HUD's top middle stack in HUD units (what the
+## night's card keeps under).
+func _stack_bottom() -> float:
+	return top_middle_bottom() / ui_scale
 
 
 ## How far above the screen's bottom edge the hint strip reaches while it
@@ -687,7 +834,17 @@ func top_middle_bottom() -> float:
 func hint_clearance() -> float:
 	if _hint_left <= 0.0:
 		return 0.0
-	return HINT_BOTTOM + _height(_hint)
+	return (-_hint.offset_top) * ui_scale
+
+
+## How far above the screen's bottom edge (canvas units) the corner plaques
+## (the vitals, the weapon) reach: the subtitles keep above them.
+func bottom_clearance() -> float:
+	var top := 0.0
+	for plaque: Control in [_vitals, _arms]:
+		if plaque != null:
+			top = maxf(top, MARGIN + _height(plaque))
+	return top * ui_scale
 
 
 ## A piece's height as laid out (or as its content asks, before layout).
@@ -830,7 +987,7 @@ func _update_boss(delta: float) -> void:
 ## first, then the goal wraps in what is left of the left half beside it
 ## (the whole left half while no bar is up), less the plaque's margins.
 func _fit_top_edge() -> void:
-	var canvas := get_viewport().get_visible_rect().size.x
+	var canvas := canvas_size().x
 	var block := canvas * BOSS_BLOCK_SHARE
 	_boss_bar.custom_minimum_size.x = minf(BOSS_BAR_WIDTH, block)
 	var name_plate := _boss_plate.get_theme_stylebox(&"panel")
@@ -887,13 +1044,31 @@ func show_hint(text: String, seconds: float = HINT_TIME) -> void:
 	_place_hint()
 
 
-## The hint strip centred, its bottom edge HINT_BOTTOM above the screen's.
+## The hint strip centred, its bottom edge HINT_BOTTOM above the screen's
+## (higher where a corner plaque would stand in its way, see _hint_bottom).
 func _place_hint() -> void:
 	_center_x(_hint)
 	var height := _hint.get_combined_minimum_size().y
-	if _hint.offset_bottom != -HINT_BOTTOM or not is_equal_approx(_hint.offset_top, -HINT_BOTTOM - height):
-		_hint.offset_bottom = -HINT_BOTTOM
-		_hint.offset_top = -HINT_BOTTOM - height
+	var bottom := _hint_bottom()
+	if _hint.offset_bottom != -bottom or not is_equal_approx(_hint.offset_top, -bottom - height):
+		_hint.offset_bottom = -bottom
+		_hint.offset_top = -bottom - height
+
+
+## The hint strip's foot above the screen's bottom (HUD units): HINT_BOTTOM,
+## or just over the vitals' or the weapon's plaque when the strip is wide
+## enough to reach one of them (the canvas of a big HUD size is narrow).
+func _hint_bottom() -> float:
+	var canvas := canvas_size()
+	var half := _hint.get_combined_minimum_size().x * 0.5
+	var bottom := HINT_BOTTOM
+	for plaque: Control in [_vitals, _arms]:
+		if plaque == null:
+			continue
+		var rect := plaque.get_global_rect()
+		if rect.end.x > canvas.x * 0.5 - half and rect.position.x < canvas.x * 0.5 + half:
+			bottom = maxf(bottom, canvas.y - rect.position.y + HINT_LIFT)
+	return bottom
 
 
 ## The hint line while it shows ("" when gone).
@@ -929,13 +1104,17 @@ func _update_card(delta: float) -> void:
 	_card.modulate.a = minf(fade_in, fade_out)
 	_card_shade.modulate.a = _card.modulate.a
 	# centred CARD_RISE above the middle, under a discovery's banner if one is up
-	var screen := get_viewport().get_visible_rect().size
+	var screen := canvas_size()
 	var height := _card.get_combined_minimum_size().y
 	var top := screen.y * 0.5 - CARD_RISE - height * 0.5
 	if below_source.is_valid():
-		var banner := float(below_source.call())
+		var banner := float(below_source.call()) / ui_scale
 		if banner > 0.0:
 			top = maxf(top, banner + CARD_GAP)
+	# a small canvas (a big HUD size): under the boss's block, the toast and the room's card too
+	var stack := _stack_bottom()
+	if stack > 0.0:
+		top = maxf(top, stack + CARD_GAP)
 	_card.offset_top = top - screen.y * 0.5
 	_card.offset_bottom = _card.offset_top + height
 	var width := _card.get_combined_minimum_size().x
@@ -955,8 +1134,38 @@ func _refresh_texts() -> void:
 	_help_hint.text = tr("HUD_HELP_HINT") % GameInput.key_label(&"toggle_help")
 	var paragraphs: PackedStringArray = []
 	for key in help_keys:
-		paragraphs.append(tr(key))
+		paragraphs.append(ControlsHelp.paragraph(key))   # (the keys in it are the player's own)
 	_help_label.text = "\n\n".join(paragraphs)
+	for i in _slot_labels.size():
+		_slot_labels[i].text = GameInput.key_label(StringName("weapon_%d" % (i + 1)))
+
+
+## The player changed his keys (or the settings were read again): the
+## help, its hint and the weapon slots name the new ones.
+func _on_settings_changed(key: StringName) -> void:
+	if (key == &"bindings" or key == &"") and _help_label != null:
+		_refresh_texts()
+	if key == &"hud_scale" or key == &"":
+		apply_scale(Settings.data.hud_scale)
+	if key == &"colour_vision" or key == &"":
+		apply_palette()
+
+
+## The colour-vision palette (ColourVision) on every piece of the HUD that
+## wears one: the heart, the health and boss bars, the stamina bar and its cup, the
+## fuses (the slot in hand and the hit markers read it as they show).
+func apply_palette() -> void:
+	_heart_icon.color = ColourVision.role(&"health").lightened(HEART_LIGHTEN)
+	_health_bar.fill = ColourVision.role(&"health")
+	_health_bar.queue_redraw()
+	_boss_bar.fill = ColourVision.role(&"boss")
+	_boss_bar.queue_redraw()
+	_caffeine_icon.color = ColourVision.role(&"stamina_caffeine")
+	_stamina_bar.queue_redraw()
+	_fuse_icons.queue_redraw()
+	if is_instance_valid(player):
+		_update_slots(player.weapons.current_state())
+		_slots.queue_redraw()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -987,7 +1196,7 @@ func _process(delta: float) -> void:
 	_update_states(delta)
 	_update_fatigue(delta, player.fatigue.effect())
 	_torch_bar.value = player.battery.fraction()
-	var blink := player.battery.is_low() and fmod(Time.get_ticks_msec() / 1000.0, 0.6) < 0.3
+	var blink := torch_alert(player.battery.is_low(), Time.get_ticks_msec() / 1000.0)
 	_torch_bar.modulate = Color(1.0, 0.35, 0.3) if blink else Color.WHITE
 	_torch_icon.modulate = _torch_bar.modulate
 	_death_label.visible = not player.alive
@@ -1012,6 +1221,13 @@ func _process(delta: float) -> void:
 				_battery_bar.value = state.battery / state.data.battery_max
 	_ammo_row.visible = _ammo_label.visible
 	_reloading_size()
+
+
+## Is the torch's bar red now: while the battery is [param low] it blinks
+## (1.7 times a second, at [param seconds] on the clock), or - with the
+## option "reduce_flashing" - stays red.
+func torch_alert(low: bool, seconds: float) -> bool:
+	return low and (Flashing.on() or fmod(seconds, 0.6) < 0.3)
 
 
 ## The reloading word is smaller than the figures it stands in for.
@@ -1071,11 +1287,11 @@ func slots_text() -> String:
 	for i in _slot_labels.size():
 		var color := _slot_labels[i].label_settings.font_color
 		if i == _slot_in_hand:
-			out.append("[%d]" % (i + 1))
+			out.append("[%s]" % _slot_labels[i].text)
 		elif color == SLOT_OWNED:
-			out.append(str(i + 1))
+			out.append(_slot_labels[i].text)
 		else:
-			out.append("(%d)" % (i + 1))
+			out.append("(%s)" % _slot_labels[i].text)
 	return " ".join(out)
 
 
@@ -1127,20 +1343,20 @@ func _update_prompt() -> void:
 
 
 func _on_player_damaged(amount: float, _from: Vector3) -> void:
-	_vignette.modulate.a = clampf(0.35 + amount / 40.0, 0.0, 0.9)
+	_vignette.modulate.a = Flashing.vignette(clampf(0.35 + amount / 40.0, 0.0, 0.9))
 
 
 func _on_hit_landed(_target: Node, info: DamageInfo, killed: bool) -> void:
 	if not is_instance_valid(player) or info == null or info.source != player:
 		return
-	var color := HIT_COLOR
+	var kind := &"hit"
 	if info.blocked:
-		color = BLOCKED_COLOR
+		kind = &"blocked"
 	elif killed:
-		color = KILL_COLOR
+		kind = &"kill"
 	elif info.weak_point:
-		color = WEAK_POINT_COLOR
-	_crosshair.show_marker(color)
+		kind = &"weak_point"
+	_crosshair.show_marker(ColourVision.role(&"hit" if kind == &"hit" else StringName("hit_" + kind)), kind)
 	Sfx.play(&"kill" if killed else &"hit_marker", -8.0)
 
 

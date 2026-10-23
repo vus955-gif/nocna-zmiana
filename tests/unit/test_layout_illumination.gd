@@ -95,3 +95,20 @@ func test_power_read_from_the_lamps_in_the_scene() -> void:
 	assert_false(powered.call(LightSpec.MAIN, &"hall"), "a dark lamp has no power")
 	assert_true(powered.call(LightSpec.MAIN, &"side"), "no lamp node for that room: powered")
 	root.free()
+
+
+func test_a_lamp_put_out_and_back_gives_its_light_again() -> void:
+	var light := LayoutIllumination.from_layout(_layout())
+	var under := Vector3(0, 1, 0)
+	var lit := light.at(under)
+	assert_true(light.put_out(Vector3(0, 3, 0)), "a lamp stands there")
+	assert_lt(light.at(under), PerceptionRules.DIM_LEVEL, "out: dark under it")
+	assert_true(light.put_back(Vector3(0, 3, 0)), "it was out")
+	assert_almost_eq(light.at(under), lit, 0.001, "back: as lit as before")
+	assert_false(light.put_back(Vector3(0, 3, 0)), "(already back)")
+	assert_false(light.put_back(Vector3(5, 3, 5)), "(no lamp there)")
+	# out and back again, as often as a fire bowl is doused and lit
+	for i in 3:
+		light.put_out(Vector3(0, 3, 0))
+		light.put_back(Vector3(0, 3, 0))
+	assert_almost_eq(light.at(under), lit, 0.001)

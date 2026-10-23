@@ -21,6 +21,9 @@ const Asia := preload("res://src/level/floor1/zones/asia.gd")
 const Americas := preload("res://src/level/floor1/zones/americas.gd")
 const Basement := preload("res://src/level/floor1/zones/basement.gd")
 const Roof := preload("res://src/level/floor1/zones/roof.gd")
+## The story layer: markers only, in rooms the zones built (labels, curios,
+## the staff's trails; plan 2026-10-21-opowiesc-muzeum).
+const Story := preload("res://src/level/floor1/zones/story.gd")
 
 ## Problems found while putting the floor together (a junction without a
 ## room on one side...); empty for a sound layout. Tests read it.
@@ -44,6 +47,7 @@ static func create() -> LevelLayout:
 		var room := layout.room(slot.room)
 		slot.zone = room.zone if room != null else &""
 	add_junctions(layout)
+	Story.build(layout)
 	return layout
 
 
@@ -120,6 +124,14 @@ static func junction_room(layout: LevelLayout, j: Floor1Plan.Junction, zone: Str
 ## permanent key items (Floor1Plan.PICKUPS).
 static func describe(layout: LevelLayout) -> LevelDescription:
 	var description := LevelDescription.from_layout(layout)
+	description.objective_rooms = objective_rooms(layout)
+	description.boss_room = layout.marker_rooms.get(Floor1Plan.TREX_MARKER, &"")
+	return description
+
+
+## The rooms the night needs: every progress pickup, guardian and the
+## T-Rex's pedestal lie in one (the switchboard's, the astrolabe's...).
+static func objective_rooms(layout: LevelLayout) -> Array[StringName]:
 	var objectives: Array[StringName] = []
 	var wanted: Array[StringName] = [Floor1Plan.TREX_MARKER]
 	for pickup in Floor1Plan.pickups():
@@ -127,12 +139,10 @@ static func describe(layout: LevelLayout) -> LevelDescription:
 	for guardian in Floor1Plan.guardians():
 		wanted.append(guardian.marker)
 	for marker in wanted:
-		var room := description.room_of(marker)
+		var room: StringName = layout.marker_rooms.get(marker, &"")
 		if room != &"" and not objectives.has(room):
 			objectives.append(room)
-	description.objective_rooms = objectives
-	description.boss_room = layout.marker_rooms.get(Floor1Plan.TREX_MARKER, &"")
-	return description
+	return objectives
 
 
 ## Rooms counting for progress area [param area].

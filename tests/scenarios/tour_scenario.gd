@@ -356,11 +356,75 @@ func _perf() -> void:
 		_place(VIEWS[label][0], VIEWS[label][1])
 		await _frames(40)
 		result["views"][label] = await _measure(4.0, label)
+	# the fights: a guardian awake in front of the guard, seen through his eyes
+	for id: StringName in [&"colossus", &"general", &"lamassu"]:
+		var label := "fight_%s" % id
+		if _wanted(label):
+			var guardian: Guardian = museum.floor_game.guardians.guardians.get(id) if museum.floor_game != null else null
+			if guardian != null:
+				result["views"][label] = await _perf_fight(guardian, label)
+	if _wanted("fight_trex") and museum.floor_game != null and museum.floor_game.finale != null and is_instance_valid(museum.floor_game.finale.boss):
+		var finale := museum.floor_game.finale
+		museum.player.global_position = Vector3(10.0, 0.1, -8.0)
+		finale.boss.wake()
+		if finale.has_method(&"_on_boss_phase"):
+			finale.call(&"_on_boss_phase", 1)
+		await _seconds(3.0)
+		_place(Vector3(14.0, 2.5, -9.0), finale.boss.global_position + Vector3.UP * 3.0)
+		await _frames(20)
+		result["views"]["fight_trex"] = await _measure(4.0, "fight_trex")
+	# the F3 overlay itself over the court (its layout at 1920x1080), numbers then systems
+	if _wanted("f3_overlay") and PerfOverlay.allowed():
+		museum.player.global_position = Vector3(33.0, 0.1, 45.5)
+		_place(VIEWS["court_from_entrance"][0], VIEWS["court_from_entrance"][1])
+		PerfOverlay.set_mode(PerfOverlay.Mode.NUMBERS)
+		await _seconds(1.5)
+		await _capture("f3_numbers_court")
+		PerfOverlay.set_mode(PerfOverlay.Mode.SYSTEMS)
+		await _seconds(2.5)
+		await _capture("f3_systems_court")
+		PerfOverlay.set_mode(PerfOverlay.Mode.OFF)
 	print("tour perf: ", JSON.stringify(result))
 	var file := FileAccess.open(OUT_DIR.path_join("perf_%s.json" % _preset), FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(result, "  "))
 		file.close()
+
+
+## [param guardian] woken with the guard 10 m in front of him; measured
+## through the guard's eyes (his gun, the HUD and the guardian's bar up),
+## then calmed and the guard back in the booth.
+func _perf_fight(guardian: Guardian, label: String) -> Dictionary:
+	var ahead := -guardian.global_basis.z
+	ahead.y = 0.0
+	var at := guardian.global_position + ahead.normalized() * 10.0
+	museum.player.global_position = Vector3(at.x, guardian.global_position.y + 0.1, at.z)
+	var eye := museum.player.global_position + Vector3.UP * museum.player.eye_height
+	var aim := guardian.global_position + Vector3.UP * 2.0 - eye
+	museum.player.head.rotation = Vector3(atan2(aim.y, Vector2(aim.x, aim.z).length()), atan2(-aim.x, -aim.z), 0.0)
+	museum.player.camera.current = true
+	if not guardian.is_fighting():
+		guardian.wake()
+	await _seconds(2.5)
+	var out := await _measure_eyes(4.0, label)
+	out["fighting"] = guardian.is_fighting()
+	museum.player.global_position = Vector3(33.0, 0.1, 45.5)
+	if guardian.is_fighting():
+		guardian.reset_fight()
+	await _seconds(1.0)
+	camera.current = true
+	return out
+
+
+## _measure through the guard's own camera (it stays where the fight put it).
+func _measure_eyes(seconds: float, label: String) -> Dictionary:
+	var swap := camera
+	camera = museum.player.camera
+	var base := camera.rotation
+	var out := await _measure(seconds, label)
+	camera.rotation = base
+	camera = swap
+	return out
 
 
 func _measure(seconds: float, label: String) -> Dictionary:
@@ -369,24 +433,43 @@ func _measure(seconds: float, label: String) -> Dictionary:
 	var last := start
 	var frames := 0
 	var times: Array[float] = []
+	# the renderer's own CPU / GPU time per frame (what the F3 overlay shows)
+	var gpu: Array[float] = []
+	var render_cpu: Array[float] = []
+	PerfStats.measure_render(get_viewport(), true)
 	while Time.get_ticks_usec() - start < int(seconds * 1000000.0):
 		await get_tree().process_frame
 		var now := Time.get_ticks_usec()
 		times.append((now - last) / 1000.0)
 		last = now
 		frames += 1
+		var rendered := PerfStats.render_times(get_viewport())
+		if rendered.y > 0.0:
+			gpu.append(rendered.y)
+		if rendered.x > 0.0:
+			render_cpu.append(rendered.x)
 		museum.player.health.heal(1000000.0)
 		camera.rotation.y = base.y + sin((now - start) / 1000000.0 * 0.8) * 0.35
 	times.sort()
+	gpu.sort()
+	render_cpu.sort()
 	var elapsed := (Time.get_ticks_usec() - start) / 1000000.0
+	var lamps := PerfStats.lights(get_tree())
 	var out := {
 		"average_fps": frames / elapsed,
+		"median_frame_ms": times[times.size() / 2] if not times.is_empty() else 0.0,
+		"gpu_median_ms": gpu[gpu.size() / 2] if not gpu.is_empty() else 0.0,
+		"gpu_p95_ms": gpu[int(gpu.size() * 0.95)] if not gpu.is_empty() else 0.0,
+		"render_cpu_median_ms": render_cpu[render_cpu.size() / 2] if not render_cpu.is_empty() else 0.0,
+		"lamps_on": lamps.get("lamps_on", 0), "shadows_on": lamps.get("shadows_on", 0), "lamps": lamps.get("lamps", 0),
 		"p99_frame_ms": times[int(times.size() * 0.99)] if not times.is_empty() else 0.0,
 		"draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
 		"objects": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
 		"primitives": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
 	}
-	print("%s [%s]: %.0f FPS (p99 %.1f ms), %d draw calls, %d primitives" % [label, _preset, out["average_fps"], out["p99_frame_ms"], out["draw_calls"], out["primitives"]])
+	print("%s [%s]: %.0f FPS (median %.1f ms, p99 %.1f ms), GPU %.1f ms (p95 %.1f), render CPU %.1f ms, %d draw calls, %d objects, %d primitives, lamps %d (%d shadows) of %d" % [label, _preset,
+			out["average_fps"], out["median_frame_ms"], out["p99_frame_ms"], out["gpu_median_ms"], out["gpu_p95_ms"], out["render_cpu_median_ms"],
+			out["draw_calls"], out["objects"], out["primitives"], out["lamps_on"], out["shadows_on"], out["lamps"]])
 	return out
 
 

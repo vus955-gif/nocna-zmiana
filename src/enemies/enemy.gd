@@ -25,6 +25,27 @@ extends CharacterBody3D
 ## from), a heavy hit knocks chips off it, a staggering one stops its legs
 ## for a moment and lets it start no attack; a kill crumbles or is blown
 ## back and apart by the weight of the weapon that dealt it.
+## Dozing (plan 2026-10-21-wydajnosc-cpu): asleep and at rest (DORMANT,
+## resting(), no stagger, the lean and the telegraph settled, the rig in its
+## rest pose, _may_doze()) an exhibit has nothing to do between its sight
+## checks, routine ticks and sound_asleep's end (_doze_due()). It leaves
+## the engine's per-frame callbacks, its rig with it, and ExhibitClock ticks
+## it only when that moment is due, with all the time since its last tick.
+## Anything that changes it from outside first brings it up to date with one
+## such tick (end_doze()): the brain's events (wake, alarm, hear, stun...)
+## do it through EnemyBrain.before_event, hits, shoves, noises, rousing and
+## sound_asleep through their own entry points here. Subclasses keep a
+## sleeper cheap the same way: work that must run every frame while it
+## sleeps (a slide onto its shelf, a countdown read by others) makes
+## _may_doze() false until it is done; a moment of its own goes into
+## _doze_due(); per-frame visuals of its own stop in _doze_changed().
+## Far from the guard the same clock ticks the awake ones (LOD): on calm
+## business (a patrol, the walk home, a search, going to look) in a room
+## more than PerceptionWorld.ROUTINE_HOPS passages from his - where he sees
+## and hears nothing of it - an exhibit is ticked every LOD_FRAMES frames,
+## its rig with it, with the time since its last tick (it walks as far:
+## _slide()). Without rooms (arenas) never; _may_lod() keeps a subclass's
+## frame-by-frame business out of it.
 
 const GRAVITY := 15.0
 ## Group of what an exhibit leaves standing about the rooms when it walks off
@@ -49,6 +70,15 @@ const SUSPICION_DB := -8.0
 const NOTICE_DB := -4.0
 ## Seconds between navigation path updates while chasing.
 const REPATH_INTERVAL := 0.25
+## A path kept for a goal that stays put is planned anew once the exhibit
+## stands farther than this (m, on the floor plan) off the line it follows
+## (a push, a blast, the harpoon; the agent itself replans only past its
+## path_max_distance, 5 m).
+const OFF_PATH := 1.0
+## Standing still awake it skips the slide, but every this many of its
+## still ticks it slides all the same: a floor that went, a door or a solid
+## thing closing on it (the slide pushes it out, or it falls).
+const STANDING_SLIDE_TICKS := 16
 ## A chaser averaging less than this (m/s) over STUCK_TIME seconds is stuck
 ## (a ledge, a corner, a crowd) and steps DETOUR_STEP metres sideways.
 const STUCK_SPEED := 0.3
@@ -129,6 +159,19 @@ const POST_DWELL := Vector2(6.0, 10.0)
 @export var block_sound: StringName = &"block"
 ## Dust this exhibit leaves when destroyed (before finisher and night bonuses).
 @export var dust_value: int = 0
+## A dozing exhibit counts as settled when its lean is below this (rad).
+const DOZE_STILL := 0.001
+## A sight or routine timer this close to zero has run out (s): counted
+## down frame by frame or in one dozing step it runs out on the same frame
+## (the sums of the steps round differently).
+const DUE_SLACK := 0.000001
+## Far from the guard an awake exhibit is ticked every this many frames.
+const LOD_FRAMES := 4
+
+## False: no exhibit dozes (comparisons, the tests that check dozing
+## changes nothing).
+static var doze_enabled := true
+
 ## How far the whole body leans back at the top of an attack's windup and
 ## forward after the strike (rad; an overhead chop leans a lot, a spear
 ## thrust hardly at all).
@@ -161,7 +204,16 @@ var starts_awake := false
 ## Seconds it still sleeps soundly (the first minutes of night 1 on the way
 ## out of the booth): asleep it does not see the guard, only feels him
 ## within SOUND_SLEEP_SENSE; noise, hits and neighbours wake it as ever.
-var sound_asleep: float = 0.0
+var sound_asleep: float = 0.0:
+	set(value):
+		if _dozing:
+			end_doze()   # (its countdown is one of the moments it dozes until)
+		sound_asleep = value
+## Waiting for its beat in a room's scenario (FloorScenarios): asleep it
+## answers no noise, no neighbour rouses it, it does not stir and it sees
+## the guard only on SOUND_SLEEP_SENSE; a hit still wakes it, and its beat
+## lets it go.
+var held := false
 ## Called in by the boss (or an arena wave): it hunts at once, always knows
 ## where the guard is, has no bounds and ignores the hunter cap.
 var summoned := false:
@@ -202,6 +254,10 @@ var _ring_goal := false
 ## next repath, head for the target itself.
 var _ring_off_floor := false
 var _nav_iteration: int = -1
+## The goal and map iteration of the last path planned (a walk to a still
+## point keeps its path: no plan anew every repath interval).
+var _planned_goal := Vector3.INF
+var _planned_map: int = -1
 var _nav_has_regions := false
 ## Dawn turned it to stone: it neither moves nor takes hits.
 var _frozen := false
@@ -215,6 +271,28 @@ var stirs: int = 0
 ## A stagger's seconds left, and how long until it can be staggered again.
 var _stagger_left: float = 0.0
 var _stagger_cooldown: float = 0.0
+## Dozing now (see the class comment), since ExhibitClock.now was
+## _doze_mark, due on physics frame _doze_frame.
+var _dozing := false
+var _doze_mark: float = 0.0
+var _doze_frame: int = -1
+## A check whether to doze is waiting for the end of the frame.
+var _doze_queued := false
+## Inside a dozing tick (due or catching up): no new check is queued.
+var _doze_busy := false
+## Ticks taken while dozing, due or catching up (tests).
+var doze_ticks: int = 0
+## Ticks until it looks again whether it is far and calm enough for LOD.
+var _lod_check: int = 0
+## Its frame of every LOD_FRAMES (frame % LOD_FRAMES): the far exhibits of a
+## night (awake together at its start) are ticked a quarter on each frame,
+## not all on the same one (a 4 ms spike every 4th frame in the hall). The
+## count starts again with every level's perception (reset_phases()): the
+## same night built twice in one process ticks in the same order.
+var _lod_phase: int = 0
+static var _lod_phases: int = 0
+## Ticks it has stood still awake in a row (_standing()).
+var _still_ticks: int = 0
 
 ## The grey of an exhibit frozen at dawn.
 static var _stone: StandardMaterial3D = null
@@ -250,9 +328,12 @@ func _ready() -> void:
 	add_child(_stun_marker)
 	brain.strike.connect(_on_strike)
 	brain.state_changed.connect(_on_state_changed)
+	brain.before_event = end_doze
 	if target == null:
 		target = get_tree().get_first_node_in_group(&"player") as Node3D
 	# spread the periodic checks of a group over different frames
+	_lod_phase = _lod_phases % LOD_FRAMES
+	_lod_phases += 1
 	_sight_timer = randf() * SIGHT_INTERVAL
 	_routine_timer = randf() * ROUTINE_INTERVAL
 	_repath_interval = REPATH_INTERVAL * randf_range(0.8, 1.2)
@@ -279,6 +360,12 @@ func _enter_tree() -> void:
 
 
 func _exit_tree() -> void:
+	if _dozing:
+		_stop_dozing()
+		if not _frozen:
+			set_physics_process(true)
+			if rig != null:
+				rig.set_physics_process(true)
 	EnemyCrowd.leave(self)
 	PerceptionWorld.leave(self)
 
@@ -363,7 +450,7 @@ func routine_active() -> bool:
 ## (the gentle start) it lies still, and so it does while the guard is in a
 ## haven (out of reach: nothing creeps up on its door).
 func _stir() -> void:
-	if sound_asleep > 0.0 or Haven.shelters(target.global_position):
+	if sound_asleep > 0.0 or held or Haven.shelters(target.global_position):
 		return
 	var to := target.global_position - global_position
 	var flat := Vector3(to.x, 0.0, to.z)
@@ -456,6 +543,7 @@ func _apply_gravity(delta: float) -> void:
 func take_damage(info: DamageInfo) -> void:
 	if brain.state == EnemyBrain.State.DESTROYED or _frozen:
 		return
+	end_doze()
 	if _blocks(info):
 		if info.periodic:
 			return
@@ -484,7 +572,7 @@ func take_damage(info: DamageInfo) -> void:
 		_react_to_hit(info, weight)
 	if info.stun_time > 0.0:
 		brain.stun(info.stun_time)
-	else:
+	elif not info.silent:
 		_alarm(info)
 	if not info.periodic:
 		Events.hit_landed.emit(self, info, false)
@@ -536,6 +624,8 @@ func freeze() -> void:
 	if _frozen:
 		return
 	_frozen = true
+	if _dozing:
+		_stop_dozing()   # (no catching up: it is stone for good)
 	set_physics_process(false)
 	if rig != null:
 		rig.set_physics_process(false)   # the model stops mid-pose too
@@ -598,8 +688,9 @@ func hear(point: Vector3, point_room: StringName = &"") -> bool:
 ## [param source] names the noise (a weapon id, ReactionRules.SOURCE_*:
 ## subclasses read it). True when it is awake now.
 func react(point: Vector3, point_room: StringName, reaction: ReactionRules.Reaction, _source: StringName = &"") -> bool:
-	if brain.state == EnemyBrain.State.DESTROYED or _frozen:
+	if brain.state == EnemyBrain.State.DESTROYED or _frozen or held:
 		return false
+	end_doze()
 	_refresh_bounds()
 	match reaction:
 		ReactionRules.Reaction.LOOK:
@@ -632,8 +723,9 @@ func profile() -> Dictionary:
 ## A neighbour woke up next to it: it comes to look at [param point],
 ## quietly (no call-out, it wakes nobody). True when it woke.
 func rouse(point: Vector3) -> bool:
-	if brain.state != EnemyBrain.State.DORMANT or _frozen:
+	if brain.state != EnemyBrain.State.DORMANT or _frozen or held:
 		return false
+	end_doze()
 	brain.quiet = true
 	hear(point, PerceptionWorld.room_at(point))
 	if brain.state == EnemyBrain.State.DORMANT:
@@ -693,25 +785,26 @@ func _physics_process(delta: float) -> void:
 	_stagger_left = maxf(_stagger_left - delta, 0.0)
 	_stagger_cooldown = maxf(_stagger_cooldown - delta, 0.0)
 	_sight_timer -= delta
-	if _sight_timer <= 0.0:
+	if _sight_timer <= DUE_SLACK:
 		_sight_timer = _sight_interval()
 		_look()
 	var has_target := _target_alive()
-	PerceptionWorld.track(target if has_target else null, delta)
+	# (one frame's time: a dozing tick's delta spans many, the trail moves once a frame)
+	PerceptionWorld.track(target if has_target else null, get_physics_process_delta_time())
 	_routine_timer -= delta
-	if _routine_timer <= 0.0:
+	if _routine_timer <= DUE_SLACK:
 		_routine_timer = ROUTINE_INTERVAL * randf_range(0.8, 1.2)
 		if routine_active():
 			routine_ticks += 1
 			_routine_tick()
 	# a guard inside a haven is out of reach: no sight, no attacks
-	var sheltered := has_target and Haven.shelters(target.global_position)
+	var sheltered := has_target and PerceptionWorld.guard_sheltered(target)
 	_sees_target = _sees_target and has_target and not sheltered
 	# attacks only start against a target in plain view (not through floors)
 	var distance := global_position.distance_to(target.global_position) if _sees_target else INF
 	if not _target_reachable and distance > attack_reach and not _attacks_from_range():
 		distance = INF   # no leaping at a guard the navmesh cannot reach (a ledge)
-	if not _may_attack() or staggered():
+	if distance < INF and (not _may_attack() or staggered()):
 		distance = INF   # busy (climbing out of its tomb, panicking, reeling): no attack starts
 	_brief_brain(has_target, sheltered)
 	brain.update(delta, _sees_target, distance)
@@ -725,10 +818,43 @@ func _physics_process(delta: float) -> void:
 	_external = _external.move_toward(Vector3.ZERO, friction * delta)
 	if resting():
 		velocity = Vector3.ZERO   # a museum piece on its floor: nothing to slide
-	else:
-		move_and_slide()
+	elif not _standing():
+		_slide(delta)
 	_check_stuck(move, delta)
 	_update_visuals(delta)
+	if doze_enabled and not _doze_busy and not _doze_queued and _may_settle():
+		# decided at the end of the frame: a subclass's own step after this one may still change it
+		_doze_queued = true
+		_settle_doze.call_deferred()
+
+
+## Awake but going nowhere on a floor that stays put (waiting at the edge,
+## holding a post, looking round): no slide, like a sleeper's (it would move
+## it nowhere; is_on_floor() stays what the last one found) - but for one
+## every STANDING_SLIDE_TICKS of its still ticks, which finds a floor gone
+## or something closed on it. Counted by its own ticks (offset by its
+## phase), not the engine's frame: the same night plays the same, dozing or
+## not, whenever it began.
+func _standing() -> bool:
+	if not (absf(velocity.x) < 0.0001 and absf(velocity.z) < 0.0001 and absf(velocity.y) < 0.0001 \
+			and is_on_floor() and get_platform_velocity().is_zero_approx()):
+		_still_ticks = 0
+		return false
+	_still_ticks += 1
+	return (_still_ticks + _lod_phase) % STANDING_SLIDE_TICKS != 0
+
+
+## move_and_slide() for [param delta] seconds: the engine moves a body by
+## one physics frame of its velocity, a dozing tick's step spans several.
+func _slide(delta: float) -> void:
+	var frame := get_physics_process_delta_time()
+	if frame <= 0.0 or delta <= frame * 1.01:
+		move_and_slide()
+		return
+	var span := delta / frame
+	velocity *= span
+	move_and_slide()
+	velocity /= span
 
 
 ## What the brain needs to know this frame (see EnemyBrain's context).
@@ -810,7 +936,9 @@ func _update_visuals(delta: float) -> void:
 	var lean := 0.0
 	if brain.state == EnemyBrain.State.ATTACK:
 		lean = strike_lean if brain.has_struck() else windup_lean * brain.windup_progress()
-	visual.rotation.x = lerpf(visual.rotation.x, lean, 1.0 - exp(-14.0 * delta))
+	var leaning := lerpf(visual.rotation.x, lean, 1.0 - exp(-14.0 * delta))
+	if absf(leaning - visual.rotation.x) > 0.000001:
+		visual.rotation.x = leaning   # (set only when it moves: a set re-places the whole model)
 	var glow := brain.windup_progress()
 	if glow != _glow:
 		_glow = glow
@@ -853,6 +981,9 @@ func _deal_damage() -> void:
 func _on_state_changed(from: EnemyBrain.State, to: EnemyBrain.State) -> void:
 	_stun_marker.visible = to == EnemyBrain.State.STUNNED
 	_repath_timer = 0.0   # a new goal: plan at once
+	_planned_goal = Vector3.INF   # (also when the new state walks to the same point)
+	if from == EnemyBrain.State.DORMANT:
+		held = false   # woken (a hit, its beat): it hears and rouses as any exhibit
 	if to == EnemyBrain.State.DESTROYED or brain.quiet:
 		return
 	var resting_before := from == EnemyBrain.State.DORMANT or from == EnemyBrain.State.PATROL
@@ -947,7 +1078,7 @@ func _look() -> void:
 ## Range (by light), cone or close sense, then the ray.
 func _can_see_target() -> bool:
 	var to := target.global_position - global_position
-	if sound_asleep > 0.0 and brain.state == EnemyBrain.State.DORMANT:
+	if (sound_asleep > 0.0 or held) and brain.state == EnemyBrain.State.DORMANT:
 		return to.length() <= SOUND_SLEEP_SENSE and _has_line_of_sight()
 	var reach := sight_reach()
 	if to.length_squared() > reach * reach:
@@ -1011,6 +1142,7 @@ func _chase_direction(delta: float, goal: Vector3) -> Vector3:
 			return aside.normalized()
 		_detour_time = 0.0
 		_repath_timer = 0.0   # plan a fresh path from the new spot
+		_planned_goal = Vector3.INF
 	if NavigationServer3D.map_get_iteration_id(nav.get_navigation_map()) > 0:
 		_refresh_path(delta, goal)
 		if _ring_goal and _ring_off_floor and _target_alive():
@@ -1036,11 +1168,32 @@ func _refresh_path(delta: float, goal: Vector3) -> void:
 	if _repath_timer > 0.0:
 		return
 	_repath_timer = _repath_interval
+	var map := NavigationServer3D.map_get_iteration_id(nav.get_navigation_map())
+	if not _ring_goal and goal.is_equal_approx(_planned_goal) and map == _planned_map and not nav.is_navigation_finished() \
+			and _external.is_zero_approx() and _on_path():
+		# the same goal on the same map, nothing pushing it, on its line: the path planned stands
+		_target_reachable = not _map_has_regions() or _path_reaches(goal)
+		return
 	_ring_off_floor = _ring_goal and _map_has_regions() and _walk_closest_point(goal).distance_to(goal) > 0.6
 	if _ring_off_floor and _target_alive():
 		goal = target.global_position
 	nav.target_position = goal
+	_planned_goal = goal if not _ring_goal else Vector3.INF
+	_planned_map = map
 	_target_reachable = not _map_has_regions() or _path_reaches(goal)
+
+
+## True while it stands within OFF_PATH (on the floor plan) of the stretch
+## of its planned path it follows now.
+func _on_path() -> bool:
+	var path := nav.get_current_navigation_path()
+	var index := nav.get_current_navigation_path_index()
+	if path.is_empty() or index < 0 or index >= path.size():
+		return false
+	var to := path[index]
+	var from := path[index - 1] if index > 0 else to
+	var closest := Geometry3D.get_closest_point_to_segment(global_position, from, to)
+	return Vector2(closest.x - global_position.x, closest.z - global_position.z).length() <= OFF_PATH
 
 
 ## True when the planned path ends at [param goal]: close on the floor plan
@@ -1284,4 +1437,196 @@ func _make_stun_marker() -> MeshInstance3D:
 ## hit's knockback it is not reduced by knockback_resist (the caller
 ## decides who can be moved).
 func shove(push: Vector3) -> void:
+	end_doze()
 	_external += Vector3(push.x, 0.0, push.z)
+	_planned_goal = Vector3.INF   # moved off its line: its path is planned anew
+
+
+## The LOD phases count from 0 again (a level's perception is set up, or
+## dropped: PerceptionWorld.configure()).
+static func reset_phases() -> void:
+	_lod_phases = 0
+
+
+# --- dozing (see the class comment) ---
+
+## Dozing now: no per-frame callbacks, ticked by ExhibitClock when due.
+func dozing() -> bool:
+	return _dozing
+
+
+## The physics frame its next dozing tick is due (-1 while it does not doze).
+func doze_frame() -> int:
+	return _doze_frame if _dozing else -1
+
+
+## True when it may doze: asleep at rest with nothing of its own left to
+## animate or count down every frame.
+func _doze_ready() -> bool:
+	return brain.state == EnemyBrain.State.DORMANT and not _frozen and _stagger_left <= 0.0 and _stagger_cooldown <= 0.0 \
+			and _external.is_zero_approx() and resting() and absf(visual.rotation.x) < DOZE_STILL and _glow == 0.0 \
+			and (rig == null or rig.settled()) and _may_doze()
+
+
+## Subclass hook: false while it has work of its own every frame even
+## asleep (a slide, an animation, a countdown others read). Asleep at rest
+## everything else waits for a dozing tick.
+func _may_doze() -> bool:
+	return true
+
+
+## True when it may be ticked every LOD_FRAMES frames: awake on calm
+## business in a room far from the guard's, seeing nothing of him.
+func _lod_ready() -> bool:
+	match brain.state:
+		EnemyBrain.State.PATROL, EnemyBrain.State.RETURN, EnemyBrain.State.SEARCH, EnemyBrain.State.INVESTIGATE:
+			pass
+		_:
+			return false
+	if _frozen or _sees_target or brain.knows_guard() or staggered() or not _external.is_zero_approx() or not _target_alive():
+		return false
+	return _far_from_guard() and _may_lod()
+
+
+## Its room lies more than PerceptionWorld.ROUTINE_HOPS passages from the
+## guard's (false without rooms, or outside them).
+func _far_from_guard() -> bool:
+	var near := PerceptionWorld.rooms_near_guard(target)
+	if near.is_empty():
+		return false
+	var room := current_room()
+	return room != &"" and not near.has(room)
+
+
+## Subclass hook: false while it does something of its own that wants every
+## frame even far from the guard.
+func _may_lod() -> bool:
+	return true
+
+
+## Worth a check at the end of the frame whether it may doze: asleep at
+## rest every tick, awake (far and calm?) every LOD_FRAMES ticks.
+func _may_settle() -> bool:
+	if brain.state == EnemyBrain.State.DORMANT:
+		return _doze_ready()
+	_lod_check -= 1
+	if _lod_check > 0:
+		return false
+	_lod_check = LOD_FRAMES
+	return _lod_ready()
+
+
+## Seconds until its next dozing tick when it may doze now (asleep: its
+## next moment; far and calm: up to LOD_FRAMES frames, to the next frame of
+## its phase), else a negative number.
+func _doze_wait() -> float:
+	if _doze_ready():
+		return _doze_due()
+	if _lod_ready():
+		var frames := posmod(_lod_phase - Engine.get_physics_frames(), LOD_FRAMES)
+		return (frames if frames > 0 else LOD_FRAMES) / float(Engine.physics_ticks_per_second)
+	return -1.0
+
+
+## Seconds until it next has something to do while asleep: a sight check,
+## a routine tick, the end of its sound sleep. Subclasses add their own
+## moments (minf(super(), ...)).
+func _doze_due() -> float:
+	var due := minf(_sight_timer, _routine_timer)
+	if sound_asleep > 0.0:
+		due = minf(due, sound_asleep)
+	return due
+
+
+## Subclass hook: it starts ([param on]) or stops dozing - per-frame
+## visuals of its own (a _process) may rest meanwhile.
+func _doze_changed(_on: bool) -> void:
+	pass
+
+
+## Brings a dozing exhibit up to date - one tick with all the time it
+## dozed, still asleep - and back to per-frame ticks. Anything about to
+## change it from outside calls this first (its own entry points do).
+func end_doze() -> void:
+	if not _dozing:
+		return
+	var debt := ExhibitClock.now - _doze_mark
+	_stop_dozing()
+	if debt > 0.0 and is_inside_tree():
+		_doze_busy = true
+		doze_ticks += 1
+		_physics_process(debt)
+		_tick_rig(debt)
+		_doze_busy = false
+	_wake_body()
+
+
+## ExhibitClock: its moment is due. One tick with the time since the last,
+## then it dozes on (to its next moment) or wakes to per-frame ticks.
+func doze_tick() -> void:
+	if not _dozing:
+		return
+	if not can_process():
+		# switched off with its branch: no time passes for it
+		_doze_mark = ExhibitClock.now
+		_doze_frame = ExhibitClock.schedule(self, 0.0)
+		return
+	var debt := ExhibitClock.now - _doze_mark
+	_dozing = false
+	_doze_frame = -1
+	_doze_busy = true
+	doze_ticks += 1
+	_physics_process(debt)
+	_tick_rig(debt)
+	_doze_busy = false
+	if _frozen or not is_inside_tree() or is_queued_for_deletion() or brain.state == EnemyBrain.State.DESTROYED:
+		ExhibitClock.release(self)
+		return
+	var wait := _doze_wait() if doze_enabled else -1.0
+	if wait >= 0.0:
+		_doze(wait)
+	else:
+		ExhibitClock.release(self)
+		_wake_body()
+
+
+## Its rig's step for a dozing tick (asleep it only counts its still frames).
+func _tick_rig(delta: float) -> void:
+	if rig != null and is_instance_valid(rig) and rig.is_inside_tree():
+		rig._physics_process(delta)
+
+
+## End of a frame it ended at rest: it dozes off if it still may.
+func _settle_doze() -> void:
+	_doze_queued = false
+	if _dozing or _frozen or not doze_enabled or not is_inside_tree() or not is_physics_processing():
+		return
+	var wait := _doze_wait()
+	if wait >= 0.0:
+		set_physics_process(false)
+		if rig != null:
+			rig.set_physics_process(false)
+		_doze(wait)
+		_doze_changed(true)
+
+
+func _doze(wait: float) -> void:
+	_dozing = true
+	_doze_mark = ExhibitClock.now
+	_doze_frame = ExhibitClock.schedule(self, wait)
+
+
+func _stop_dozing() -> void:
+	_dozing = false
+	_doze_frame = -1
+	ExhibitClock.release(self)
+
+
+## Per-frame ticks again, its rig's too.
+func _wake_body() -> void:
+	if _frozen or not is_inside_tree():
+		return
+	set_physics_process(true)
+	if rig != null:
+		rig.set_physics_process(true)
+	_doze_changed(false)

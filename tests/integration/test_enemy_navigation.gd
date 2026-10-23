@@ -141,6 +141,119 @@ func test_falling_speed_is_capped() -> void:
 	assert_lt(wax.velocity.y, -Enemy.MAX_FALL_SPEED + 1.0, "it did reach the cap")
 
 
+## (plan 2026-10-21-wydajnosc-cpu) A walk to a point that stays put keeps
+## the path it planned - no A* across the whole floor every repath interval
+## - and plans anew for a new point or when the navigation map changes.
+## A wax figure on a calm round on open floor (the guard far out of sight),
+## once it walks to the far end of it, 40 m off; its plans are counted in
+## [member plans].
+var plans: Array = []
+
+
+func _walking_figure() -> WaxFigure:
+	Greybox.box(region, Vector3(0, -0.5, 0), Vector3(50, 1, 20), Color.GRAY)
+	await _bake()
+	target.position = Vector3(0, 0, 300)
+	var wax: WaxFigure = WaxFigure.new()
+	wax.position = Vector3(-20, 0, 0)
+	wax.target = target
+	wax.starts_awake = true
+	wax.patrol_route = PackedVector3Array([Vector3(-20, 0, 0), Vector3(20, 0, 0)])
+	add_child(wax)
+	plans = watch(wax.nav.path_changed)
+	for frame in 10 * _ticks:   # (it may hold the first post a while)
+		await get_tree().physics_frame
+		if wax.brain.walking() and wax.velocity.length() > 0.1:
+			break
+	assert_eq(wax.brain.state, EnemyBrain.State.PATROL)
+	assert_true(wax.brain.walking(), "on its way to the far end")
+	await physics_frames(15)
+	return wax
+
+
+func test_a_walk_to_a_still_point_keeps_its_path_until_the_point_or_the_map_changes() -> void:
+	var wax := await _walking_figure()
+	var first := plans.size()
+	assert_gt(first, 0, "it planned its walk")
+	var from := wax.global_position
+	await physics_frames(3 * _ticks)   # 12 repath intervals of 0.25 s
+	assert_gt(wax.global_position.distance_to(from), 2.0, "it walked on")
+	assert_lt(plans.size() - first, 2, "the same point: the same path (%d plans more)" % (plans.size() - first))
+	var before_bake := plans.size()
+	region.bake_navigation_mesh(false)   # a door opening, say: a new map
+	await physics_frames(30)
+	assert_gt(plans.size(), before_bake, "a new map: a new plan")
+
+
+func test_pushed_off_its_line_it_plans_the_walk_anew_from_where_it_ends_up() -> void:
+	var wax := await _walking_figure()
+	var before := plans.size()
+	wax.shove(Vector3(0, 0, 9))   # the harpoon's pull, a blast: ~1.3 m aside, well inside the agent's own 5 m
+	await physics_frames(30)   # the push has died down
+	assert_gt(absf(wax.global_position.z), 0.8, "it was pushed aside (%.2f m)" % wax.global_position.z)
+	var pushed_to := wax.global_position
+	await physics_frames(roundi(Enemy.REPATH_INTERVAL * 1.3 * 60.0) + 2)
+	assert_gt(plans.size(), before, "pushed: a new plan")
+	var path := wax.nav.get_current_navigation_path()
+	assert_false(path.is_empty())
+	if not path.is_empty():
+		var start := path[0]
+		assert_lt(Vector2(start.x - pushed_to.x, start.z - pushed_to.z).length(), 0.7,
+				"planned from where the push left it (%s, it stood at %s)" % [start, pushed_to])
+
+
+func test_a_new_state_plans_at_once_even_for_the_same_point() -> void:
+	var wax := await _walking_figure()
+	await physics_frames(2)
+	var before := plans.size()
+	wax._on_state_changed(EnemyBrain.State.PATROL, EnemyBrain.State.PATROL)   # (what every state change does)
+	await physics_frames(2)
+	assert_gt(plans.size(), before, "a state change plans at once")
+
+
+func test_a_kept_path_still_tells_whether_it_reaches_its_point() -> void:
+	var wax := await _walking_figure()
+	wax._target_reachable = false   # (as if the last plan had ended short)
+	await physics_frames(roundi(Enemy.REPATH_INTERVAL * 1.3 * 60.0) + 2)
+	assert_true(wax._target_reachable, "the path kept reaches its point: said again at every repath")
+
+
+func test_a_moving_goal_is_planned_every_interval() -> void:
+	Greybox.box(region, Vector3(0, -0.5, 0), Vector3(50, 1, 30), Color.GRAY)
+	await _bake()
+	target.position = Vector3(0, 0, -8)
+	var wax := _spawn(WaxFigure, Vector3(0, 0, 8))
+	wax.summoned = true   # it always knows where he is
+	await physics_frames(2)
+	wax.brain.wake()
+	await physics_frames(30)
+	var count := watch(wax.nav.path_changed)
+	for frame in 2 * _ticks:
+		await get_tree().physics_frame
+		var t := frame / float(_ticks)
+		target.position = Vector3(12.0 * sin(t * 1.5), 0, -8.0 + 4.0 * cos(t * 1.5))   # he keeps moving
+	assert_true(wax.brain.is_hunting(), "it hunts him")
+	assert_gt(count.size(), 5, "a moving goal: a plan every interval (%d in 2 s)" % count.size())
+
+
+func test_an_exhibit_standing_awake_falls_when_its_floor_goes() -> void:
+	var floor := Greybox.box(self, Vector3(0, -0.5, 0), Vector3(6, 1, 6), Color.GRAY)
+	Greybox.box(self, Vector3(0, -6.5, 0), Vector3(30, 1, 30), Color.GRAY)   # the floor below
+	target.position = Vector3(0, 0, 300)
+	var wax: WaxFigure = WaxFigure.new()
+	wax.target = target
+	wax.starts_awake = true
+	add_child(wax)
+	wax.brain.roam_radius = 0.0   # it holds its post: awake, standing still
+	await physics_frames(60)
+	assert_eq(wax.brain.state, EnemyBrain.State.PATROL)
+	assert_true(wax.velocity.is_zero_approx() and wax.is_on_floor(), "awake and standing still: no slide most ticks")
+	var height := wax.global_position.y
+	floor.free()   # a trapdoor, a floor that goes
+	await physics_frames(60)
+	assert_lt(wax.global_position.y, height - 1.0, "it fell (%.2f -> %.2f)" % [height, wax.global_position.y])
+
+
 func test_a_crowd_of_melee_exhibits_spreads_around_the_guard() -> void:
 	Greybox.box(region, Vector3(0, -0.5, 0), Vector3(40, 1, 40), Color.GRAY)
 	await _bake()

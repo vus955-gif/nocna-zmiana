@@ -24,9 +24,12 @@ tinkles, metal groans and far footsteps, each with the space baked in
 (they are heard from far away), placed in 3D around the listener.
 
 Floor I's zones add their own beds and one-shots (ambience_floor1.py).
+The ambient story's sounds and the rain beds come from ambience_story.py
+('story'), the room tails of shots and blasts from acoustics_tails.py ('tails').
 
     "D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe" tools/music/gen_ambience.py [name ...]
-    (names of beds or one-shot kinds; 'floor1' = all of Floor I's; none = everything)
+    (names of beds or one-shot kinds; 'floor1' = all of Floor I's; 'story' = the ambient story's
+    sounds and rain; 'tails' = the room tails; none = everything)
 """
 import sys
 from pathlib import Path
@@ -34,7 +37,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import acoustics_tails  # noqa: E402
 import ambience_floor1 as floor1  # noqa: E402
+import ambience_story as story  # noqa: E402
 import analyze  # noqa: E402
 import dsp  # noqa: E402
 import instruments as ins  # noqa: E402
@@ -340,16 +345,17 @@ SHOT_PEAK_DB = {"thud": -4.0, "creak": -6.0, "door": -4.0, "fall": -5.0, "pipe":
 
 def main(names=()):
     dsp.intermediates_dir(ROOT)
-    beds = dict(BEDS, **floor1.BEDS)
-    mono_beds = MONO_BEDS | floor1.MONO_BEDS
-    bed_lufs = dict(BED_LUFS, **floor1.BED_LUFS)
-    shots = dict(SHOTS, **floor1.SHOTS)
-    peaks = dict(SHOT_PEAK_DB, **floor1.SHOT_PEAK_DB)
+    beds = dict(BEDS, **floor1.BEDS, **story.BEDS)
+    mono_beds = MONO_BEDS | floor1.MONO_BEDS | story.MONO_BEDS
+    bed_lufs = dict(BED_LUFS, **floor1.BED_LUFS, **story.BED_LUFS)
+    shots = dict(SHOTS, **floor1.SHOTS, **story.SHOTS)
+    peaks = dict(SHOT_PEAK_DB, **floor1.SHOT_PEAK_DB, **story.SHOT_PEAK_DB)
 
-    def wanted(name, floor1_set):
-        return not names or name in names or ("floor1" in names and name in floor1_set)
+    def wanted(name, floor1_set, story_set):
+        return (not names or name in names or ("floor1" in names and name in floor1_set)
+                or ("story" in names and name in story_set))
     for name, make in beds.items():
-        if not wanted(name, floor1.BEDS):
+        if not wanted(name, floor1.BEDS, story.BEDS):
             continue
         rng = np.random.default_rng(sum(map(ord, name)) * 7919)
         x = dsp.stereo(make(rng))
@@ -361,7 +367,7 @@ def main(names=()):
         dsp.write_wav(path, x, np.random.default_rng(1), channels=1 if name in mono_beds else None)
         print(analyze.format_report(analyze.report(dsp.read_wav(path), path.name, True)))
     for kind, (count, make) in shots.items():
-        if not wanted(kind, floor1.SHOTS):
+        if not wanted(kind, floor1.SHOTS, story.SHOTS):
             continue
         for k in range(count):
             rng = np.random.default_rng(sum(map(ord, kind)) * 104729 + k)
@@ -375,6 +381,8 @@ def main(names=()):
             path = OUT / "oneshots" / f"shot_{kind}_{k + 1}.wav"
             dsp.write_wav(path, x, np.random.default_rng(2), channels=1)
             print(f"  {path.name:<22} {x.shape[0] / SR:5.2f} s  peak {dsp.to_db(dsp.peak(x)):5.1f} dBFS")
+    if not names or "tails" in names:
+        acoustics_tails.main(names)
 
 
 if __name__ == "__main__":

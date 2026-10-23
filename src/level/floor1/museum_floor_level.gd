@@ -14,6 +14,8 @@ extends Level
 ## door rebakes only the boxes round it) and one haven region.
 
 var layout: LevelLayout
+## room_at() through a grid (built on the first look-up: the layout is done in _init()).
+var _room_index: RoomIndex = null
 ## Marker id -> Transform3D (origin on the object / floor, -Z = its front).
 var markers: Dictionary = {}
 ## Opening id -> Door (every junction and internal door with a style).
@@ -234,13 +236,17 @@ static func describe_layout(floor_layout: LevelLayout) -> LevelDescription:
 	return description
 
 
+## (through a RoomIndex of the finished layout: the guard's room is asked
+## for every frame)
 func room_at(point: Vector3) -> StringName:
-	return layout.room_at(point)
+	if _room_index == null:
+		_room_index = RoomIndex.build(layout)
+	return _room_index.room_at(point)
 
 
 ## The zone of the room at [param point] (&"" outside every room).
 func zone_at(point: Vector3) -> StringName:
-	var room := layout.room(layout.room_at(point))
+	var room := layout.room(room_at(point))
 	return room.zone if room != null else &""
 
 

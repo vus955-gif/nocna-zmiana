@@ -7,6 +7,10 @@ extends RefCounted
 
 enum WindowMode { WINDOWED, MAXIMIZED, FULLSCREEN, EXCLUSIVE }
 enum Upscaler { BILINEAR, FSR, FSR2 }
+## Accessibility (plan 2026-10-21-dostepnosc): the subtitle text size, and the
+## colour-vision palette of the HUD and the pickups' rims (ColourVision).
+enum SubtitleSize { SMALL, MEDIUM, LARGE }
+enum ColourVisionMode { NORMAL, DEUTERANOPIA, PROTANOPIA, TRITANOPIA }
 
 const FOV_MIN := 70.0
 const FOV_MAX := 110.0
@@ -14,6 +18,9 @@ const SENSITIVITY_MIN := 0.1
 const SENSITIVITY_MAX := 3.0
 const RENDER_SCALE_MIN := 0.5
 const RENDER_SCALE_MAX := 1.0
+## The HUD's size (a share of its designed size, see Hud.apply_scale).
+const HUD_SCALE_MIN := 0.75
+const HUD_SCALE_MAX := 1.5
 ## Frame limits offered in the options (0 = no limit).
 const FPS_CHOICES: Array[int] = [0, 30, 60, 120, 144, 165, 240]
 const MAX_FPS_LIMIT := 1000
@@ -55,9 +62,26 @@ var language: String = "pl"
 var show_fps: bool = false
 ## Subtitles of the voice lines (the lines are English; Polish players read them).
 var subtitles: bool = true
+## Accessibility (plan 2026-10-21-dostepnosc). The HUD's size (0.75..1.5, 1.0
+## as designed); the subtitles' text size and an optional dark band behind
+## them (0 = none .. 1 = solid); flashing capped for photosensitive players
+## (Flashing: lamps, muzzle light, hit flashes, the low-health pulse); the
+## colour-blind palette of the HUD and the pickups' rims; sprint held (false)
+## or switched on and off by its key (true).
+var hud_scale: float = 1.0
+var subtitle_size: int = SubtitleSize.MEDIUM
+var subtitle_backing: float = 0.0
+var reduce_flashing: bool = false
+var colour_vision: int = ColourVisionMode.NORMAL
+var sprint_toggle: bool = false
+## The dev performance overlay (F3) in a build that is not a dev build.
+var dev_tools: bool = false
 ## GraphicsQuality.Quality: Low, Medium, High, Ultra (the first start picks
 ## one for the machine, see GraphicsQuality.detect()).
 var graphics_quality: int = GraphicsQuality.Quality.HIGH
+## The player's keys and mouse buttons (own [bindings] section of the file;
+## not one of keys(): the options menu edits it in its own panel).
+var bindings := KeyBindings.new()
 
 
 static func keys() -> Array[StringName]:
@@ -65,7 +89,8 @@ static func keys() -> Array[StringName]:
 		&"mouse_sensitivity", &"invert_y", &"fov", &"screen_shake", &"head_bob",
 		&"volume_master", &"volume_sfx", &"volume_music", &"volume_ambience", &"volume_voice", &"volume_ui",
 		&"window_mode", &"vsync", &"max_fps", &"render_scale", &"upscaler",
-		&"language", &"show_fps", &"subtitles", &"graphics_quality",
+		&"language", &"show_fps", &"subtitles", &"dev_tools", &"graphics_quality",
+		&"hud_scale", &"subtitle_size", &"subtitle_backing", &"reduce_flashing", &"colour_vision", &"sprint_toggle",
 	]
 
 
@@ -121,11 +146,18 @@ func sanitize() -> void:
 	if not LANGUAGES.has(language):
 		language = LANGUAGES[0]
 	graphics_quality = clampi(graphics_quality, 0, GraphicsQuality.Quality.size() - 1)
+	hud_scale = clampf(snappedf(hud_scale, 0.05), HUD_SCALE_MIN, HUD_SCALE_MAX)
+	if subtitle_size < 0 or subtitle_size >= SubtitleSize.size():
+		subtitle_size = SubtitleSize.MEDIUM
+	subtitle_backing = clampf(snappedf(subtitle_backing, 0.05), 0.0, 1.0)
+	if colour_vision < 0 or colour_vision >= ColourVisionMode.size():
+		colour_vision = ColourVisionMode.NORMAL
 
 
 func to_config(config: ConfigFile) -> void:
 	for key in keys():
 		config.set_value(SECTION, key, get(key))
+	bindings.to_config(config)
 
 
 ## Reads every known option from [param config]; missing or broken entries
@@ -134,3 +166,4 @@ func from_config(config: ConfigFile) -> void:
 	for key in keys():
 		if config.has_section_key(SECTION, key):
 			set_value(key, config.get_value(SECTION, key))
+	bindings.from_config(config)

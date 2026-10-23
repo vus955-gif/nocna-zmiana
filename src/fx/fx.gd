@@ -23,6 +23,9 @@ const DUST_MIN_STRENGTH := 0.6
 const SCORCH := &"scorch"
 const CHUNK_LIFETIME := 8.0
 const DECAL_LIFETIME := 30.0
+## A point-light flash shorter than this (seconds) is a quick one: rate
+## limited while flashing is reduced (see flash()).
+const QUICK_FLASH := 0.2
 ## Microseconds per frame spent cutting model meshes for debris ahead of
 ## need (MeshShards.warm_*).
 const SHARD_BUDGET_USEC := 2500
@@ -37,6 +40,9 @@ var _hole: Texture2D = null
 ## Surface (or SCORCH) -> its mark's texture.
 var _marks: Dictionary = {}
 var _hitstop_token: int = 0
+## Game seconds so far and the gate that spaces the quick flashes of light.
+var _flash_clock: float = 0.0
+var _flash_gate := Flashing.Gate.new()
 ## Real time (s) when the running hitstop ends; negative when none runs.
 var _hitstop_end: float = -1.0
 var _time_scale_before: float = 1.0
@@ -46,7 +52,8 @@ func _ready() -> void:
 	get_tree().scene_changed.connect(clear)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_flash_clock += delta
 	if MeshShards.pending() > 0:
 		MeshShards.tick(SHARD_BUDGET_USEC)
 
@@ -243,8 +250,15 @@ func arc(from: Vector3, to: Vector3) -> void:
 	flash(to, Color(0.5, 0.8, 1.0), 2.5, 4.0, 0.12)
 
 
-## Short-lived point light (muzzle flash, zap).
+## Short-lived point light (muzzle flash, zap). With the option
+## "reduce_flashing" (Flashing) it shines at half the energy, and a short
+## flash (under QUICK_FLASH s: a muzzle, a spark, a zap) is let through at
+## most three times a second - a long one (a blast, a boss's cue) always.
 func flash(position: Vector3, color: Color, energy: float, light_range: float, duration: float) -> void:
+	if Flashing.on():
+		if duration < QUICK_FLASH and not _flash_gate.allow(_flash_clock):
+			return
+		energy = Flashing.light_energy(energy)
 	var light := OmniLight3D.new()
 	light.light_color = color
 	light.light_energy = energy

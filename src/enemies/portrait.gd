@@ -359,5 +359,10 @@ static func _dark() -> StandardMaterial3D:
 
 
 ## It has its own answer to a hit: no whole-body flinch.
+## Not while its frame is still pushing out of the wall.
+func _may_doze() -> bool:
+	return _push_tween == null or not _push_tween.is_valid()
+
+
 func _reaction_scale() -> float:
 	return 0.0

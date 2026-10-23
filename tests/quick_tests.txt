@@ -1,0 +1,49 @@
+# The quick subset (bash tools/run_tests.sh --quick): what CI runs on every
+# push. One glob per line over "dir/file" (the runner's select_quick); a line
+# with a leading "-" takes files out again. Later lines win.
+#
+# All unit tests, and all integration tests - except the slow ones below.
+# Slow = over about 8 s of wall time in tests/test_durations.tsv: fights with
+# the guardians played to their end, whole nights, walks and sweeps over the
+# whole floor, the dressed floor built once per test. The full suite
+# (bash tools/run_tests.sh, ideally --parallel) still runs all of them.
+# A new fast integration test joins the quick subset by itself; a new slow
+# one belongs in the list of exceptions (test_runner_selection checks that
+# nothing slower than 25 s is in).
+unit/*
+integration/*
+
+# guardian fights, played to the end
+-integration/test_lamassu.gd
+-integration/test_colossus.gd
+-integration/test_planetarium.gd
+-integration/test_centaur.gd
+-integration/test_serpent.gd
+-integration/test_serpent_fall.gd
+-integration/test_general.gd
+-integration/test_general_roof.gd
+-integration/test_general_phase3.gd
+-integration/test_general_fall.gd
+-integration/test_general_lead.gd
+# whole nights and the whole floor
+-integration/test_full_night.gd
+-integration/test_floor1_game_flow.gd
+-integration/test_floor1_game_guardians.gd
+-integration/test_floor1_game_arenas.gd
+-integration/test_floor1_game_world.gd
+-integration/test_floor1_game_onboarding.gd
+-integration/test_floor1_timing.gd
+-integration/test_floor1_save_world.gd
+-integration/test_floor1_softlock_*.gd
+-integration/test_floor1_reachability*.gd
+-integration/test_floor1_collision*.gd
+-integration/test_lobby_perception.gd
+-integration/test_perception_perf.gd
+# Floor I dressed and built again for every test
+-integration/test_floor1_art_*.gd
+-integration/test_world_rewards.gd
+-integration/test_cafe_corner.gd
+-integration/test_menu_stage.gd
+-integration/test_night_edges.gd
+-integration/test_enemy_ecology.gd
+-integration/test_museum_map.gd

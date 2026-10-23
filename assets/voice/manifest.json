@@ -204,6 +204,11 @@
   "speaker": "heniek",
   "seconds": 6.955
  },
+ "VO_HENIEK_EYES": {
+  "hash": "1a91cbd2d7b32a779282daf2595ba05a1f219e00d1397deffd4089f40a14969e",
+  "speaker": "heniek",
+  "seconds": 9.355
+ },
  "VO_HENIEK_GATE_CANOE": {
   "hash": "5514973e2da346eb39db2af9905c0546218647837eef79376f0f56604833ab05",
   "speaker": "heniek",
@@ -258,6 +263,11 @@
   "hash": "d82ba4674733a6e828146ee44b3a621540e4cd8d642b21d20b12d3e7348d4b06",
   "speaker": "heniek",
   "seconds": 8.805
+ },
+ "VO_HENIEK_RADIO_NOT_ME": {
+  "hash": "d56fdb7865b7df7db4d1c1fe3d6af89f7b11d2f359ea1a12a8dbec13892e882e",
+  "speaker": "heniek",
+  "seconds": 3.155
  },
  "VO_HENIEK_ROOM_CRYPT": {
   "hash": "c4b76cdfdb87c54f3a1c87b56779bafca63cedebef98bf2c5d419079555850dd",
@@ -584,6 +594,11 @@
   "speaker": "system",
   "seconds": 11.602
  },
+ "VO_SYSTEM_LAMPS_OUT": {
+  "hash": "05ed44d4f3e26f40a3ddbd1158dcaa66179913d29bab3636ff21104004670de8",
+  "speaker": "system",
+  "seconds": 6.236
+ },
  "VO_SYSTEM_LOSSES_10": {
   "hash": "39f9d34a4031b2747f177829edd6d67709a2202951d8ff0fbb40b902c5a5ed9c",
   "speaker": "system",
@@ -623,6 +638,11 @@
   "hash": "7470055932ad138c3d1e4e9c72307e0172f4bf8faaab2df27eeb57cdc018aa83",
   "speaker": "system",
   "seconds": 14.579
+ },
+ "VO_SYSTEM_PA_CLOSED": {
+  "hash": "8565ec624c83167a200d62f7f6ed2a9b453c93706db42ce754dbdf774dc3e664",
+  "speaker": "system",
+  "seconds": 5.648
  },
  "VO_SYSTEM_SEAL": {
   "hash": "01883db9d852ad1d14475486d4cdb853f320b1684dbe95f4b92ed43c9c8257db",

@@ -185,6 +185,16 @@ func _physics_process(delta: float) -> void:
 	_bite(delta)
 
 
+## A still heap (no cloud, no flash, no scatter, no hum) dozes; its
+## crawlers' frame-by-frame posing rests meanwhile.
+func _may_doze() -> bool:
+	return _rise <= 0.0 and _flash <= 0.0 and _scatter <= 0.0 and (_hum == null or not _hum.playing)
+
+
+func _doze_changed(on: bool) -> void:
+	set_process(not on)
+
+
 func _process(delta: float) -> void:
 	if _cloud == null or is_frozen() or brain.state == EnemyBrain.State.DESTROYED:
 		return
@@ -203,7 +213,7 @@ func _process(delta: float) -> void:
 		_shading = shading
 		for view: MultiMeshInstance3D in [_cloud, _crawl]:
 			view.set_instance_shader_parameter(&"awake", shading.x)
-			view.set_instance_shader_parameter(&"flash", shading.y)
+			view.set_instance_shader_parameter(&"flash", Flashing.hit_flash(shading.y))
 	_animate_cloud()
 	_animate_crawlers()
 	if _hum != null and _hum.playing:

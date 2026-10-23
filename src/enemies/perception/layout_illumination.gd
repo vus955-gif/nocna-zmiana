@@ -26,6 +26,9 @@ var _powered: Callable
 ## Room id -> Array of LightSpec lighting it.
 var _by_room: Dictionary = {}
 var _all: Array[LightSpec] = []
+## Lamps put out (shot down for the night: EnvLayer.put_out; a doused fire
+## bowl until it burns again: SacredFire) -> true.
+var _out: Dictionary = {}
 
 
 ## The light model of [param layout] (its lights plus [param extra]);
@@ -56,12 +59,35 @@ func at(point: Vector3) -> float:
 	for spec in lamps:
 		if _powered.is_valid() and not _powered.call(spec.group, spec.room):
 			continue
+		if _out.has(spec):
+			continue
 		total += contribution(spec, point)
 		if total >= 1.0:
 			return 1.0
 	if room_id != &"" and moon_level > 0.0 and _under_skylight(room_id, point):
 		total += moon_level
 	return clampf(total, 0.0, 1.0)
+
+
+## Puts out the lamp standing at [param position] (a lamp shot down for the
+## night: EnvLayer.put_out; a fire bowl doused: SacredFire); true when there
+## was one.
+func put_out(position: Vector3) -> bool:
+	for spec in _all:
+		if spec.position.distance_to(position) < 0.05:
+			_out[spec] = true
+			return true
+	return false
+
+
+## Gives back the light of the lamp at [param position] put out before (a
+## fire bowl burning again: SacredFire); true when one there was out.
+func put_back(position: Vector3) -> bool:
+	for spec: LightSpec in _out.keys():
+		if spec.position.distance_to(position) < 0.05:
+			_out.erase(spec)
+			return true
+	return false
 
 
 ## This model as the Callable PerceptionWorld.configure() takes.

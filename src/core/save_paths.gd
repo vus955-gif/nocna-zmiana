@@ -5,7 +5,8 @@ class_name SavePaths
 ## - Editor-binary builds (Graj.bat, the tools): tools/godot/editor_data/
 ##   nz_save, next to the engine's own self-contained editor_data.
 ## - Test and scenario runs (a start scene under res://tests/): the test
-##   folder, never a real save.
+##   folder, never a real save. (One of several test processes running side
+##   by side, --shard=k: its own folder, TEST_DIR + "_k".)
 ## - --save-dir=<dir> or NZ_SAVE_DIR=<dir>: that folder (any build).
 ## Only when the game's folder cannot be written to (e.g. installed under
 ## Program Files, or started from inside a zip, which Windows unpacks into
@@ -54,7 +55,12 @@ static func log_dir() -> String:
 
 
 static func test_dir() -> String:
-	return _absolute(TEST_DIR)
+	return _test_dir_for(_user_arg("--shard="))
+
+
+## The test folder of shard [param shard] ("" or not a number: the plain one).
+static func _test_dir_for(shard: String) -> String:
+	return _absolute(TEST_DIR if not shard.is_valid_int() else "%s_%d" % [TEST_DIR, int(shard)])
 
 
 ## True for the headless test runner and the visual scenarios: their start

@@ -352,7 +352,7 @@ func _glow(p: Pose, delta: float) -> void:
 			glow = p.arm_glow[1]
 		_set_uniform(view, index * 3, &"glow", glow)
 		_set_uniform(view, index * 3 + 1, &"awake", clampf(p.eyes, 0.0, 1.0))
-		_set_uniform(view, index * 3 + 2, &"flash", _flash)
+		_set_uniform(view, index * 3 + 2, &"flash", Flashing.hit_flash(_flash))
 
 
 ## Sets an instance uniform only when it changed (cheap when idle).

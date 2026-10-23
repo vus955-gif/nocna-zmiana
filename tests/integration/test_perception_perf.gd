@@ -63,4 +63,4 @@ func test_120_exhibits_look_cheaply() -> void:
 	print("  perception, %d exhibits, %.0f s: %.0f looks/s, %.0f rays/s, %.0f us looking per frame (%.1f us a look), %.2f ms per frame all in, %d awake at the end" % [
 		SLEEPERS + PATROLS, SECONDS, looks / SECONDS, rays / SECONDS, look_usec / frames, look_usec / maxf(looks, 1.0), wall_usec / 1000.0 / frames, awake])
 	assert_lt(looks / SECONDS, (SLEEPERS + PATROLS) * 5.0 + 1.0, "never more than one look per exhibit per 0.2 s")
-	assert_lt(look_usec / frames, LOOK_BUDGET_USEC, "looking stays cheap")
+	assert_lt(look_usec / frames, LOOK_BUDGET_USEC * time_slack(), "looking stays cheap")

@@ -28,6 +28,7 @@ const EXTRAS := {
 	"wax_figure": {"sss": 0.35},
 	"display_case": {"emission": 3.0},
 	"wolf": {"emission": 1.2},
+	"bison": {"emission": 1.2},
 	"knight": {"emission": 2.5},
 	"bust_enemy": {"emission": 1.0},
 	"lantern": {"emission": 5.0},
@@ -121,6 +122,10 @@ const EXTRAS := {
 	"teahouse": {"emission": 1.6},
 	"teahouse_interior": {"emission": 2.0},
 	"cherry_tree": {"alpha_scissor": 0.5},
+	"pine_fringe": {"alpha_scissor": 0.5},
+	"bamboo_leaves": {"alpha_scissor": 0.5},
+	"pigeon_door": {"alpha_scissor": 0.5},
+	"rr_dome_lantern": {"emission": 1.0},
 	"cherry_petals_ground": {"alpha_scissor": 0.5},
 	"loudspeaker": {"emission": 3.0},
 	# pickups (backlog #11, #43): the print, the stencil and the slot digit
@@ -652,6 +657,24 @@ const KIT := {
 	&"totem_pole_house": [],
 	&"totem_pole_welcome": [],
 	&"totem_log": [],
+	# Floor I props modelled in Blender in place of procedural solids (plan
+	# docs/superpowers/plans/2026-10-21-modele-blender.md; sizes and budgets in KIT_PROPS)
+	&"bison": ["bison"],
+	&"asy_chariot": ["asy_chariot"],
+	&"asy_cage": ["asy_cage"],
+	&"kayak": ["kayak"],
+	&"kayak_stand": ["kayak_stand"],
+	&"whaleboat": ["whaleboat"],
+	&"tipi": ["tipi"],
+	&"garden_pine": ["garden_pine"],
+	&"garden_bamboo": ["garden_bamboo"],
+	&"roof_water_tank": ["roof_water_tank"],
+	&"roof_air_handler": ["roof_air_handler"],
+	&"roof_chimney_tall": ["roof_chimney_tall"],
+	&"roof_chimney_short": ["roof_chimney_short"],
+	&"roof_pigeon_loft": ["roof_pigeon_loft"],
+	&"asy_scaffold": ["asy_scaffold"],
+	&"rr_dome_lantern": ["rr_dome_lantern", "rr_dome_lantern_glass"],
 	# Floor I, Greek wing (tools/art/models/gr_*.py; catalog docs/art/kit-pietro1-grecja.md)
 	&"gr_frieze_4m": [],
 	&"gr_frieze_2m": [],
@@ -999,6 +1022,31 @@ const KIT_AMERICAS := {
 	&"totem_pole_welcome": [Vector3(2.39, 4.10, 1.12), 4600],
 	&"totem_log": [Vector3(6.00, 1.50, 1.48), 2800],
 }
+## Floor I props modelled in Blender in place of the art modules' procedural
+## solids (tools/art/models/bison.py ...; plan
+## docs/superpowers/plans/2026-10-21-modele-blender.md): model id -> [native
+## size (its AABB in metres, Godot axes), triangle budget]. Origin = the
+## middle of the footprint on the floor, front -Z; the art modules fit each
+## into its greybox box (Floor1Art.fit_model).
+const KIT_PROPS := {
+	&"bison": [Vector3(0.95, 1.79, 2.94), 5000],
+	&"asy_chariot": [Vector3(1.74, 1.56, 3.09), 4600],
+	&"asy_cage": [Vector3(1.74, 1.73, 1.78), 2000],
+	&"kayak": [Vector3(0.62, 0.36, 5.0), 2200],
+	&"kayak_stand": [Vector3(1.01, 0.92, 5.4), 1200],
+	&"whaleboat": [Vector3(1.77, 1.3, 6.96), 6600],
+	&"tipi": [Vector3(4.15, 5.44, 4.02), 1600],
+	&"garden_pine": [Vector3(3.59, 4.17, 3.52), 1600],
+	&"garden_bamboo": [Vector3(2.37, 6.98, 3.35), 2000],
+	&"roof_water_tank": [Vector3(2.92, 3.5, 2.87), 3000],
+	&"roof_air_handler": [Vector3(2.36, 1.6, 1.38), 2000],
+	&"roof_chimney_tall": [Vector3(1.2, 4.5, 1.2), 800],
+	&"roof_chimney_short": [Vector3(1.5, 3.0, 1.5), 1100],
+	&"roof_pigeon_loft": [Vector3(4.2, 1.8, 0.58), 1300],
+	&"asy_scaffold": [Vector3(1.19, 3.2, 3.96), 2200],
+	# (the dome's lantern is stood on the crown under its greybox box, not fitted into it)
+	&"rr_dome_lantern": [Vector3(3.6, 2.5, 3.6), 2400],
+}
 ## Extra texture sets of the Enlightenment wing's REGISTRY models (same mesh):
 ## [code]exhibit(&"flying_book", {"flying_book": "flying_book_green"})[/code];
 ## scale the node 0.8-1.3 for the size variants.
@@ -1099,6 +1147,18 @@ static func pickup_rim_color(tex_name: String) -> Color:
 	if PICKUP_AMMO.has(tex_name):
 		return WeaponPalette.ammo_color(PICKUP_AMMO[tex_name])
 	return PICKUP_RIM_COLOR
+
+
+## The colour-vision palette changed (Settings, "colour_vision"): the rims
+## of the pickup materials made so far (whole and broken) take their kind's
+## colour of the new palette, on every pickup already in the world. The
+## baked prints keep their colours.
+static func refresh_pickup_rims() -> void:
+	for tex_name: String in PICKUP_AMMO:
+		for key in ["exhibit:%s" % tex_name, "exhibit_debris:%s" % tex_name]:
+			var mat := _materials.get(key) as ShaderMaterial
+			if mat != null:
+				mat.set_shader_parameter(&"rim_color", pickup_rim_color(tex_name))
 
 ## False = every caller falls back to its greybox (a missing model does
 ## the same). Used to compare frame rates with the greybox.

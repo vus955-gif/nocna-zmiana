@@ -33,15 +33,13 @@ const HEAD := 1.9
 ## floor: nobody walks into it.
 const FLAT := 0.1
 
+## (no test changes the level: all of them look at one built for the file -
+## TestCase.shared_fixture; the runner fails a test that changed it)
 var level: MuseumFloorLevel
 
 
 func before_each() -> void:
-	MuseumFloorLevel.dress_default = true
-	level = MuseumFloorLevel.new()
-	level.bake_navigation = false
-	add_child(level)
-	level.build()
+	level = await shared_fixture(&"dressed_floor", DressedFloor.build)
 
 
 func after_each() -> void:

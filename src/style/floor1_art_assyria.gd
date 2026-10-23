@@ -23,6 +23,8 @@ const MODELS: Array[String] = [
 	"khorsabad_gate", "asy_relief_2m", "asy_relief_1m", "asy_relief_wake", "asy_relief_wake_lion", "asy_frieze_1m",
 	"asy_corbel", "asy_plinth", "asy_plinth_low", "asy_torch", "asy_brazier", "asy_tablet_shelf", "asy_tablet_crate",
 	"asy_prism", "asy_portal_4m", "asy_threshold_4m", "asy_parapet_2m",
+	# props modelled in Blender in place of the procedural solids (plan 2026-10-21-modele-blender.md)
+	"asy_chariot", "asy_cage", "asy_scaffold",
 ]
 ## The relief theme (texture set prefix of the asy_relief_ runs) by room;
 ## "" = the kit's default (the winged genius, the spearman).
@@ -365,99 +367,31 @@ static func _tint(node: Node, tint: Color) -> void:
 			view.set_surface_override_material(i, _tinted[key])
 
 
-## The conservators' tube scaffold filling its box (long along z): four
-## standards, ledgers and transoms every metre, two plank decks, braces.
+## The conservators' scaffold filling its box (long along z, the room on
+## its +X side): the asy_scaffold model (galvanised tube and fittings, a
+## storage lift and the boarded deck, the ladder at its open end, a dust
+## sheet over the rail, their bucket, toolbox and work lamp, the sign).
 static func _scaffold(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var hx := size.x * 0.5 - 0.05
-	var hz := size.z * 0.5 - 0.1
-	var steel := iron()
-	for sx: float in [-1.0, 1.0]:
-		for sz: float in [-1.0, 1.0]:
-			_rod(root, Vector3(sx * hx, 0.0, sz * hz), Vector3(sx * hx, size.y, sz * hz), 0.024, steel)
-	var levels: Array[float] = []
-	var y := 1.0
-	while y < size.y - 0.1:
-		levels.append(y)
-		y += 1.0
-	for level_y in levels:
-		for sx: float in [-1.0, 1.0]:
-			_rod(root, Vector3(sx * hx, level_y, -hz), Vector3(sx * hx, level_y, hz), 0.02, steel)
-		for sz: float in [-1.0, 1.0]:
-			_rod(root, Vector3(-hx, level_y, sz * hz), Vector3(hx, level_y, sz * hz), 0.02, steel)
-	for sx: float in [-1.0, 1.0]:
-		_rod(root, Vector3(sx * hx, 0.15, -hz), Vector3(sx * hx, minf(size.y - 0.2, 3.0), hz), 0.016, steel)
-	# plank decks on the ledgers (the top one is the working level)
-	var decks := [levels[0], levels[-1]] if levels.size() > 1 else levels
-	for deck_y in decks:
-		_solid(root, AABB(Vector3(-hx + 0.03, deck_y + 0.02, -hz), Vector3(2.0 * hx - 0.06, 0.04, 2.0 * hz)), cedar())
+	Floor1Art.fit_model(root, "asy_scaffold", size)
 	return root
 
 
-## The king's hunting chariot filling its box (its pole forward, -Z): a
-## cedar cab with a bronze rim on an axle between two spoked bronze wheels,
-## the pole and the yoke.
+## The king's hunting chariot filling its box, its pole forward (-Z): the
+## asy_chariot model (cedar cab painted with rosettes, quivers, two great
+## studded wheels, the pole and the yoke).
 static func _chariot(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var wheel_r := 0.5
-	var axle_y := wheel_r
-	var axle_z := 0.8
-	var cab_w := minf(1.0, size.x - 0.7)
-	_solid(root, AABB(Vector3(-cab_w * 0.5, axle_y - 0.05, 0.0), Vector3(cab_w, 0.95, 1.1)), cedar())
-	_solid(root, AABB(Vector3(-cab_w * 0.5 - 0.02, axle_y + 0.85, -0.02), Vector3(cab_w + 0.04, 0.08, 1.14)), bronze())
-	_rod(root, Vector3(-size.x * 0.5 + 0.05, axle_y, axle_z), Vector3(size.x * 0.5 - 0.05, axle_y, axle_z), 0.05, iron())
-	for sx: float in [-1.0, 1.0]:
-		var x := sx * (size.x * 0.5 - 0.11)
-		var rim := TorusMesh.new()
-		rim.inner_radius = wheel_r - 0.06
-		rim.outer_radius = wheel_r
-		rim.rings = 36
-		rim.ring_segments = 8
-		var view := MeshInstance3D.new()
-		view.mesh = rim
-		view.material_override = bronze()
-		view.transform = Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(x, axle_y, axle_z))
-		root.add_child(view)
-		for k in 8:
-			var a := TAU * k / 8.0
-			var tip := Vector3(x, axle_y + cos(a) * (wheel_r - 0.05), axle_z + sin(a) * (wheel_r - 0.05))
-			_rod(root, Vector3(x, axle_y, axle_z), tip, 0.018, cedar())
-		var hub := CylinderMesh.new()
-		hub.top_radius = 0.09
-		hub.bottom_radius = 0.09
-		hub.height = 0.16
-		var hub_view := MeshInstance3D.new()
-		hub_view.mesh = hub
-		hub_view.material_override = bronze()
-		hub_view.transform = Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(x, axle_y, axle_z))
-		root.add_child(hub_view)
-	var pole_end := Vector3(0.0, 0.9, -size.z * 0.5 + 0.1)
-	_rod(root, Vector3(0.0, axle_y + 0.02, 0.2), pole_end, 0.04, cedar())
-	_rod(root, pole_end + Vector3(-0.6, 0.0, 0.0), pole_end + Vector3(0.6, 0.0, 0.0), 0.035, cedar())
+	Floor1Art.fit_model(root, "asy_chariot", size)
 	return root
 
 
-## A lion cage filling its box: an iron frame with bars every 0.3 m on its
-## sides and across its top, a plank floor.
+## A lions' cage of the hunt filling its box (the asy_cage model: a cedar
+## frame bound in iron, wooden bars, the keeper's hutch on its roof), its
+## sliding gate turned to the pit (the cages stand on its west side: +X).
 static func _cage(size: Vector3) -> Node3D:
 	var root := _holder("Visual")
-	var h := Vector3(size.x * 0.5 - 0.04, size.y - 0.04, size.z * 0.5 - 0.04)
-	var steel := iron()
-	var corners := [Vector3(-h.x, 0.0, -h.z), Vector3(h.x, 0.0, -h.z), Vector3(h.x, 0.0, h.z), Vector3(-h.x, 0.0, h.z)]
-	for i in 4:
-		var a: Vector3 = corners[i]
-		var b: Vector3 = corners[(i + 1) % 4]
-		_rod(root, a, a + Vector3.UP * h.y, 0.03, steel)
-		_rod(root, a + Vector3.UP * 0.06, b + Vector3.UP * 0.06, 0.03, steel)
-		_rod(root, a + Vector3.UP * h.y, b + Vector3.UP * h.y, 0.03, steel)
-		var n := maxi(1, int(round(a.distance_to(b) / 0.3)))
-		for k in range(1, n):
-			var p := a.lerp(b, float(k) / n)
-			_rod(root, p + Vector3.UP * 0.06, p + Vector3.UP * h.y, 0.018, steel)
-	for k in range(1, 4):
-		var x := -h.x + 2.0 * h.x * k / 4.0
-		_rod(root, Vector3(x, h.y, -h.z), Vector3(x, h.y, h.z), 0.018, steel)
-	_solid(root, AABB(Vector3(-h.x, 0.0, -h.z), Vector3(2.0 * h.x, 0.05, 2.0 * h.z)), cedar())
+	Floor1Art.fit_model(root, "asy_cage", size, -PI * 0.5)
 	return root
 
 

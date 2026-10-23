@@ -423,3 +423,40 @@ func test_a_stray_hit_after_dawn_does_not_hold_the_dawn_line_back() -> void:
 	_advance(0.2)
 	var now := VoiceDirector.current_line()
 	assert_eq(VoiceDirector.catalog.line(now).get("event", ""), "dawn_broke", "still on air at once, no calm to wait for: %s" % now)
+
+
+# --- G3: lines that belong to a moment (plan 2026-10-22-glos-g3) ----------------------
+
+func test_the_voice_is_free_only_when_a_line_could_start_this_moment() -> void:
+	assert_true(VoiceDirector.is_free(), "nothing yet")
+	_inject(&"VO_TEST_FREE", {"speaker": "heniek", "event": "idle"})
+	VoiceDirector.queue.push(&"VO_TEST_FREE", VoiceQueue.NORMAL)
+	assert_false(VoiceDirector.is_free(), "a line waits")
+	_advance(5.0)
+	assert_eq(VoiceDirector.current_line(), &"VO_TEST_FREE")
+	assert_false(VoiceDirector.is_free(), "a line is on air")
+	_advance(4.0)
+	assert_eq(VoiceDirector.current_line(), &"", "it played out")
+	assert_false(VoiceDirector.is_free(), "the 20 s of quiet after a line")
+	_advance(VoiceQueue.LINE_GAP + 0.5)
+	assert_true(VoiceDirector.is_free(), "and free again")
+
+
+func test_a_rules_expiry_goes_to_the_queue() -> void:
+	_inject(&"VO_TEST_MOMENT", {"speaker": "system", "event": "uncanny_event", "kind": "test_moment", "delay": 0.8, "expires": 3.0})
+	Events.uncanny_event.emit(&"test_moment", &"court")
+	var request: Dictionary = VoiceDirector.queue.pending[0]
+	assert_eq(request.key, &"VO_TEST_MOMENT")
+	assert_eq(float(request.expires), 3.0)
+	assert_eq(float(request.delay), 0.8)
+
+
+func test_a_moment_line_that_cannot_start_in_time_is_dropped_unheard() -> void:
+	_inject(&"VO_TEST_MOMENT", {"speaker": "system", "event": "uncanny_event", "kind": "test_moment", "delay": 0.8, "expires": 3.0})
+	VoiceDirector.queue.since_line = 0.0   # a line just ended: 20 s of quiet
+	Events.uncanny_event.emit(&"test_moment", &"court")
+	_advance(5.0)
+	assert_false(VoiceDirector.queue.has(&"VO_TEST_MOMENT"), "the click is long past")
+	assert_false(GameState.voice_heard.has(&"VO_TEST_MOMENT"), "it stays unheard: the next moment gets another chance")
+	Events.uncanny_event.emit(&"test_moment", &"court")
+	assert_true(VoiceDirector.queue.has(&"VO_TEST_MOMENT"))

@@ -587,7 +587,7 @@ func _waking(brain: GeneralBrain) -> void:
 	# the eyes catch as the helmet lands, flickering
 	var lit := clampf((pose.assembly - 0.9) / 0.1, 0.0, 1.0)
 	_eye_flicker = fposmod(_eye_flicker + 0.37, 1.0)
-	pose.eyes = 1.0 if pose.assembly >= 1.0 else lit * (0.4 + 0.6 * float(_eye_flicker > 0.4))
+	pose.eyes = 1.0 if pose.assembly >= 1.0 or Flashing.on() else lit * (0.4 + 0.6 * float(_eye_flicker > 0.4))
 	if u <= 0.0:
 		_hanging_arms()
 		return

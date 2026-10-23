@@ -208,6 +208,17 @@ func firing_face() -> int:
 
 
 ## Which way face [param face] looks, relative to the pole's front (rad).
+## Asleep it dozes once every face has come home to the front (they turn
+## back at half rate) and none is waking.
+func _may_doze() -> bool:
+	if _awake_time >= 0.0:
+		return false
+	for k in range(1, _top + 1):
+		if absf(face_yaw(k)) > 0.0001:
+			return false
+	return true
+
+
 func face_yaw(face: int) -> float:
 	if face < 1 or face > _yaw.size():
 		return 0.0

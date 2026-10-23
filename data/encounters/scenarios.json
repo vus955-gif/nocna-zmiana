@@ -1,0 +1,54 @@
+{
+	"_doc": "Room fight scenarios (plan docs/superpowers/plans/2026-10-22-projekt-starc.md; fields: ScenarioCatalog). Switch one off: \"on\": false, or its id in \"off\".",
+	"off": [],
+	"scenarios": [
+		{
+			"id": "greece_nereid",
+			"note": "Height: a hoplite meets the guard at the door, the busts on the temple porch open fire from 4.5 m, then one more comes in from the side: through the metopes door, or the Bassae door when he came in by the metopes.",
+			"rooms": ["greece_nereid", "greece_nereid_podium"],
+			"absorbs": ["greece_podium"],
+			"entry": [-64.5, 0.0, 12.0],
+			"points": {
+				"metopes_door": [-72.0, 0.0, 28.2, 0.0],
+				"bassae_door": [-88.2, 0.0, 5.5, -1.5708]
+			},
+			"beats": [
+				{"id": "contact", "room": "greece_nereid", "roles": ["tank"], "count": 1, "pick": "near", "fallback": true,
+					"cue": "hoplite_shield", "lead": 0.8},
+				{"id": "porch", "ambush": "greece_podium", "count": 2, "after": 5.0, "down": 1,
+					"area": [-86.0, 7.0, -79.0, 17.0], "area_y": [4.0, 7.5], "cue": "bust_grind", "lead": 0.8},
+				{"id": "flank", "room": "greece_nereid", "roles": ["tank", "support"], "count": 1, "fallback": true,
+					"from": "metopes_door", "also_from": ["bassae_door"], "after": 8.0, "down": 2, "cue": "hoplite_shield", "lead": 0.9}
+			]
+		},
+		{
+			"id": "assyria_nimrud",
+			"note": "A long gallery: a warrior steps out of the far wall and shoots down its length, a lion breaks from the wall behind the guard as he goes on, the fuse on the trolley wakes the two by the scaffold.",
+			"rooms": ["assyria_nimrud"],
+			"absorbs": ["assyria_fuse"],
+			"entry": [-64.0, 0.0, -48.0],
+			"beats": [
+				{"id": "contact", "roles": ["ranged"], "count": 1, "pick": "far", "fallback": true,
+					"cue": "relief_crack", "lead": 0.8},
+				{"id": "behind", "roles": ["flanker"], "count": 1, "pick": "near", "fallback": true, "after": 7.0, "down": 1,
+					"area": [-100.0, -52.5, -80.0, -39.5], "area_y": [-0.5, 3.0], "cue": "relief_crack", "lead": 0.8},
+				{"id": "fuse", "ambush": "assyria_fuse", "count": 2, "pickup": "fuse_assyria", "after": 40.0, "cue": "relief_crack", "lead": 0.7}
+			]
+		},
+		{
+			"id": "asia_armor",
+			"note": "The armoury's bell: an armour steps off its rack by the door, the bell over the islands tolls on its own and the rest come to it (ring it again while they stand under it), then the two by the vault march out.",
+			"rooms": ["asia_armor"],
+			"absorbs": ["asia_armor_guard"],
+			"entry": [40.0, 0.0, -63.5],
+			"beats": [
+				{"id": "contact", "roles": ["tank"], "kinds": ["samurai_armor", "knight"], "count": 1, "pick": "near", "fallback": true,
+					"cue": "samurai_glint", "lead": 0.8},
+				{"id": "bell", "roles": ["tank"], "count": 2, "fallback": true, "after": 6.0, "down": 1,
+					"ring": "asia_bell_armor", "lead": 0.9},
+				{"id": "vault", "ambush": "asia_armor_guard", "count": 2, "after": 9.0,
+					"area": [43.0, -85.0, 50.0, -77.0], "area_y": [-0.5, 3.0], "cue": "samurai_glint", "lead": 0.8}
+			]
+		}
+	]
+}

@@ -9,15 +9,20 @@ extends TestCase
 
 const ZONE := &"basement"
 
+## The tests that change the level (blackouts, culling, quality presets, parts
+## taken away) build their own; all the others look at one built for the file
+## (TestCase.shared_fixture: the runner fails a test that changed it).
+const OWN_LEVEL: Array[StringName] = [
+	&"test_the_tubes_flicker_and_the_emergency_lamps_stay_red",
+	&"test_steam_rises_in_the_boiler_hall_and_is_culled_far_away",
+	&"test_the_court_does_not_keep_the_boiler_hall_lit",
+]
+
 var level: MuseumFloorLevel
 
 
 func before_each() -> void:
-	MuseumFloorLevel.dress_default = true
-	level = MuseumFloorLevel.new()
-	level.bake_navigation = false
-	add_child(level)
-	level.build()
+	level = DressedFloor.build(self) if OWN_LEVEL.has(current_test) else await shared_fixture(&"dressed_floor", DressedFloor.build)
 
 
 func after_each() -> void:

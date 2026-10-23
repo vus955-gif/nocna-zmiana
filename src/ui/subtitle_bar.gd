@@ -16,10 +16,24 @@ const BOTTOM := 240              ## px above the bottom edge (the hint strip is 
 const HINT_GAP := 14.0
 const MAX_CHARS := 110
 const WIDTH := 1100.0
+## The text sizes of the option "Rozmiar napisów": the speaker's name, the
+## line (points) and the width the line wraps at. Medium is the design
+## (WIDTH); none is smaller than the HUD's smallest text.
+const SIZES := {
+	SettingsData.SubtitleSize.SMALL: {"who": 20, "text": 22, "width": 960.0},
+	SettingsData.SubtitleSize.MEDIUM: {"who": 22, "text": 26, "width": WIDTH},
+	SettingsData.SubtitleSize.LARGE: {"who": 30, "text": 38, "width": 1500.0},
+}
+## The dark backing (option "Ciemne tło napisów"): a band this much wider
+## than the plaque on every side, at most this opaque (at the option's 100 %).
+const BACKING_PAD := 16.0
+const BACKING_ALPHA := 0.92
 const COLOURS := {&"radio": UiTheme.ACCENT, &"pa": UiTheme.MOON, &"guide": UiTheme.MOON}
 const LABELS := {&"radio": "VOICE_SPEAKER_HENIEK", &"pa": "VOICE_SPEAKER_SYSTEM", &"guide": "VOICE_SPEAKER_GUIDE"}
 
 var _panel: PanelContainer
+## The dark band behind the plaque (option subtitle_backing), under it.
+var _backing: ColorRect
 var _who: Label
 var _text: Label
 var _key: StringName = &""
@@ -39,6 +53,10 @@ func set_over_dawn(over: bool) -> void:
 
 
 func _ready() -> void:
+	_backing = ColorRect.new()
+	_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_backing.visible = false
+	add_child(_backing)
 	_panel = PanelContainer.new()
 	var style := UiTheme.plaque(UiTheme.Plaque.HUD)
 	style.content_margin_left = 30.0
@@ -71,6 +89,7 @@ func _ready() -> void:
 		director.line_started.connect(show_line)
 		director.line_ended.connect(clear_line)
 	Settings.settings_changed.connect(_on_setting_changed)
+	_apply_look()
 
 
 ## The plaque centred, its bottom edge BOTTOM above the screen's (higher
@@ -85,11 +104,26 @@ func _place() -> void:
 				var hint := (hud as Hud).hint_clearance()
 				if hint > 0.0:
 					bottom = maxf(bottom, hint + HINT_GAP)
+				# a big HUD size makes the corner plaques reach over the usual height
+				bottom = maxf(bottom, (hud as Hud).bottom_clearance() + HINT_GAP)
 	if _panel.offset_left != -least.x * 0.5 or _panel.offset_bottom != -bottom or _panel.offset_top != -bottom - least.y:
 		_panel.offset_left = -least.x * 0.5
 		_panel.offset_right = least.x * 0.5
 		_panel.offset_bottom = -bottom
 		_panel.offset_top = -bottom - least.y
+	_place_backing(least, bottom)
+
+
+## The backing round the plaque (anchored to the bottom middle like it).
+func _place_backing(least: Vector2, bottom: float) -> void:
+	_backing.visible = _panel.visible and Settings.data.subtitle_backing > 0.0
+	if not _backing.visible:
+		return
+	_backing.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_backing.offset_left = -least.x * 0.5 - BACKING_PAD
+	_backing.offset_right = least.x * 0.5 + BACKING_PAD
+	_backing.offset_bottom = -bottom + BACKING_PAD
+	_backing.offset_top = -bottom - least.y - BACKING_PAD
 
 
 func show_line(key: StringName, channel: StringName, seconds: float) -> void:
@@ -110,12 +144,27 @@ func clear_line(key: StringName) -> void:
 	if key == _key or key == &"":
 		_key = &""
 		_panel.visible = false
+		_backing.visible = false
 
 
 ## The "Napisy" switch takes effect at once, also in the middle of a line.
 func _on_setting_changed(key: StringName) -> void:
 	if key == &"subtitles":
 		_panel.visible = Settings.data.subtitles and _key != &"" and _text.text != ""
+		_place()
+	if key == &"subtitle_size" or key == &"subtitle_backing" or key == &"":
+		_apply_look()
+
+
+## The text size and the backing of the options (live, also mid-line).
+func _apply_look() -> void:
+	var look: Dictionary = SIZES[Settings.data.subtitle_size]
+	_who.add_theme_font_size_override(&"font_size", int(look["who"]))
+	_text.add_theme_font_size_override(&"font_size", int(look["text"]))
+	_text.custom_minimum_size.x = float(look["width"])
+	_backing.color = Color(0.0, 0.0, 0.0, Settings.data.subtitle_backing * BACKING_ALPHA)
+	if _panel.visible:
+		_place()
 
 
 func _process(delta: float) -> void:

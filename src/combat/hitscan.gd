@@ -8,6 +8,9 @@ const MAX_SKIPPED_AREAS := 4
 ## the zones found before) one sweep may take.
 const QUERY_BATCH := 32
 const MAX_BATCHES := 16
+## The museum's props' zones one piercing round may pass on top of its
+## targets (a glass case has four overlapping zones).
+const MAX_PROP_ZONES := 24
 
 
 ## Casts a ray against level geometry and hurtboxes. Returns {} on a miss,
@@ -46,11 +49,18 @@ static func ray(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3, ex
 ## hunting rifle). Returns the hits in order: one per receiver (the first of
 ## its zones the ray crosses decides the weak point; its other zones are
 ## passed through), and a wall last (hurtbox null) when one stops the ray.
+## The museum's props on the way (a case's glass, a lamp, a tool's tag:
+## EnvProp, EnvTag) are hit too but do not count against
+## [param max_targets]; their zones have a budget of their own
+## (MAX_PROP_ZONES), so a row of them never ends the shot early.
 static func pierce(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3, max_targets: int) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	var receivers: Array[Node] = []
 	var passed: Array[RID] = []
-	for step in maxi(max_targets, 1) * 8:
+	var targets := 0
+	var steps := 0
+	var prop_steps := 0
+	while steps < maxi(max_targets, 1) * 8 and prop_steps < MAX_PROP_ZONES:
 		var hit := ray(space, from, to, passed)
 		if hit.is_empty():
 			break
@@ -58,14 +68,32 @@ static func pierce(space: PhysicsDirectSpaceState3D, from: Vector3, to: Vector3,
 		if hurtbox == null:
 			out.append(hit)   # a wall ends the shot
 			break
+		var prop := is_prop(hurtbox)
+		if prop:
+			prop_steps += 1
+		else:
+			steps += 1
 		passed.append(hit["rid"])
+		# a pane the round goes through lets it past the solid case round it
+		# (EnvGlass: the glass of a display case)
+		for rid: RID in hurtbox.get_meta(&"pierced_bodies", []):
+			if not passed.has(rid):
+				passed.append(rid)
 		if receivers.has(hurtbox.receiver):
 			continue   # another zone of a target already hit
 		receivers.append(hurtbox.receiver)
 		out.append(hit)
-		if receivers.size() >= max_targets:
-			break
+		if not prop:
+			targets += 1
+			if targets >= max_targets:
+				break
 	return out
+
+
+## True when [param hurtbox] is a zone of the museum's reactive props
+## (EnvProp: glass, lamps, busts...; EnvTag: a tool's red tag), not a target.
+static func is_prop(hurtbox: Hurtbox) -> bool:
+	return hurtbox != null and (hurtbox.receiver is EnvProp or hurtbox.receiver is EnvTag)
 
 
 ## Random direction inside a cone around [param forward]
@@ -94,9 +122,20 @@ static func spread_direction(forward: Vector3, spread_deg: float, rng: RandomNum
 static func sphere_hurtboxes(space: PhysicsDirectSpaceState3D, center: Vector3, radius: float) -> Array[Hurtbox]:
 	var shape := SphereShape3D.new()
 	shape.radius = radius
+	var found := shape_hurtboxes(space, shape, Transform3D(Basis.IDENTITY, center))
+	found.sort_custom(func(a: Hurtbox, b: Hurtbox) -> bool:
+		return a.global_position.distance_squared_to(center) < b.global_position.distance_squared_to(center))
+	return found
+
+
+## Hurtboxes overlapping [param shape] at [param frame], each once, in the
+## order the physics found them, in batches (see sphere_hurtboxes(): a zone
+## of many shapes never crowds out the others). A falling load's strike
+## (EnvStrike) asks this way too.
+static func shape_hurtboxes(space: PhysicsDirectSpaceState3D, shape: Shape3D, frame: Transform3D) -> Array[Hurtbox]:
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = shape
-	query.transform = Transform3D(Basis.IDENTITY, center)
+	query.transform = frame
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
 	query.collision_mask = Layers.HURTBOX
@@ -117,6 +156,4 @@ static func sphere_hurtboxes(space: PhysicsDirectSpaceState3D, center: Vector3, 
 		if hits.size() < QUERY_BATCH or not fresh:
 			break
 		query.exclude = seen
-	found.sort_custom(func(a: Hurtbox, b: Hurtbox) -> bool:
-		return a.global_position.distance_squared_to(center) < b.global_position.distance_squared_to(center))
 	return found

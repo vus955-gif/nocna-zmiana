@@ -216,7 +216,8 @@ func _physics_process(delta: float) -> void:
 		return
 	_time += delta
 	if flock != null:
-		flock.tick(delta, Engine.get_physics_frames())
+		# (the flock's clock moves one frame a frame: a dozing tick's delta spans many)
+		flock.tick(get_physics_process_delta_time(), Engine.get_physics_frames())
 	if not _perch_ready:
 		_settle_on_perch()
 	_tick_wake(delta)
@@ -231,6 +232,13 @@ func _physics_process(delta: float) -> void:
 ## Asleep on its shelf it is a museum piece: no physics step.
 func resting() -> bool:
 	return _perched or _launch > 0.0 or _landing > 0.0
+
+
+## It dozes on its shelf once it sits there: not while it slides off or
+## onto it, nor while its turn to wake with the flock counts down.
+func _may_doze() -> bool:
+	return _perch_ready and _perched and _launch <= 0.0 and _landing <= 0.0 and _wake_delay < 0.0 \
+			and (_flock_sound == null or not _flock_sound.playing)
 
 
 ## Hovers on a spring at its height (by the guard's while it hunts),
@@ -517,6 +525,7 @@ func _wake_flock() -> void:
 		return
 	var delays := flock.wake_delays(self, sleeping)
 	for other: FlyingBook in delays:
+		other.end_doze()   # (its sleep caught up before its turn starts counting)
 		other._wake_delay = delays[other]
 		other._wake_spotted = brain.spotted()
 		other._wake_point = brain.last_known

@@ -51,7 +51,7 @@ UPG_PISTOL_MAG_DESC,Magazynek pistoletu mieści 18 naboi.,The pistol magazine ho
 UPG_SHOTGUN_SPREAD_NAME,Dławik,Choke
 UPG_SHOTGUN_SPREAD_DESC,Rozrzut śrutu mniejszy o 35%.,Buckshot spread is 35% tighter.
 UPG_SHOTGUN_SLUG_NAME,Pocisk „slug”,Slugs
-UPG_SHOTGUN_SLUG_DESC,"Przytrzymaj R, aby przełączyć śrut na slug: jeden ciężki pocisk (70 obrażeń), słaby punkt ×2.","Hold R to switch buckshot to slugs: one heavy round (70 damage), weak point ×2."
+UPG_SHOTGUN_SLUG_DESC,"Przytrzymaj przeładowanie, aby przełączyć śrut na slug: jeden ciężki pocisk (70 obrażeń), słaby punkt ×2.","Hold reload to switch buckshot to slugs: one heavy round (70 damage), weak point ×2."
 PROMPT_TERMINAL,Terminal ulepszeń,Upgrade terminal
 TERMINAL_SUBTITLE,Terminal ochrony,Security terminal
 TERMINAL_TITLE,Ulepszenia,Upgrades
@@ -65,7 +65,7 @@ TERMINAL_NEEDS_WEAPON,"Zadziała, gdy znajdziesz: %s.",Takes effect once you fin
 TERMINAL_INSTALLED,Zainstalowano.,Installed.
 TERMINAL_HINT_SELECT,↑ ↓  Wybór,↑ ↓  Select
 TERMINAL_HINT_BUY,Enter  Kup,Enter  Buy
-TERMINAL_HINT_CLOSE,Esc / E  Zamknij,Esc / E  Close
+TERMINAL_HINT_CLOSE,Esc / %s  Zamknij,Esc / %s  Close
 DEATH_NIGHT,Noc %d,Night %d
 DEATH_LANTERN,"Twoja latarka została tam, gdzie padłeś. Czeka w niej %d Pyłu.","Your flashlight lies where you fell, with %d Dust in it."
 DEATH_NOTHING,Tym razem kieszenie były puste.,Your pockets were empty this time.
@@ -341,6 +341,11 @@ NIGHT_OBJ_BOSS,Pokonaj strażnika holu,Defeat the guardian of the hall
 NIGHT_OBJ_DESCEND,Zejdź do podziemi,Go down into the undercroft
 NIGHT_WITCHING,Godzina duchów,The witching hour
 NIGHT_WITCHING_DETAIL,Eksponaty są szybsze i groźniejsze.,The exhibits grow faster and fiercer.
+UNCANNY_EYES,"Te oczy… przed chwilą patrzyły prosto.","Those eyes… a moment ago they looked straight ahead."
+UNCANNY_RADIO,"Krótkofalówka trzeszczy. Ktoś oddycha na kanale.","The radio crackles. Someone is breathing on the channel."
+UNCANNY_CLOCKS,"Wszystkie zegary idą do tyłu. Wszystkie naraz.","Every clock is running backwards. All at once."
+SETPIECE_COURT_GAME,"Baba Jaga patrzy… Nie odwracaj się do nich plecami.","Grandmother's footsteps… Don't turn your back on them."
+SETPIECE_COURT_GAME_WON,"Nikt się nie ruszył. Wygrałem?","Nobody moved. Did I win?"
 NIGHT_DAWN,Świt,Dawn
 NIGHT_DAWN_SURVIVED,Przetrwałeś noc %d.,You made it through night %d.
 NIGHT_DAWN_DUST,Pył przy sobie: %d,Dust carried: %d
@@ -366,15 +371,7 @@ PROMPT_TAKE_RIFLE_HUNT,Weź sztucer,Take the rifle
 PROMPT_TAKE_HARPOON,Weź harpunnik,Take the harpoon gun
 PROMPT_TAKE_HWACHA,Weź ognistą skrzynię,Take the fire-arrow chest
 HUD_VOLLEY,%d RAKIET,%d ROCKETS
-HUD_HELP_CONTROLS_P1,"STEROWANIE
-WSAD — ruch     Shift — sprint     Ctrl / boczny przycisk myszy — unik
-Spacja — skok     LPM — strzał     PPM / V — cios pięścią
-R — przeładowanie     1–8, kółko — broń     F — latarka     E — użyj
-F1 — pomoc     F11 — pełny ekran     Esc — pauza","CONTROLS
-WASD — move     Shift — sprint     Ctrl / side mouse button — dash
-Space — jump     LMB — fire     RMB / V — punch
-R — reload     1–8, wheel — weapon     F — flashlight     E — use
-F1 — help     F11 — fullscreen     Esc — pause"
+HUD_HELP_CONTROLS_P1,STEROWANIE,CONTROLS
 HUD_HELP_SANDBOX_P1,"PIASKOWNICA
 F5 — figury woskowe     F6 — wilki     F7 — rycerz     F8 — usuń wrogów","SANDBOX
 F5 — wax figures     F6 — wolves     F7 — knight     F8 — remove enemies"
@@ -556,6 +553,8 @@ SWITCHBOARD_ON,Rozdzielnia — zasilanie działa,Switchboard — the power is on
 SWITCHBOARD_FIT,Włóż bezpieczniki i przywróć zasilanie,Fit the fuses and restore the power
 SWITCHBOARD_NEED,Rozdzielnia — brak bezpieczników (%d/%d),Switchboard — fuses missing (%d/%d)
 HUD_POWER_ON,Zasilanie wraca: żaluzje korytarza północnego idą w górę,The power is back: the north corridor's shutters roll up
+HINT_ENV_TAG,Czerwona zawieszka: obluzowane mocowanie — strzał je zrywa,Red tag: a loose mount — a shot tears it free
+ENV_TAG_TEXT,USTERKA — NIE DOTYKAĆ,FAULTY — DO NOT TOUCH
 HAVEN_FOUND_FLOOR_DETAIL,"Terminal, apteczka i spokój. Stąd też można zacząć noc.","A terminal, a first-aid kit and quiet. Nights can start here too."
 PROMPT_TAKE_ITEM,Weź: %s,Take: %s
 CHESS_PIECE,Figura szachowa z Lewis,A Lewis chess piece
@@ -663,21 +662,21 @@ From the north catwalk you can see the dinosaur from above. On a full moon it tu
 Shed boarded up until further notice (management's decision after the incident with the bust)."
 NOTE_ROOF_1_SIGN,— brygada dekarska nr 2,— roofing crew no. 2
 NOTE_BOOTH_1_TITLE,"Dziennik stróża nocnego, październik 1912","The night watchman's log, October 1912"
-NOTE_BOOTH_1_BODY,"3 X. Obchód o północy. Bez zdarzeń. Skrzydlaty byk spod asyryjskiej bramy obszedł Czytelnię dookoła i wrócił na swoje miejsce. Bez zdarzeń.
-7 X. Mumia z sali egipskiej znów siedzi na moim krześle. Wyniosłem. Ognia nie lubią — wystarczy zapałka do bandaża.
-11 X. Łańcuch na tych drzwiach zakładam ja. Puszcza, kiedy się w niego porządnie walnie, więc proszę nie walić.
-12 X. Drzwi do piwnic ryglują się od strony sal. Z dołu nie otworzysz, z góry owszem. Tak kazali fundatorzy.
+NOTE_BOOTH_1_BODY,"3 X. Skrzydlaty byk spod asyryjskiej bramy obszedł nocą Czytelnię i wrócił na miejsce.
+7 X. Mumia znów na moim krześle. Ognia nie lubią: zapałka do bandaża wystarczy.
+11 X. Łańcuch na tych drzwiach puszcza od porządnego ciosu. Proszę nie walić.
+12 X. Drzwi do piwnic ryglują się od strony sal: z dołu nie otworzysz, z góry owszem.
 15 X. Spod krypty stuka. Równo, jak zegar albo serce. Kiedy stuka głośniej, eksponaty chodzą śmielej.
-17 X. Fundatorzy kazali nie schodzić niżej krypty. Fundatorzy leżą w krypcie i niczego już nie każą.
-17 X, trzecia w nocy. Schodzę. Schody idą dalej, niż powinny. Na dole ktoś zostawił zapalone światło.
-Dopisek inną ręką: stróż nocny J. Kopeć nie zdał służby 18 X o szóstej rano. Nie odnaleziony. Jego latarni też nie odnaleziono.","3 Oct. Midnight round. Nothing to report. The winged bull from the Assyrian gate walked once round the Reading Room and went back to its place. Nothing to report.
-7 Oct. The mummy from the Egyptian room is sitting in my chair again. Carried it out. They don't care for fire — a match to the bandages will do.
-11 Oct. The chain on this door is mine to put on. It gives if you hit it properly hard, so kindly don't.
-12 Oct. The cellar doors bolt from the gallery side. From below you will never open them; from above you will. The founders' orders.
+17 X. Fundatorzy kazali nie schodzić niżej krypty. Leżą w krypcie i niczego już nie każą.
+17 X, trzecia. Schodzę. Schody idą dalej, niż powinny. Na dole ktoś zostawił zapalone światło.
+Dopisek inną ręką: J. Kopeć nie zdał służby 18 X. Nie odnaleziony. Latarni też nie.","3 Oct. The winged bull from the Assyrian gate walked round the Reading Room at night and went back.
+7 Oct. The mummy is in my chair again. They don't care for fire: a match to the bandages will do.
+11 Oct. The chain on this door gives to a good hard blow. Kindly don't.
+12 Oct. The cellar doors bolt from the gallery side: from below you will never open them, from above you will.
 15 Oct. Something knocks under the crypt. Steady, like a clock or a heart. When it knocks louder, the exhibits walk bolder.
-17 Oct. The founders said never to go lower than the crypt. The founders lie in the crypt and give no more orders.
-17 Oct, three in the morning. Going down. The stairs go on further than they should. Someone down there has left a light on.
-Added in another hand: night watchman J. Kopeć did not hand over his watch at six in the morning on 18 Oct. Not found. Nor was his lantern."
+17 Oct. The founders said never to go lower than the crypt. They lie in the crypt and give no more orders.
+17 Oct, three o'clock. Going down. The stairs go on further than they should. Someone down there has left a light on.
+Added in another hand: J. Kopeć did not hand over his watch on 18 Oct. Not found. Nor was his lantern."
 NOTE_BOOTH_1_SIGN,Stróż nocny J. Kopeć,"J. Kopeć, night watchman"
 NOTE_ENTRANCE_1_TITLE,Do nocnej zmiany — z kasy,To the night shift — from the ticket desk
 NOTE_ENTRANCE_1_BODY,"Panie Heniu, albo kto tam teraz za Pana siedzi.
@@ -705,31 +704,31 @@ PS Something sits loose under the information desk."
 NOTE_COURT_1_SIGN,— Heniek,— Heniek
 NOTE_COURT_2_TITLE,Notatka służbowa: astrolabium,Memo: the astrolabe
 NOTE_COURT_2_BODY,"Do: nocna zmiana. Do wiadomości: nikt więcej.
-Astrolabium w środku Czytelni trafiło do nas z zapisu fundatora, Ksawerego Zawilskiego. Przez półtora wieku jego środkowy pierścień był pusty. Dar anonimowy, „minerał nieznanego pochodzenia”, wszedł w niego co do milimetra. Przyznaję: osadziłem go tam sam, wbrew zastrzeżeniom testamentu, które uważałem za dziwactwo starego człowieka.
+Astrolabium w Czytelni trafiło do nas z zapisu fundatora, Ksawerego Zawilskiego. Przez półtora wieku jego środkowy pierścień był pusty. Dar anonimowy, „minerał nieznanego pochodzenia”, wszedł w niego co do milimetra. Osadziłem go sam, wbrew testamentowi, który uważałem za dziwactwo starego człowieka.
 Uważałem.
-Jeśli zbierzecie odłamki, proszę je osadzić z powrotem w pierścieniu. Wszystkie sześć. Kamień się scali i — sądząc po tym, jak bije — od razu poleci tam, gdzie czeka szkielet. To jedyny słaby punkt tego zwierzęcia: kryształ między żebrami. W kości szkoda amunicji.
-Kiedy zaryczy, schodzą się eksponaty ze wszystkich skrzydeł. Pod koniec od jego ryku pęka szklany dach — proszę patrzeć na cienie na posadzce.
-Kartaczownicę z ekspozycji „Wiek pary i stali” wolno zabrać. Łańcuch puści od strzelby albo od trzech porządnych ciosów.
+Jeśli zbierzecie odłamki, osadźcie wszystkie sześć z powrotem w pierścieniu. Kamień się scali i poleci tam, gdzie czeka szkielet. Jedyny słaby punkt tego zwierzęcia to kryształ między żebrami; w kości szkoda amunicji.
+Jego ryk zwołuje eksponaty ze wszystkich skrzydeł, a pod koniec rozbija szklany dach: patrzcie na cienie na posadzce.
+Kartaczownicę z wystawy „Wiek pary i stali” wolno zabrać. Łańcuch puści od strzelby albo trzech ciosów.
 Za szkody odpowiada Dział Techniczny.","To: the night shift. Copies: nobody else.
-The astrolabe in the middle of the Reading Room came to us in the will of our founder, Ksawery Zawilski. For a century and a half its central ring stood empty. The anonymous gift, the “mineral of unknown origin”, went into it to the millimetre. I admit it: I set it there myself, against the reservations in the will, which I took for an old man's whim.
+The astrolabe in the Reading Room came to us in the will of our founder, Ksawery Zawilski. For a century and a half its central ring stood empty. The anonymous gift, the “mineral of unknown origin”, went into it to the millimetre. I set it there myself, against the will, which I took for an old man's whim.
 Took.
-If you gather the shards, set them back in the ring. All six. The stone will mend and — judging by the way it beats — fly straight to where the skeleton waits. That is the animal's only weak point: the crystal between its ribs. Bone is a waste of ammunition.
-When it roars, exhibits come from every wing. Towards the end its roar cracks the glass roof — watch the shadows on the floor.
-You may take the gatling gun from “The Age of Steam and Steel”. The chain gives to a shotgun or to three good punches.
+If you gather the shards, set all six back in the ring. The stone will mend and fly to where the skeleton waits. That animal's only weak point is the crystal between its ribs; bone is a waste of ammunition.
+Its roar calls exhibits from every wing, and towards the end cracks the glass roof: watch the shadows on the floor.
+You may take the gatling gun from “The Age of Steam and Steel”. The chain gives to a shotgun or three good punches.
 The Maintenance Department is liable for all damage."
 NOTE_COURT_2_SIGN,"dr A. Wróblewski, kustosz","Dr A. Wróblewski, curator"
 NOTE_EGYPT_1_TITLE,"Dziennik ekspedycji, Teby 1898","Expedition diary, Thebes 1898"
 NOTE_EGYPT_1_BODY,"14 lutego. Otworzyliśmy grób kapłana Amona. Profesor tańczył. Ja rysowałem.
-15 lutego. Tragarze nie chcą nocować przy sarkofagach. Mówią, że umarli nie lubią, kiedy ktoś zabiera rzeczy ze stołu. Profesor kazał im się nie wygłupiać i położył strzelbę na stole mapowym — „na hieny”.
-19 lutego. W nocy Hasan wziął strzelbę, żeby przegonić hieny. Hien nie było. Spod namiotu wstały trzy mumie, jedna po drugiej, jakby ktoś je wywołał po nazwisku.
-20 lutego. Notuję dla potomnych: bandaże śmigają jak bicz i przyciągają człowieka do siebie — trzeba stać z boku, nigdy na wprost. Za to płoną jak papier, a płonący umarły zapomina, czego chciał, i ucieka. Ogień to nasz przyjaciel. Hasan się zgadza.
-22 lutego. Profesor kazał spakować do muzeum cały obóz, ze stołem i strzelbą. Mówi, że to „pedagogiczne”.
-Jeśli czytasz to w muzeum: kto weźmie strzelbę ze stołu, ten obudzi obóz. Tak było w Tebach.","14 February. We opened the tomb of the priest of Amun. The Professor danced. I drew.
-15 February. The porters won't sleep by the sarcophagi. They say the dead don't like it when somebody takes things off the table. The Professor told them not to be silly and laid the shotgun on the map table — “for the hyenas”.
-19 February. In the night Hasan took the shotgun to chase off the hyenas. There were no hyenas. Three mummies rose from beside the tent, one after another, as if someone had called them by name.
-20 February. For posterity: the bandages lash out like a whip and drag a man in — stand to one side, never square in front. But they burn like paper, and a burning dead man forgets what he wanted and runs. Fire is our friend. Hasan agrees.
-22 February. The Professor has had the whole camp packed up for the museum, table and shotgun included. He calls it “educational”.
-If you are reading this in the museum: whoever takes the shotgun from the table wakes the camp. That is how it was in Thebes."
+15 lutego. Tragarze nie chcą nocować przy sarkofagach: umarli nie lubią, kiedy ktoś zabiera rzeczy ze stołu. Profesor położył strzelbę na stole mapowym — „na hieny”.
+19 lutego. Nocą Hasan wziął strzelbę na hieny. Hien nie było. Spod namiotu wstały trzy mumie, jakby ktoś je wywołał po nazwisku.
+20 lutego. Dla potomnych: bandaże śmigają jak bicz i przyciągają człowieka — stać z boku, nigdy na wprost. Za to płoną jak papier, a płonący umarły zapomina, czego chciał, i ucieka. Hasan się zgadza.
+22 lutego. Profesor kazał spakować do muzeum cały obóz, ze stołem i strzelbą. „Pedagogiczne”, mówi.
+Jeśli czytasz to w muzeum: kto weźmie strzelbę ze stołu, ten obudzi obóz.","14 February. We opened the tomb of the priest of Amun. The Professor danced. I drew.
+15 February. The porters won't sleep by the sarcophagi: the dead don't like it when somebody takes things off the table. The Professor laid the shotgun on the map table — “for the hyenas”.
+19 February. In the night Hasan took the shotgun to the hyenas. There were no hyenas. Three mummies rose from beside the tent, as if someone had called them by name.
+20 February. For posterity: the bandages lash like a whip and drag a man in — stand to one side, never square in front. But they burn like paper, and a burning dead man forgets what he wanted and runs. Hasan agrees.
+22 February. The Professor has had the whole camp packed for the museum, table and shotgun included. He calls it “educational”.
+If you are reading this in the museum: whoever takes the shotgun from the table wakes the camp."
 NOTE_EGYPT_1_SIGN,"F. Zaręba, rysownik ekspedycji","F. Zaręba, expedition draughtsman"
 NOTE_EGYPT_2_TITLE,Zlecenie serwisowe nr 203,Work order no. 203
 NOTE_EGYPT_2_BODY,"Obiekt: Kolos Ramzesa. Zakres: pęknięcia.
@@ -765,7 +764,7 @@ Skrzynie 8–10: sarkofagi z mumiami, trzy sztuki. Wieka przybijać mocno.
 Skrzynia 11: fałszywe drzwi z grobu kapłana Amona, z żelaznym uchem do transportu.
 Skrzynia 12: szkatuła z grobu kapłana. W środku gniazdo w kształcie serca, wyściełane czerwonym pyłem. Puste. Kapłan trzymał w zaciśniętej dłoni papirus: „Serce, którego nie można zważyć, zeszło pod ziemię. Kto je wyniesie na wierzch, obudzi wszystko, co pamięta”.
 Uwaga rysownika, ołówkiem: Profesor twierdzi, że to metafora. Profesor śpi przy zapalonej lampie.
-Uwaga magazyniera, dopisana później innym atramentem: gniazdo ma co do milimetra wymiary pustego pierścienia astrolabium w Czytelni. Nikomu nie mówić.
+Uwaga magazyniera, dopisana innym atramentem: gniazdo ma co do milimetra wymiary pustego pierścienia astrolabium w Czytelni. Nikomu nie mówić.
 Łańcuch na drzwiach składu założony na polecenie Dyrekcji.","Copy made in 1899.
 Crates 1–6: statues, stelae, canopic jars.
 Crate 7: the camp (tent, map table, lamps, the Professor's shotgun).
@@ -773,20 +772,20 @@ Crates 8–10: sarcophagi with mummies, three of them. Nail the lids down hard.
 Crate 11: the false door from the tomb of the priest of Amun, with an iron ring for hauling.
 Crate 12: a casket from the priest's tomb. Inside, a heart-shaped socket lined with red dust. Empty. In his clenched hand the priest held a papyrus: “The heart that cannot be weighed has gone down beneath the earth. Whoever brings it up again shall wake all that remembers.”
 Draughtsman's note, in pencil: the Professor says it is a metaphor. The Professor sleeps with the lamp lit.
-Storekeeper's note, added later in different ink: the socket matches the empty ring of the astrolabe in the Reading Room to the millimetre. Tell no one.
+Storekeeper's note, added in different ink: the socket matches the empty ring of the astrolabe in the Reading Room to the millimetre. Tell no one.
 The chain on the store's door put on by order of the Management."
 NOTE_EGYPT_4_SIGN,Magazyn zbiorów egipskich,The Egyptian collection store
 NOTE_GREECE_1_TITLE,List w sprawie marmurów,A letter concerning the marbles
 NOTE_GREECE_1_BODY,"Szanowny Panie Kustoszu,
-odlewy metop są gotowe i stoją w magazynie, ale muszę Panu napisać o rzeczy, za którą w Akademii by mnie wyśmiano.
-Marmur jest nocą ciepły. Zdejmowałem formę z Kentaura po zmroku i jego pierś była miękka jak glina, którą się dopiero ugniata. Gips pękł mi dokładnie tam, na torsie, i jeszcze na głowie. Nigdzie indziej. Proszę przekazać stróżom: jeśli kiedyś zejdzie z metopy, tam właśnie jest słaby.
-Wiem też, jak walczy, bo widziałem to w kamieniu: z daleka rzuca oszczep, łukiem; z bliska staje dęba i kopie; a kiedy ma długą salę, szarżuje przez całą. W Galerii Partenonu ma długą salę. Proszę tam postawić coś, za czym można się schować.
+odlewy metop stoją w magazynie, ale muszę Panu napisać o rzeczy, za którą w Akademii by mnie wyśmiano.
+Marmur jest nocą ciepły. Zdejmowałem formę z Kentaura po zmroku i jego pierś była miękka jak świeża glina. Gips pękł mi dokładnie na torsie i na głowie. Nigdzie indziej. Proszę przekazać stróżom: jeśli kiedyś zejdzie z metopy, tam właśnie jest słaby.
+Widziałem w kamieniu, jak walczy: z daleka rzuca oszczep łukiem, z bliska staje dęba i kopie, a w długiej sali szarżuje przez całą. Galeria Partenonu jest długa. Proszę tam postawić coś, za czym można się schować.
 Lapici u wejścia do galerii też nie śpią. Zejdą razem.
 I nie stawiajmy odlewów obok oryginałów. Oryginały się obrażają.
 Z wyrazami szacunku","Dear Mr Curator,
-The casts of the metopes are finished and stand in the store, but I must write to you of something that would get me laughed out of the Academy.
-At night the marble is warm. I took the mould off the Centaur after dark, and his chest was soft, like clay still being kneaded. My plaster cracked exactly there, across the torso, and on the head. Nowhere else. Please tell the watchmen: if he ever comes down off his metope, that is where he is weak.
-I also know how he fights, for I have seen it in the stone: from afar he throws his javelin in an arc; up close he rears and kicks; and when he has a long room, he charges the length of it. In the Parthenon gallery he has a long room. Please put something there one can hide behind.
+The casts of the metopes stand in the store, but I must write to you of something that would get me laughed out of the Academy.
+At night the marble is warm. I took the mould off the Centaur after dark, and his chest was soft as fresh clay. My plaster cracked exactly across the torso and on the head. Nowhere else. Please tell the watchmen: if he ever comes down off his metope, that is where he is weak.
+I have seen in the stone how he fights: from afar he throws his javelin in an arc, up close he rears and kicks, and in a long room he charges the length of it. The Parthenon gallery is long. Please put something there one can hide behind.
 The Lapiths at the mouth of the gallery do not sleep either. They will come down together.
 And let us not stand the casts beside the originals. The originals take offence.
 Yours respectfully,"
@@ -833,38 +832,36 @@ Uwagi: spod posadzki tego korytarza słychać równe stukanie. Przyłożyłem st
 Remarks: under the floor of this corridor there is a steady knocking. I put a stethoscope to it — it stopped. Took it away — it started again. As if it were laughing."
 NOTE_GREECE_4_SIGN,Wykonał: konserwator R. Gil,"Done by: R. Gil, maintenance"
 NOTE_ASSYRIA_1_TITLE,Karta informacyjna: lamassu,Information card: the lamassu
-NOTE_ASSYRIA_1_BODY,"LAMASSU. Skrzydlaty byk o ludzkiej głowie, strażnik bram pałacu Sargona II w Chorsabadzie, VIII w. p.n.e. Ma pięć nóg: oglądany z przodu stoi, z boku kroczy.
-Dopiski nocnej zmiany, długopisem:
+NOTE_ASSYRIA_1_BODY,"LAMASSU. Skrzydlaty byk o ludzkiej głowie, strażnik bramy Sargona II w Chorsabadzie, VIII w. p.n.e. Ma pięć nóg: z przodu stoi, z boku kroczy.
+Dopiski nocnej zmiany:
 — W nocy robi jedno i drugie.
-— Ten z dziedzińca pałacu jest większy i ma odłamek. Zanim ruszy do szarży, grzebie kopytem. Słychać.
-— Rozkłada skrzydła = zaraz dmuchnie. Za kolumnę.
+— Ten z dziedzińca jest większy i ma odłamek. Przed szarżą grzebie kopytem. Słychać.
+— Rozkłada skrzydła = dmuchnie. Za kolumnę.
 — Tupnie = po posadzce idzie fala. Przeskoczyć.
-— Bić w twarz. Twarz jest ludzka i miękka. Korona też coś czuje.
-— W połowie walki budzą się wojownicy w ścianach.
-— Wojownicy z płaskorzeźb: z boku płascy jak deska, szkoda naboi. Z przodu w oko. Jak w nich celujesz, uskakują w bok.
-— Bezpiecznik do rozdzielni wykręciła ekipa od oświetlenia i zostawiła na rusztowaniu w Galerii Nimrud. Kto go weźmie, obudzi rusztowanie.
-— Przeczytałem tę kartę dwa razy i dalej nie wiem, co to p.n.e. (S.M.)","LAMASSU. A winged bull with a human head, guardian of the gates of Sargon II's palace at Khorsabad, 8th century BC. It has five legs: seen from the front it stands, seen from the side it strides.
-Notes from the night shift, in biro:
+— Bić w twarz, jest ludzka i miękka. Korona też coś czuje.
+— W połowie walki budzą się wojownicy w ścianach. Z boku płascy jak deska; z przodu w oko. Uskakują, kiedy się celuje.
+— Bezpiecznik do rozdzielni został na rusztowaniu w Galerii Nimrud. Kto go weźmie, obudzi rusztowanie.
+— Dalej nie wiem, co to p.n.e. (S.M.)","LAMASSU. A winged bull with a human head, guardian of Sargon II's gate at Khorsabad, 8th century BC. It has five legs: from the front it stands, from the side it strides.
+Notes from the night shift:
 — At night it does both.
-— The one in the palace courtyard is bigger and has a shard. Before it charges, it paws the ground. You can hear it.
-— Wings spread = it's about to blow. Get behind a column.
+— The one in the courtyard is bigger and has a shard. Before it charges, it paws the ground. You can hear it.
+— Wings spread = it's about to blow. Behind a column.
 — Stamps = a wave runs along the floor. Jump it.
-— Hit it in the face. The face is human and soft. The crown feels something too.
-— Halfway through the fight, the warriors in the walls wake up.
-— The warriors from the reliefs: side-on they're flat as a plank, don't waste your rounds. From the front, in the eye. When you aim at them, they sidestep.
-— The switchboard fuse was taken out by the lighting crew and left on the scaffold in the Nimrud gallery. Whoever takes it wakes the scaffold.
-— Read this card twice and I still don't know what BC stands for. (S.M.)"
+— Hit it in the face, it's human and soft. The crown feels something too.
+— Halfway through, the warriors in the walls wake. Side-on they're flat as a plank; from the front, in the eye. They sidestep when you aim.
+— The switchboard fuse was left on the scaffold in the Nimrud gallery. Whoever takes it wakes the scaffold.
+— Still don't know what BC stands for. (S.M.)"
 NOTE_ASSYRIA_1_SIGN,"Muzeum Miejskie, dział edukacji","City Museum, Education Department"
 NOTE_ASSYRIA_2_TITLE,Tabliczka bez sygnatury — przekład roboczy,An unnumbered tablet — working translation
-NOTE_ASSYRIA_2_BODY,"Tabliczkę znaleziono w magazynie, w skrzyni bez numeru. Glinę wypalił pożar Niniwy, tak jak całą bibliotekę Assurbanipala: ogień, który miał ją zniszczyć, utrwalił ją na wieki. Tekst uszkodzony; nawiasy oznaczają moje uzupełnienia.
+NOTE_ASSYRIA_2_BODY,"Tabliczka z magazynu, ze skrzyni bez numeru. Wypalił ją pożar Niniwy, jak całą bibliotekę Assurbanipala: ogień, który miał ją zniszczyć, utrwalił ją na wieki. Nawiasy to moje uzupełnienia.
 „Kamień z Apsu, z wód pod ziemią, otworzył oko. Byki ze skrzydłami zeszły z bram. Lwy zeszły ze ścian i król polował na nie po raz drugi. [Kapłani] rozbili kamień na [sześć] i rozdali strażnikom, a strażnicy nie oddali. [Gdy] kamień się złoży, otworzy się droga w dół, do Apsu, i Apsu upomni się o swoje”.
-Moja uwaga: „sześć” to domysł. Wolałbym, żeby był błędny.
-Druga uwaga: magazyn tabliczek za spękaną ścianą biblioteki trzeba otworzyć wybuchem. Dyrekcja się nie zgadza. Ja się nie zgadzam z Dyrekcją.
-Trzecia: od tygodnia po zamknięciu słyszę w tej sali skrobanie rylców. Ktoś tu nocą pisze dalej.","This tablet was found in the store, in an unnumbered crate. Its clay was baked in the fire of Nineveh, like the whole library of Ashurbanipal: the fire that was meant to destroy it preserved it for ever. The text is damaged; brackets mark my restorations.
+„Sześć” to domysł. Wolałbym, żeby był błędny.
+Magazyn tabliczek za spękaną ścianą biblioteki trzeba otworzyć wybuchem. Dyrekcja się nie zgadza. Ja nie zgadzam się z Dyrekcją.
+Od tygodnia słyszę tu nocą skrobanie rylców. Ktoś pisze dalej.","This tablet comes from the store, from an unnumbered crate. The fire of Nineveh baked it, like the whole library of Ashurbanipal: the fire meant to destroy it preserved it for ever. Brackets mark my restorations.
 “The stone from the Apsu, from the waters beneath the earth, opened its eye. The winged bulls came down from the gates. The lions came down from the walls, and the king hunted them a second time. [The priests] broke the stone into [six] and gave it to the guardians, and the guardians would not give it back. [When] the stone is whole again, the way down to the Apsu will open, and the Apsu will come for what is its own.”
-My note: “six” is a guess. I would rather it were wrong.
-Second note: the tablet store behind the library's cracked wall must be opened with a blast. The Management disagrees. I disagree with the Management.
-Third: for a week now, after closing, I have heard styluses scratching in this room. Someone goes on writing here at night."
+“Six” is a guess. I would rather it were wrong.
+The tablet store behind the library's cracked wall must be opened with a blast. The Management disagrees. I disagree with the Management.
+For a week now I have heard styluses scratching in here at night. Someone goes on writing."
 NOTE_ASSYRIA_2_SIGN,prof. T. Mirecki,Prof. T. Mirecki
 NOTE_ASSYRIA_3_TITLE,Zlecenie serwisowe nr 311,Work order no. 311
 NOTE_ASSYRIA_3_BODY,"Obiekt: winda towarowa. Zgłoszenie: kursy, których nikt nie zamawiał.
@@ -896,29 +893,29 @@ PS Napoleon still has my grandfather's watch."
 NOTE_ASSYRIA_4_SIGN,St. Mazur,S. Mazur
 NOTE_ENLIGHTENMENT_1_TITLE,Regulamin Biblioteki Królewskiej po zmroku,King's Library rules after dark
 NOTE_ENLIGHTENMENT_1_BODY,"1. Zakaz jedzenia, picia i głośnego czytania. One odpowiadają.
-2. Książki latają stadami. Kiedy zaszeleszczą i rozłożą okładki, zaraz zanurkują. Proszę zejść z linii lotu.
-3. Książki palą się chętnie. Bibliotekarka tego nie pochwala, ale i nie zabrania.
-4. Do Planetarium prowadzi krata na przeciwwadze. Lina wisi wysoko pod kopułą; z pistoletu nie dosięgniesz jej z żadnego miejsca na dole. Potrzebny sztucer z Gabinetu Historii Naturalnej, najlepiej z galerii obserwatorów w połowie kopuły. Schody prowadzą tam z górnej galerii regałów.
-5. Zachodnia krata w Sali Zegarów też wisi na linie. Za nią jest archiwum zapieczętowane. Nie ja je pieczętowałam.
-6. Pod Magazynem zamkniętym jest introligatornia, zabita deskami. Introligator zostawił tam coś, czego nie chciał nikomu pokazywać. Deski puszczą od strzelby albo od kilku porządnych ciosów.
-7. Na górnej galerii jeden regał ma żelazne ucho. Proszę nie wieszać na nim płaszczy.
+2. Książki latają stadami. Kiedy zaszeleszczą i rozłożą okładki, zanurkują. Proszę zejść z linii lotu.
+3. Książki palą się chętnie. Bibliotekarka nie pochwala, ale nie zabrania.
+4. Krata Planetarium wisi na linie wysoko pod kopułą: z pistoletu jej nie dosięgniesz. Potrzebny sztucer z Gabinetu Historii Naturalnej i galeria obserwatorów; schody z górnej galerii regałów.
+5. Zachodnia krata w Sali Zegarów też wisi na linie; za nią zapieczętowane archiwum. Nie ja je pieczętowałam.
+6. Introligatornia pod Magazynem zamkniętym zabita deskami; introligator coś tam ukrył. Deski puszczą od strzelby albo pięści.
+7. Jeden regał na górnej galerii ma żelazne ucho. Nie wieszać na nim płaszczy.
 8. Ten gabinet jest przystanią. Herbata w szufladzie.","1. No eating, drinking or reading aloud. They answer back.
 2. The books fly in flocks. When they rustle and spread their covers, they are about to dive. Kindly step out of the flight path.
 3. The books burn readily. The librarian neither approves nor forbids it.
-4. The way into the Planetarium is a portcullis on a counterweight. The rope hangs high under the dome; a pistol will not reach it from anywhere below. You need the rifle from the natural history cabinet, best fired from the observers' gallery halfway up the dome. The stairs go up there from the upper gallery of bookcases.
-5. The west grille in the clocks room hangs on a rope too. Behind it lies the sealed archive. I did not seal it.
-6. Under the closed stacks is the bindery, boarded up. The bookbinder left something there he did not wish to show anyone. The boards give to a shotgun or a few good punches.
-7. On the upper gallery one bookcase has an iron ring. Kindly do not hang your coat on it.
+4. The Planetarium's portcullis hangs on a rope high under the dome: a pistol will not reach it. You need the rifle from the natural history cabinet and the observers' gallery; the stairs go up from the upper gallery of bookcases.
+5. The west grille in the clocks room hangs on a rope too; behind it, the sealed archive. I did not seal it.
+6. The bindery under the closed stacks is boarded up; the bookbinder hid something there. The boards give to a shotgun or fists.
+7. One bookcase on the upper gallery has an iron ring. Kindly do not hang your coat on it.
 8. This office is a haven. The tea is in the drawer."
 NOTE_ENLIGHTENMENT_1_SIGN,"mgr I. Kostecka, bibliotekarka","I. Kostecka, MA, librarian"
 NOTE_ENLIGHTENMENT_2_TITLE,"Z testamentu Ksawerego Zawilskiego (odpis, 1869)","From the will of Ksawery Zawilski (copy, 1869)"
-NOTE_ENLIGHTENMENT_2_BODY,"…zbiory moje, przyrodnicze i astronomiczne, zapisuję Muzeum Miejskiemu pod warunkami następującymi:
-Primo. Astrolabium ma stać w środku Czytelni i nikt nie ma go ruszać. Pierścień środkowy ma zostać pusty. Gdyby kiedyś przyszedł do tego domu czerwony kamień, który w ten pierścień wejdzie, niech go nikt w nim nie osadza. Kamień, który się złoży, upomni się o drogę w dół.
-Secundo. Sztucer mój ma leżeć w gabinecie, na stole, nabity. Bije trzech na wylot, a kto trafi w miejsce słabe, kładzie zwierzę jednym strzałem. Moje wilki i jaszczury w gablotach pamiętają go i wstaną, gdy ktoś go podniesie. Niech wstają. Niech się uczą.
-Tertio. Mój gabinet ukryty, nad schodami służbowymi, ma pozostać zamknięty. Kto znajdzie do niego drogę po żelaznym uchu, niech go sobie weźmie.
-Quarto. Pochować mnie w krypcie, obok pozostałych fundatorów, twarzą do schodów. Ktoś musi pilnować.","…my collections, of natural history and astronomy, I bequeath to the City Museum on the following conditions:
-Primo. The astrolabe shall stand in the middle of the Reading Room and no one shall move it. Its central ring shall stay empty. Should a red stone ever come to this house that fits that ring, let no one set it there. A stone made whole will demand its way down.
-Secundo. My rifle shall lie in the cabinet, on the table, loaded. It shoots clean through three, and whoever hits the weak place drops the beast with one shot. My wolves and lizards in the cases remember it and will rise when someone lifts it. Let them rise. Let them learn.
+NOTE_ENLIGHTENMENT_2_BODY,"…zbiory moje, przyrodnicze i astronomiczne, zapisuję Muzeum Miejskiemu pod warunkami:
+Primo. Astrolabium ma stać w środku Czytelni, a jego pierścień środkowy ma zostać pusty. Gdyby przyszedł do tego domu czerwony kamień, który w ten pierścień wejdzie, niech go nikt nie osadza. Kamień, który się złoży, upomni się o drogę w dół.
+Secundo. Sztucer mój ma leżeć w gabinecie, na stole, nabity. Bije trzech na wylot, a kto trafi w miejsce słabe, kładzie zwierzę jednym strzałem. Moje wilki i jaszczury wstaną, gdy ktoś go podniesie. Niech się uczą.
+Tertio. Mój gabinet ukryty, nad schodami służbowymi, ma pozostać zamknięty. Kto znajdzie drogę po żelaznym uchu, niech go weźmie.
+Quarto. Pochować mnie w krypcie, obok fundatorów, twarzą do schodów. Ktoś musi pilnować.","…my collections, of natural history and astronomy, I bequeath to the City Museum on these conditions:
+Primo. The astrolabe shall stand in the middle of the Reading Room, and its central ring shall stay empty. Should a red stone come to this house that fits that ring, let no one set it. A stone made whole will demand its way down.
+Secundo. My rifle shall lie in the cabinet, on the table, loaded. It shoots clean through three, and whoever hits the weak place drops the beast with one shot. My wolves and lizards will rise when someone lifts it. Let them learn.
 Tertio. My hidden study, above the service stairs, shall stay shut. Whoever finds the way to it by the iron ring may keep it.
 Quarto. Bury me in the crypt, beside the other founders, facing the stairs. Someone has to keep watch."
 NOTE_ENLIGHTENMENT_2_SIGN,"Ksawery Zawilski, kolekcjoner, fundator Muzeum","Ksawery Zawilski, collector, founder of the Museum"
@@ -947,19 +944,19 @@ Kopeć went down below the crypt in October 1912 and never came back. His parcel
 I will not hand the folder over until someone explains this to me. I am boarding up the door. If you have found it, there was nobody left to explain."
 NOTE_ENLIGHTENMENT_4_SIGN,"T. Bury, introligator","T. Bury, bookbinder"
 NOTE_ASIA_1_TITLE,Hwacha — ognista skrzynia,Hwacha — the fire-arrow chest
-NOTE_ASIA_1_BODY,"HWACHA. Wyrzutnia ognistych strzał na wózku, Korea, dynastia Joseon. Oryginał wypuszczał w jednej salwie dziesiątki strzał z prochem. Nasz egzemplarz ma sześć rur. Resztę zużyto na pokazie sylwestrowym.
+NOTE_ASIA_1_BODY,"HWACHA. Wyrzutnia ognistych strzał na wózku, Korea, dynastia Joseon. Oryginał strzelał salwą dziesiątek strzał. Nasz ma sześć rur; resztę zużyto na pokazie sylwestrowym.
 Dopiski nocnej zmiany:
-— Strzela salwą, wachlarzem. Spękany mur puszcza od jednej salwy. W Sali Chin, w ścianie obok Buddy, przez rysy prześwituje księżyc: tam jest ogród.
-— Kto ruszy wózek, obudzi lwy z brązu. Chodzą parami. Zanim ryknie, kula w pysku zaczyna świecić — ryk ogłusza na chwilę, więc wtedy nie stój blisko. Strzelaj w kulę.
-— Zbroje samurajów chodzą jak rycerze: z przodu zasłonięte, obracają się wolno.
-— W ogrodzie czeka Generał. Przed cięciem błyska ostrzem. Kiedy stoi w gardzie, odbija wszystko, co leci z przodu: obejdź go albo daj mu prądem. Słaby jest w twarz pod maską i w plecy.
-— Drzwi z tej sali do Planetarium ryglują się od naszej strony. Odsuń zasuwę, będzie skrót do Oświecenia.","HWACHA. A cart-mounted fire-arrow launcher, Korea, Joseon dynasty. The original loosed dozens of gunpowder arrows in a single volley. Our example has six tubes. The rest were used up at a New Year's Eve display.
+— Salwa kruszy spękany mur. W Sali Chin, obok Buddy, przez rysy prześwituje księżyc: tam jest ogród.
+— Kto ruszy wózek, obudzi lwy z brązu. Przed rykiem kula w pysku świeci, a ryk ogłusza. Strzelaj w kulę.
+— Zbroje chodzą jak rycerze: z przodu zasłonięte, obracają się wolno.
+— W ogrodzie czeka Generał. Przed cięciem błyska ostrzem. W gardzie odbija wszystko, co leci z przodu: obejdź go albo daj mu prądem. Słaby w twarz pod maską i w plecy.
+— Drzwi stąd do Planetarium ryglują się od naszej strony. Odsuń zasuwę: skrót do Oświecenia.","HWACHA. A cart-mounted fire-arrow launcher, Korea, Joseon dynasty. The original loosed dozens of arrows in one volley. Ours has six tubes; the rest went at a New Year's Eve display.
 Notes from the night shift:
-— It fires a volley, in a fan. A cracked wall gives way to a single volley. In the China hall, in the wall beside the Buddha, moonlight shows through the cracks: that's where the garden is.
-— Whoever moves the cart wakes the bronze lions. They go in pairs. Before one roars, the ball in its mouth starts to glow — the roar stuns you for a moment, so don't stand close then. Shoot the ball.
-— The samurai armours move like the knights: guarded at the front, slow to turn.
-— The General waits in the garden. His blade flashes before he cuts. When he stands on guard he deflects everything that comes at him from the front: go round him, or give him a jolt. He is weak in the face under the mask, and in the back.
-— The door from this hall to the Planetarium bolts on our side. Draw the bolt for a shortcut to the Enlightenment."
+— A volley breaks a cracked wall. In the China hall, beside the Buddha, moonlight shows through the cracks: that's where the garden is.
+— Move the cart and the bronze lions wake. Before a roar the ball in the mouth glows, and the roar stuns. Shoot the ball.
+— The armours move like knights: guarded in front, slow to turn.
+— The General waits in the garden. His blade flashes before he cuts. On guard he deflects everything from the front: go round him or give him a jolt. Weak in the face under the mask, and in the back.
+— The door from here to the Planetarium bolts on our side. Draw the bolt: a shortcut to the Enlightenment."
 NOTE_ASIA_1_SIGN,Dział Azji; dopiski: nocna zmiana,Asia Department; notes: the night shift
 NOTE_ASIA_2_TITLE,Herbata dla stróża,Tea for the watchman
 NOTE_ASIA_2_BODY,"Woda nie może wrzeć. Wrząca woda się złości, a złość przechodzi w liście.
@@ -1001,23 +998,23 @@ NOTE_ASIA_4_SIGN,"A. Rudnicki, kierownik wyprawy","A. Rudnicki, expedition leade
 NOTE_AMERICAS_1_TITLE,Dziennik bosmana Szczygła,Boatswain Szczygieł's log
 NOTE_AMERICAS_1_BODY,"Statek wielorybniczy „Hope”, Pacyfik, rok 1851.
 Kaszalot zszedł w głąb i nie wynurzał się przez godzinę. Kiedy wypłynął, w brzuchu miał światło. Czerwone. Kapitan mówi, że to ambra. Ambra nie świeci.
-Nasz harpunnik zrobiony na wieloryba, nie na ludzi, ale zapiszę, co umie, bo pamięć już nie ta. Mały cel przybija do burty albo do ściany, jeśli ma za sobą ścianę. Większy przyciąga do siebie i ogłusza. Wielki tylko rani, a potem wielki jest zły. Trafisz w żelazne ucho — pociągnie wszystko, co do ucha przywiązane: szalupę, kratę, choćby i czółno.
-Kto zdejmie harpunnik ze stojaka, ten budzi wachtę. Taki zwyczaj na statku. I taki tutaj.
+Harpunnik zrobiony na wieloryba, nie na ludzi, ale zapiszę, co umie, bo pamięć już nie ta. Mały cel przybija do burty albo do ściany, jeśli ma za sobą ścianę. Większy przyciąga do siebie i ogłusza. Wielki tylko rani, a potem wielki jest zły. Trafisz w żelazne ucho — pociągnie wszystko, co do ucha przywiązane: szalupę, kratę, choćby i czółno.
+Kto zdejmie harpunnik ze stojaka, ten budzi wachtę. Taki zwyczaj na statku. I tutaj.
 Szalupę i harpunnik oddaję do muzeum, bo morze już ich nie chce. Mnie chyba też nie.","The whaler Hope, the Pacific, 1851.
 The sperm whale sounded and stayed down an hour. When it surfaced it had a light in its belly. Red. The captain says it's ambergris. Ambergris does not glow.
-Our harpoon gun was made for whales, not men, but I'll write down what it can do, for my memory isn't what it was. A small mark it nails to the side, or to a wall if there's a wall behind it. A bigger one it hauls in and stuns. A great one it only wounds, and then the great one is angry. Hit an iron ring and it drags whatever is tied to that ring: a boat, a grille, even a canoe.
+The harpoon gun was made for whales, not men, but I'll write down what it can do, for my memory isn't what it was. A small mark it nails to the side, or to a wall if there's a wall behind it. A bigger one it hauls in and stuns. A great one it only wounds, and then the great one is angry. Hit an iron ring and it drags whatever is tied to that ring: a boat, a grille, even a canoe.
 Whoever takes the harpoon gun off its rack wakes the watch. That's the custom aboard ship. And here too.
 I give the boat and the harpoon gun to the museum, for the sea doesn't want them any more. Nor me, I think."
 NOTE_AMERICAS_1_SIGN,"J. Szczygieł, bosman","J. Szczygieł, boatswain"
 NOTE_AMERICAS_2_TITLE,Scenariusz oprowadzania (wersja nocna),Tour script (night version)
-NOTE_AMERICAS_2_BODY,"Proszę państwa, zatrzymajmy się przy totemach. Proszę nie stawać na wprost twarzy. Każda twarz to osobny… powiedzmy: rzeźbiarz. Kiedy oczy się zapalają, zaraz pluje drzazgą. Zestrzeliwujemy od góry. Im mniej twarzy zostanie, tym szybciej plują pozostałe, więc kończymy, co zaczęliśmy.
-Wojownicy-jaguary skaczą jak wilki. Po skoku chwilę stoją bez obrony. To jest ten moment, w którym przewodnik przestaje mówić i zaczyna działać.
-W Galerii Pacyfiku zapadła się podłoga. Nad dziurą wisi na hakach czółno wojenne, z żelaznym uchem. Do Świątyni Węża nie ma innej drogi niż po czółnie.
-W Świątyni czeka Dwugłowy Wąż. Jedna głowa pluje turkusem, druga kąsa — przed ukąszeniem syczy. Ogon zamiata. Proszę celować w głowy i w te miejsca ciała, z których odpadła mozaika. Według jednej z interpretacji jedna głowa patrzy w niebo, a druga w podziemia. Ta druga, proszę państwa, patrzy teraz w naszą stronę.
-Pytania? Nie ma pytań. Wychodzimy szybko.","Ladies and gentlemen, let us stop by the totem poles. Please don't stand squarely in front of a face. Each face is a separate… let us say, sculptor. When its eyes light up, it is about to spit a splinter. We shoot them down from the top. The fewer faces are left, the faster the rest of them spit, so we finish what we started.
-The jaguar warriors pounce like wolves. After a pounce they are defenceless for a moment. That is the moment when the guide stops talking and starts acting.
-In the Pacific gallery the floor has caved in. Over the hole a war canoe hangs on hooks, with an iron ring. There is no way to the Serpent Temple except across the canoe.
-In the Temple waits the Double-Headed Serpent. One head spits turquoise, the other bites — before it bites, it hisses. The tail sweeps. Please aim at the heads, and at the places on the body where the mosaic has come away. According to one interpretation, one head looks to the sky and the other to the underworld. The second one, ladies and gentlemen, is now looking our way.
+NOTE_AMERICAS_2_BODY,"Proszę państwa, zatrzymajmy się przy totemach. Proszę nie stawać na wprost twarzy. Kiedy oczy się zapalą, twarz zaraz pluje drzazgą. Zestrzeliwujemy od góry; im mniej twarzy, tym szybciej plują pozostałe, więc kończymy, co zaczęliśmy.
+Wojownicy-jaguary skaczą jak wilki i po skoku chwilę stoją bez obrony. Wtedy przewodnik przestaje mówić i zaczyna działać.
+W Galerii Pacyfiku zapadła się podłoga. Nad dziurą wisi na hakach czółno wojenne z żelaznym uchem: jedyna droga do Świątyni Węża.
+W Świątyni czeka Dwugłowy Wąż. Jedna głowa pluje turkusem, druga kąsa, a przedtem syczy. Ogon zamiata. Celujemy w głowy i tam, skąd odpadła mozaika. Według jednej z interpretacji jedna głowa patrzy w niebo, druga w podziemia. Ta druga patrzy teraz na nas.
+Pytania? Nie ma. Wychodzimy szybko.","Ladies and gentlemen, let us stop by the totem poles. Please don't stand squarely in front of a face. When its eyes light up, it is about to spit a splinter. We shoot them down from the top; the fewer faces are left, the faster the rest spit, so we finish what we started.
+The jaguar warriors pounce like wolves and after a pounce stand defenceless for a moment. That is when the guide stops talking and starts acting.
+In the Pacific gallery the floor has caved in. Over the hole a war canoe hangs on hooks, with an iron ring: the only way to the Serpent Temple.
+In the Temple waits the Double-Headed Serpent. One head spits turquoise, the other bites, and hisses first. The tail sweeps. We aim at the heads and where the mosaic has come away. According to one interpretation, one head looks to the sky and the other to the underworld. The second one is now looking at us.
 Any questions? No questions. We leave quickly."
 NOTE_AMERICAS_2_SIGN,"H. Bielecka, przewodniczka","H. Bielecka, guide"
 NOTE_AMERICAS_3_TITLE,"Młody, to moje miejsce","Kid, this is my spot"
@@ -1126,7 +1123,7 @@ MAP_PENCIL_HERE,tu!,here!
 MAP_PENCIL_GOAL_ON,(zob. %s),(see %s)
 MAP_HINT,%s — zamknij    Q / E — piętro    kółko — zbliż    przeciągnij — przesuń    %s — gdzie jestem,%s — close    Q / E — floor    wheel — zoom    drag — move    %s — where am I
 PAUSE_MAP,Plan muzeum,Museum map
-HUD_HELP_MAP,M — plan muzeum z ołówkowymi notatkami strażnika,M — the museum map with the guard's pencil notes
+HUD_HELP_MAP,%s — plan muzeum z ołówkowymi notatkami strażnika,%s — the museum map with the guard's pencil notes
 MAP_KEY_SPACE,Spacja,Space
 MENU_SUBTITLE,Piętro I — Wielki Dziedziniec,Floor I — The Great Court
 MENU_VERSION_FLOOR1,Wersja demonstracyjna  ·  Piętro I,Demo build  ·  Floor I
@@ -1142,6 +1139,17 @@ VOICE_SPEAKER_SYSTEM,Wirtualny Kustosz,Virtual Curator
 VOICE_SPEAKER_GUIDE,Audioprzewodnik,Audio guide
 HUD_NO_REST_GUARDIAN,"Nie teraz — strażnik ogrodu czuwa","Not now — the garden's guardian keeps watch"
 PROMPT_CAFE_FLAP,Unieś klapę lady,Lift the counter flap
+PROMPT_BELL,Uderz w dzwon,Ring the bell
+PROMPT_MIRROR,Obróć lustro,Turn the mirror
+PROMPT_ARC_LAMP,Zapal lampę łukową,Strike the arc lamp
+PROMPT_STEAM_VALVE,Zakręć zawór,Shut the valve
+HINT_BIOME_EGYPT,"Płyty z kartuszem odpalają strzałki z otworów w ścianie. Zejdź z linii albo zwab na nią mumię.","Cartouche plates fire darts from the slits in the wall. Step off the line, or lure a mummy onto it."
+HINT_BIOME_ASIA,"Strzał w dzwon albo pociągnięcie liny ściąga psy Fu pod dzwon i ogłusza każdego, kto pod nim stoi.","A shot at a bell or a pull on its rope calls the Fu dogs under it and stuns whoever stands there."
+HINT_BIOME_AMERICAS,"Totemy widzą cię tylko w blasku ognia albo latarki. Strzał gasi misę, raca ją rozpala.","Totems see you only by firelight or your flashlight. A shot puts a fire bowl out, a flare lights it."
+HINT_BIOME_GREECE,"Lampa łukowa na balkonie rzuca promień dnia, który pali posągi. Lustra obracasz E albo strzałem.","The arc lamp on the balcony throws a beam of daylight that burns the statues. Turn the mirrors with E or a shot."
+HINT_BIOME_ENLIGHTENMENT,"Regulator wybija takt: na jego uderzenie walczący stają, potem przyspieszają. Strzał w szybkę go zatrzyma.","The regulator keeps time: on its strike fighters freeze, then rush. A shot through its glass stops it."
+HINT_BIOME_ASSYRIA,"Pod sufitem wiszą sieci myśliwskie. Strzał w zwój zrzuca sieć na tych, którzy stoją pod nią.","Hunting nets hang under the ceiling. A shot at a roll drops it on whoever stands below."
+HINT_BIOME_BASEMENT,"Pęknięte rury co kilkanaście sekund buchają parą. Koło na ścianie zakręca zawór.","Cracked mains blow steam every few seconds. The wheel on the wall shuts the valve."
 PROMPT_COFFEE_ESPRESSO,Zrób espresso,Pull an espresso
 PROMPT_COFFEE_LARGE,Nalej dużą kawę,Pour a large coffee
 PROMPT_COFFEE_HAYWIRE,"Ekspres coś nalewa: %s (ręce drżą)","The machine pours something: %s (hands shake)"
@@ -1360,3 +1368,228 @@ VO_GUIDE_ASTROLABE_A,"Stanowisko jedenaste. Astrolabium naszego fundatora, Ksawe
 VO_GUIDE_ASTROLABE_B,Stanowisko jedenaste. Pierścień w sercu astrolabium miał pozostać pusty. Wypełniono go i pękł. Wypełni go pan ponownie. Fundatorzy leżą twarzą do schodów. Pan też kiedyś tak będzie leżał.,"Stop eleven. The ring at the heart of the astrolabe was meant to stay empty. It was filled, and it broke. It will be filled again, by you. The founders lie facing the stairs. One day, so will you."
 VO_GUIDE_TREX_A,"Stanowisko dwunaste. Tyrannosaurus rex, król jaszczurów tyranów. Żył u samego schyłku ery dinozaurów, około 66 milionów lat temu, na terenie dzisiejszej Ameryki Północnej. Miał jeden z najsilniejszych zgryzów spośród wszystkich zwierząt lądowych, jakie kiedykolwiek żyły.","Stop twelve. Tyrannosaurus rex, the tyrant lizard king. It lived at the very end of the age of dinosaurs, about sixty-six million years ago, in what is now North America. Its bite was among the strongest of any land animal that ever lived."
 VO_GUIDE_TREX_B,"Stanowisko dwunaste. Tyrannosaurus rex, 66 milionów lat. Nie śpi. Czeka na swoje serce. Kiedy szarżuje, słabo skręca. Bęben Czytelni nie skręca wcale.","Stop twelve. Tyrannosaurus rex, sixty-six million years old. It is not asleep. It is waiting for its heart. When it charges, it does not turn well. The drum of the Reading Room does not turn at all."
+VO_SYSTEM_LAMPS_OUT,Awaria zasilania w tym sektorze. Proszę zachować spokój.,Power failure in this sector. Please remain calm.
+VO_SYSTEM_PA_CLOSED,Uwaga. Muzeum… jest… zamknięte.,Attention. The museum... is... closed.
+VO_HENIEK_RADIO_NOT_ME,Młody? …To nie ja cię wołałem.,Kid? ...That wasn't me calling you.
+VO_HENIEK_EYES,"Młody, te portrety na Dziedzińcu. Chodzą za tobą wzrokiem, prawda? Nie patrz im w oczy. Biorą to za zaproszenie.","Kid, those portraits in the Great Court. Their eyes follow you, don't they? Don't look them in the eyes. They take it as an invitation."
+BIND_KEY_SPACE,Spacja,Space
+BIND_MOUSE,Mysz,Mouse
+BIND_MOUSE_LEFT,LPM,LMB
+BIND_MOUSE_RIGHT,PPM,RMB
+BIND_MOUSE_MIDDLE,ŚPM,MMB
+BIND_MOUSE_WHEEL_UP,Kółko w górę,Wheel up
+BIND_MOUSE_WHEEL_DOWN,Kółko w dół,Wheel down
+BIND_MOUSE_SIDE_1,Mysz 4,Mouse 4
+BIND_MOUSE_SIDE_2,Mysz 5,Mouse 5
+OPT_KEYS,Klawisze,Keys
+OPT_KEYS_DEFAULT,Domyślne,Default
+OPT_KEYS_CUSTOM,Zmienione,Customised
+BIND_TITLE,Klawisze,Keys
+BIND_GROUP_MOVE,Ruch,Movement
+BIND_GROUP_ARMS,Walka i bronie,Combat and weapons
+BIND_GROUP_WORLD,Muzeum,Museum
+BIND_GROUP_INTERFACE,Interfejs,Interface
+BIND_MOVE_FORWARD,Ruch do przodu,Move forward
+BIND_MOVE_LEFT,Ruch w lewo,Move left
+BIND_MOVE_BACK,Ruch do tyłu,Move back
+BIND_MOVE_RIGHT,Ruch w prawo,Move right
+BIND_JUMP,Skok,Jump
+BIND_SPRINT,Sprint,Sprint
+BIND_DASH,Unik,Dash
+BIND_FIRE,Strzał,Fire
+BIND_PUNCH,Cios pięścią,Punch
+BIND_RELOAD,Przeładowanie,Reload
+BIND_WEAPON_NEXT,Następna broń,Next weapon
+BIND_WEAPON_PREV,Poprzednia broń,Previous weapon
+BIND_WEAPON,Broń %d,Weapon %d
+BIND_FLASHLIGHT,Latarka,Flashlight
+BIND_INTERACT,Użyj,Use
+BIND_MAP,Plan muzeum,Museum map
+BIND_TOGGLE_HELP,Pomoc,Help
+BIND_TOGGLE_FULLSCREEN,Pełny ekran,Fullscreen
+BIND_PAUSE,Pauza,Pause
+BIND_PRESS,naciśnij…,press a key…
+BIND_RESET,Przywróć domyślne klawisze,Restore default keys
+BIND_HINTS,Enter / klik — zmień     Del — wyczyść     Esc — wstecz,Enter / click — change     Del — clear     Esc — back
+BIND_MSG_LISTENING,"Naciśnij klawisz lub przycisk myszy. Esc — anuluj, Del — wyczyść miejsce.","Press a key or a mouse button. Esc cancels, Del clears the place."
+BIND_MSG_SET,«%s» — teraz: %s,“%s” is now: %s
+BIND_MSG_SWAPPED,Klawisz %s należał do akcji «%s» — akcje zamieniły się klawiszami.,%s belonged to “%s” — the two actions traded keys.
+BIND_MSG_SWAPPED_SELF,«%s»: główny i dodatkowy klawisz zamieniły się miejscami.,“%s”: the main and the extra key traded places.
+BIND_MSG_MOVED,Klawisz %s zabrano akcji «%s» — zostaje jej %s.,%s was taken from “%s” — it keeps %s.
+BIND_MSG_LAST_KEY,Klawisz %s to jedyny klawisz akcji «%s» — najpierw przypisz jej inny.,%s is the only key of “%s” — give it another one first.
+BIND_MSG_LOCKED,Esc zawsze otwiera pauzę.,Esc always opens the pause menu.
+BIND_MSG_RESERVED,Tego klawisza nie można przypisać (%s).,That key can not be bound (%s).
+BIND_MSG_NEEDS_KEY,Akcja «%s» musi mieć co najmniej jeden klawisz.,“%s” needs at least one key.
+BIND_MSG_CLEARED,Wyczyszczono klawisz akcji «%s».,Cleared a key of “%s”.
+BIND_MSG_RESET,Przywrócono domyślne klawisze.,Default keys restored.
+HELP_MOVE,ruch,move
+HELP_WEAPONS,broń,weapon
+HELP_WHEEL,kółko,wheel
+BIND_MOVE_ORDER,fblr,flbr
+OPT_DEV_TOOLS,Narzędzia deweloperskie (F3),Developer tools (F3)
+PERF_FRAME,Klatka: średnia / najgorsza,Frame: average / worst
+PERF_SCRIPT,Skrypty _process (CPU),Scripts _process (CPU)
+PERF_PHYSICS,Tyk fizyki: skrypty + krok (CPU),Physics tick: scripts + step (CPU)
+PERF_RENDER_CPU,Render CPU,Render CPU
+PERF_RENDER_GPU,Render GPU,Render GPU
+PERF_DRAW,Draw calls,Draw calls
+PERF_GEOMETRY,Obiekty · trójkąty,Objects · triangles
+PERF_LIGHTS,Światła (z cieniem) z wszystkich,Lights (shadowed) of all
+PERF_ROOMS,Pokoje zapalone z wszystkich,Rooms lit of all
+PERF_AI,Wystawy: czuwa · goni z wszystkich,Exhibits: awake · hunting of all
+PERF_GUARDIANS,Strażnicy w walce,Guardians fighting
+PERF_ENVIRONMENT,Otoczenie: w ruchu · zniszczone z wszystkich,Environment: moving · broken of all
+PERF_BODIES,Fizyka 3D: ciała · pary,Physics 3D: bodies · pairs
+PERF_MEMORY,Pamięć · VRAM,Memory · VRAM
+PERF_NODES,Węzły (sieroty),Nodes (orphans)
+PERF_PLACE,Pokój · strefa,Room · zone
+PERF_PERCEPTION,Percepcja: spojrzenia · promienie · czas,Perception: looks · rays · time
+PERF_PIPELINES,Potoki skompilowane,Pipelines compiled
+PERF_HINT_NUMBERS,F3 — pokaż systemy,F3 — show systems
+PERF_HINT_SYSTEMS,F3 — wyłącz,F3 — off
+PERF_SYSTEMS,Systemy: ms skryptów na klatkę · na tyk fizyki,Systems: script ms per frame · per physics tick
+PERF_SYSTEMS_NONE,Systemy: brak sceny gry,Systems: no game scene
+PERF_SYS_PLAYER,Strażnik i broń,Guard and weapons
+PERF_SYS_EXHIBITS,Wystawy (AI),Exhibits (AI)
+PERF_SYS_GUARDIANS,Strażnicy skrzydeł,Wing guardians
+PERF_SYS_INTERFACE,HUD i menu,HUD and menus
+PERF_SYS_LEVEL,Poziom: światła i drzwi,Level: lights and doors
+PERF_SYS_ENVIRONMENT,Otoczenie reagujące,Reactive environment
+PERF_SYS_FLOOR_GAME,Logika piętra,Floor logic
+PERF_SYS_FX,Efekty,Effects
+PERF_SYS_MUSIC,Muzyka,Music
+PERF_SYS_AMBIENCE,Ambient i foley,Ambience and foley
+PERF_SYS_VOICE,Głos,Voice
+PERF_SYS_WORLD,Reszta świata,Rest of the world
+PERF_SYS_AUTOLOADS,Usługi gry,Game services
+PERF_SYS_REST,Razem w systemach: %.2f · %.2f,All systems together: %.2f · %.2f
+PERF_SYS_NAVIGATION,Nawigacja (agenci),Navigation (agents)
+PERF_SYS_AUDIO_3D,Dźwięk 3D (źródła),3D sound (sources)
+PERF_SYS_ANIMATION,Animacje,Animation
+PERF_SYS_PARTICLES,Cząsteczki,Particles
+OPT_SECTION_ACCESS,Dostępność,Accessibility
+OPT_SPRINT_TOGGLE,Sprint przełączany (zamiast przytrzymywania),Toggle sprint (instead of holding)
+OPT_HUD_SCALE,Rozmiar interfejsu,HUD size
+OPT_SUBTITLE_SIZE,Rozmiar napisów,Subtitle size
+OPT_SUBTITLE_SIZE_SMALL,Mały,Small
+OPT_SUBTITLE_SIZE_MEDIUM,Średni,Medium
+OPT_SUBTITLE_SIZE_LARGE,Duży,Large
+OPT_SUBTITLE_BACKING,Ciemne tło napisów,Subtitle backing
+OPT_REDUCE_FLASHING,Ogranicz błyski i migotanie,Reduce flashing and flicker
+OPT_COLOUR_VISION,Paleta dla daltonistów,Colour-blind palette
+OPT_COLOUR_VISION_NORMAL,Standardowa,Standard
+OPT_COLOUR_VISION_DEUTERANOPIA,Deuteranopia (brak zieleni),Deuteranopia (no green)
+OPT_COLOUR_VISION_PROTANOPIA,Protanopia (brak czerwieni),Protanopia (no red)
+OPT_COLOUR_VISION_TRITANOPIA,Tritanopia (brak błękitu),Tritanopia (no blue)
+PROMPT_READ_LABEL,Przeczytaj tabliczkę,Read the label
+LABEL_CAPTION,Nr inw. %s · %s,Inv. no. %s · %s
+LABEL_TREX_TITLE,Tyrannosaurus rex,Tyrannosaurus rex
+LABEL_TREX_TEXT,"Szkielet z Montany, ok. 66 mln lat. Kości twardsze niż skała, w której leżały. Jedyne słabe miejsce to pusta przestrzeń w klatce piersiowej, przewidziana na coś, czego nie znaleziono w wykopie.","A skeleton from Montana, about 66 million years old. The bones are harder than the rock they lay in. The only weak spot is the empty space in the ribcage, kept for something the dig never found."
+LABEL_CRYPT_TITLE,Krypta fundatorów,The founders' crypt
+LABEL_CRYPT_TEXT,"Fundatorzy Muzeum Miejskiego spoczywają tu od 1870 roku, zgodnie z wolą: twarzą do schodów. Zejście poniżej krypty zamknięto na ich życzenie. Klucza nie przewidziano.","The founders of the City Museum have rested here since 1870, as they wished: facing the stairs. The way below the crypt was closed at their request. No key was ever made."
+LABEL_ROSETTA_TITLE,Kamień z Rosetty,The Rosetta Stone
+LABEL_ROSETTA_TEXT,"Granodioryt, 196 p.n.e. Jeden dekret trzema pismami: hieroglifami dla kapłanów, demotyką na co dzień, greką dla władzy. Nocą na wypolerowanej krawędzi pojawia się czwarte pismo. Nikt go jeszcze nie odczytał.","Granodiorite, 196 BC. One decree in three scripts: hieroglyphs for the priests, Demotic for everyday use, Greek for the rulers. At night a fourth script appears on the polished edge. No one has read it yet."
+LABEL_CAMP_TITLE,"Obóz ekspedycji, Teby 1898","The expedition camp, Thebes 1898"
+LABEL_CAMP_TEXT,"Namiot, skrzynie, stół z mapami i strzelba kierownika wyprawy, przeniesione do muzeum w całości, tak jak je zostawiono. Prosimy nie zdejmować strzelby ze stołu. Ostatnim razem ją zdjęto.","The tent, the crates, the map table and the expedition leader's shotgun, brought to the museum whole, just as they were left. Please do not lift the shotgun from the table. The last time, someone did."
+LABEL_COLOSSUS_TITLE,Ramzes II na tronie,Ramesses II enthroned
+LABEL_COLOSSUS_TEXT,"Granit, Teby, XIII w. p.n.e. Płyty z inskrypcjami na piersi dodano w starożytności, by zakryć pęknięcia; od silnego wstrząsu odpadają. Najsłabsze miejsca to pęknięcia i kobra na czole. Konserwator prosi, by tam nie celować.","Granite, Thebes, 13th century BC. The inscribed plates on the chest were added in antiquity to hide the cracks; a heavy jolt shakes them loose. The weakest points are the cracks and the cobra on the brow. The conservator asks visitors not to aim there."
+LABEL_FALSE_DOOR_TITLE,Fałszywe drzwi kapłana Amona,False door of a priest of Amun
+LABEL_FALSE_DOOR_TEXT,"Wapień, Teby. Przez takie drzwi dusza zmarłego wychodziła po ofiary i wracała do grobu. Żelazne ucho w ościeżu dorobiono w 1898 roku do transportu. Wystarczy porządnie pociągnąć.","Limestone, Thebes. Through such a door the soul of the dead went out for its offerings and came back to the tomb. The iron eye in the frame was added in 1898 for transport. One good pull is enough."
+LABEL_LAMASSU_TITLE,Lamassu z Chorsabadu,Lamassu from Khorsabad
+LABEL_LAMASSU_TEXT,"Alabaster gipsowy, pałac Sargona II, ok. 710 p.n.e. Pięć nóg: z przodu stoi, z boku kroczy. Twarz i rogata tiara są najbardziej zniszczone, od uderzeń, nie od czasu. Jego para pilnuje dziedzińca.","Gypsum alabaster, the palace of Sargon II, about 710 BC. Five legs: from the front it stands, from the side it walks. The face and the horned crown are the most damaged, by blows rather than by time. Its pair guards the courtyard."
+LABEL_OBELISK_TITLE,Czarny Obelisk Salmanasara III,The Black Obelisk of Shalmaneser III
+LABEL_OBELISK_TEXT,"Wapień, Nimrud, 825 p.n.e. Pięć rzędów płaskorzeźb: królowie i posłowie składają hołd. Na naszym egzemplarzu od października 1912 roku widnieje szósty rząd. Pusty. Na razie.","Limestone, Nimrud, 825 BC. Five registers of reliefs: kings and envoys bring tribute. On our piece a sixth register has shown since October 1912. Empty. For now."
+LABEL_LION_CAGE_TITLE,Klatka lwów królewskich,The royal lions' cage
+LABEL_LION_CAGE_TEXT,"Niniwa, VII w. p.n.e. Na płaskorzeźbach z pałacu Assurbanipala lwy wypuszcza się z klatek na królewskie łowy. Krata wisi na oryginalnej linie, za wysoko, by jej sięgnąć. Lina jest napięta. Bardzo.","Nineveh, 7th century BC. On the reliefs from Ashurbanipal's palace, lions are let out of cages for the royal hunt. The grate hangs on its original rope, too high to reach. The rope is taut. Very."
+LABEL_TABLETS_TITLE,Tabliczki z biblioteki Assurbanipala,Tablets from Ashurbanipal's library
+LABEL_TABLETS_TEXT,"Glina, Niniwa, VII w. p.n.e. Przetrwały, bo pożar pałacu wypalił je na kamień. Reszta zbioru leży w magazynie za tą ścianą. Ściana pękła od środka; dokończy ją porządny wstrząs od zewnątrz.","Clay, Nineveh, 7th century BC. They survived because the fire that burnt the palace baked them hard as stone. The rest of the collection lies in the store behind this wall. The wall cracked from the inside; a good jolt from outside will finish it."
+LABEL_NEREID_TITLE,Pomnik Nereid z Ksantos,The Nereid Monument from Xanthos
+LABEL_NEREID_TEXT,"Marmur, Licja, ok. 390 p.n.e. Fasadę złożono na oryginalnym podium. Nereidy to córki morza; nocą stoją inaczej niż za dnia. Prosimy nie wchodzić na portyk. Popiersia nie lubią towarzystwa.","Marble, Lycia, about 390 BC. The facade stands on its original podium. The Nereids are daughters of the sea; at night they do not stand as they do by day. Please keep off the porch. The busts dislike company."
+LABEL_METOPES_TITLE,Metopy z Partenonu,Metopes from the Parthenon
+LABEL_METOPES_TEXT,"Marmur pentelicki, Ateny, V w. p.n.e. Lapici walczą z centaurami, którzy zakłócili wesele. Lapici celują tam, gdzie człowiek przechodzi w konia: w tors i w głowę. Koń nie męczy się nigdy.","Pentelic marble, Athens, 5th century BC. Lapiths fight the Centaurs who broke up a wedding feast. The Lapiths aim where man becomes horse: the torso and the head. The horse never tires."
+LABEL_VASES_TITLE,Ceramika attycka,Attic pottery
+LABEL_VASES_TEXT,"Wazy czarno- i czerwonofigurowe, Ateny, VI i V w. p.n.e. Skorupy, których nie zdążono skleić, leżą od 1923 roku w magazynie za tą ścianą. Ściana co roku pęka odrobinę bardziej. Wystarczy jej pomóc.","Black- and red-figure vases, Athens, 6th and 5th centuries BC. The sherds no one had time to glue have lain in the store behind this wall since 1923. The wall cracks a little more every year. It only needs a little help."
+LABEL_ORRERY_TITLE,Wielkie Planetarium,The Great Orrery
+LABEL_ORRERY_TEXT,"Mechanizm zegarowy, Londyn 1840. Krata rotundy unosi się na przeciwwadze pod kopułą. Lina wisi za wysoko na pistolet; z galerii obserwatorów sięgnie ją sztucer kolekcjonera.","Clockwork, London, 1840. The rotunda's portcullis rides on a counterweight high under the dome. The rope hangs too high for a pistol; from the observers' gallery the collector's rifle will reach it."
+LABEL_RIFLE_TITLE,Sztucer Ksawerego Zawilskiego,Ksawery Zawilski's rifle
+LABEL_RIFLE_TEXT,"Liège, 1858. Zapisany muzeum w testamencie razem z gabinetem i zakazem strzelania w budynku. Wilki z jego polowań i raptory z jego wykopalisk stoją obok w dioramach. Obie dioramy mają dobrą pamięć.","Liège, 1858. Left to the museum in his will, together with his cabinet and a ban on shooting in the building. The wolves from his hunts and the raptors from his digs stand beside it in dioramas. Both have long memories."
+LABEL_GENERAL_TITLE,"Zbroja generała, okres Edo","A general's armour, Edo period"
+LABEL_GENERAL_TEXT,"Żelazo, skóra i laka, ok. 1700. Od 1910 roku stoi w ogrodzie za tą ścianą, a ściana od tamtej pory pęka. Przód zbroi zachował się najlepiej. Od tyłu i pod maską płytki są cienkie jak papier.","Iron, leather and lacquer, about 1700. Since 1910 it has stood in the garden behind this wall, and the wall has been cracking ever since. The front of the armour is the best preserved. At the back and under the mask the plates are as thin as paper."
+LABEL_SHRINE_TITLE,Kapliczka z dzwonem,The bell shrine
+LABEL_SHRINE_TEXT,"Drewno i brąz, Kioto, XVIII w. Dzwonu nie wolno uderzać po zmroku; ktoś i tak uderza w niego od spodu. Drzwi kapliczki zawieszono na linie przeciwwagi, wysoko, żeby nikt ich nie otworzył przypadkiem.","Wood and bronze, Kyoto, 18th century. The bell must not be struck after dark; someone strikes it from below all the same. The shrine's door hangs on a counterweight rope, high up, so that no one opens it by accident."
+LABEL_MOAI_TITLE,Moai z Rapa Nui,A moai from Rapa Nui
+LABEL_MOAI_TEXT,"Tuf wulkaniczny. Na wyspie moai stały plecami do morza, twarzą do wiosek. Ten patrzy w stronę kraty w korytarzu północnym. Żelazne ucho z tyłu cokołu zostało po transporcie; ktoś je niedawno naoliwił.","Volcanic tuff. On the island the moai stood with their backs to the sea, facing the villages. This one faces the grate in the north corridor. The iron eye on the back of the plinth is left from its shipping; someone oiled it recently."
+LABEL_SERPENT_TITLE,Dwugłowy wąż,The double-headed serpent
+LABEL_SERPENT_TEXT,"Mozaika turkusowa na drewnie, Meksyk, XV–XVI w. Jedna głowa patrzy w niebo, druga w podziemia. Mozaika przetrwała najlepiej na grzbiecie. Tam, gdzie płytek brak, widać gołe drewno, i tylko tam drewno ustępuje.","Turquoise mosaic on wood, Mexico, 15th–16th century. One head looks to the sky, the other to the underworld. The mosaic survives best along the back. Where the tiles are missing the bare wood shows, and only there does the wood give."
+LABEL_TOTEMS_TITLE,Słupy totemowe Haida,Haida totem poles
+LABEL_TOTEMS_TEXT,"Czerwony cedr, XIX w. Pięć słupów, pięć rodów; na ekspozycji cztery. Słup nr 3 wycofano w 1931 roku, gdy wszedł w ścianę, a magazyn pod salą zabito deskami. Deski są stare i spróchniałe. Śpiew spod podłogi nie.","Red cedar, 19th century. Five poles, five clans; four on display. Pole no. 3 was withdrawn in 1931, when it went into the wall, and the store under this hall was boarded up. The boards are old and rotten. The singing under the floor is not."
+PROMPT_EXAMINE,Obejrzyj,Examine
+STORY_EGYPT_WHO,"R. Gil, konserwator","R. Gil, conservator"
+STORY_EGYPT_TITLE,Skrzynka narzędziowa,A toolbox
+STORY_EGYPT_TEXT,"Na wieku kredą: „Stuka za ścianą. Równo”. Stetoskop Gila wisi obok na gwoździu, przy spękanym tynku.","Chalked on the lid: “Knocking behind the wall. Steady.” Gil's stethoscope hangs beside it on a nail, by the cracked plaster."
+STORY_ASSYRIA_WHO,"St. Mazur, stróż nocny","St. Mazur, night watchman"
+STORY_ASSYRIA_TITLE,Latarka służbowa nr 7,Duty torch no. 7
+STORY_ASSYRIA_TEXT,"Bateria prawie pusta, a latarka wciąż świeci w stronę klatki lwów. Ślady pazurów biegną tam, gdzie pada światło.","The battery is nearly flat, yet the torch still shines towards the lions' cage. The claw marks run where the light falls."
+STORY_GREECE_WHO,"E. Turek, gołębiarz","E. Turek, pigeon keeper"
+STORY_GREECE_TITLE,Kosz na gołębie,A pigeon basket
+STORY_GREECE_TEXT,"Pusty, drzwiczki wygięte od środka. Pióra prowadzą pod klapę strychu, a klapa wisi na linie.","Empty, its little door bent outwards from inside. The feathers lead to the loft hatch, and the hatch hangs on a rope."
+STORY_ENLIGHTENMENT_WHO,"Heniek, nocny stróż","Heniek, night watchman"
+STORY_ENLIGHTENMENT_TITLE,Latarka Heńka,Heniek's torch
+STORY_ENLIGHTENMENT_TEXT,"Na obudowie wydrapane „H.”. Leży tam, gdzie upadła tamtej nocy, i wciąż świeci na raptory. Ślady kończą się w gabinecie bibliotekarza. Przystań wytrzymała.",An “H.” scratched into the casing. It lies where it fell that night and still shines on the raptors. The trail ends at the librarian's office. The haven held.
+STORY_ASIA_WHO,"W. Kowalik, płatnerz","W. Kowalik, armourer"
+STORY_ASIA_TITLE,Młotek płatnerza,The armourer's hammer
+STORY_ASIA_TEXT,"Łuski zbroi prowadzą do skarbca. Łańcuch na jego drzwiach założono od tej strony, a kłódka jest nowa.","Armour scales lead to the vault. The chain on its door was put on from this side, and the padlock is new."
+STORY_AMERICAS_WHO,"H. Bielecka, przewodniczka","H. Bielecka, guide"
+STORY_AMERICAS_TITLE,Lista uczestników,The list of participants
+STORY_AMERICAS_TEXT,"Próba nocnego oprowadzania. Uczestnicy: manekiny z magazynu, sztuk siedem. Po przerwie na kawę ktoś dopisał: sześć. Ulotki prowadzą do schodów w dół.","A rehearsal of the night tour. Participants: mannequins from the store, seven. After the coffee break someone added: six. The leaflets lead to the stairs down."
+CURIO_FOUND,Eksponat odpowiada,An exhibit answers
+CURIO_DUST,Sakiewka Pyłu: +%d,A pouch of Dust: +%d
+PROMPT_CURIO_BIRD,Nakręć ptaszka,Wind the bird
+PROMPT_CURIO_ASTROLABE,Obróć alidadę,Turn the alidade
+PROMPT_CURIO_PORTRAIT,Zapytaj portret,Ask the portrait
+PROMPT_CURIO_SCALE,Połóż dłoń na szali,Lay a hand on the pan
+CURIO_BIRD_TITLE,Śpiewający ptak w klatce,The singing bird in a cage
+CURIO_BIRD_TEXT,"Automat, Szwajcaria, ok. 1780. Nakręcany kluczem z boku podstawy. Śpiewa zawsze tę samą melodię.","Automaton, Switzerland, about 1780. Wound with the key on the side of its stand. It always sings the same tune."
+CURIO_BIRD_ANSWER,"Sześć krótkich nut i jeden długi tryl, zaśpiewany w stronę Planetarium. Kustosz zapisał w katalogu: „sześć planet, potem słońce”.","Six short notes and one long trill, sung towards the Planetarium. The curator wrote in the catalogue: “six planets, then the sun.”"
+CURIO_ASTROLABE_TITLE,Podróżne astrolabium Zawilskiego,Zawilski's travelling astrolabe
+CURIO_ASTROLABE_TEXT,"Mosiądz, Paryż, 1866. Fundator co wieczór ustawiał alidadę na Gwiazdę Polarną, małą gwiazdkę na górze tarczy. Mawiał, że szuflada się wtedy odwdzięcza.","Brass, Paris, 1866. Every evening the founder set the alidade on the Pole Star, the little star at the top of the disc. He used to say the drawer would then return the favour."
+CURIO_ASTROLABE_ANSWER,Alidada wskazuje Gwiazdę Polarną. W podstawie coś kliknęło i wysunęła się szuflada.,"The alidade points at the Pole Star. Something clicks in the stand, and a drawer slides out."
+CURIO_PORTRAIT_TITLE,"Ksawery Zawilski, fundator","Ksawery Zawilski, founder"
+CURIO_PORTRAIT_ANSWER,"„Mój portier miał izbę na wschodnim końcu tego korytarza. Okiennica wisi na sznurze. Przetnij go, skoro już tu jesteś. I nie schodź pod kryptę. Proszę.”","“My porter kept his lodge at the east end of this corridor. The shutter hangs on a cord. Cut it, since you are here. And do not go below the crypt. Please.”"
+CURIO_SCALE_TITLE,Waga Sądu Ozyrysa,The scales of Osiris's judgement
+CURIO_SCALE_TEXT,"Brąz, Teby, Nowe Państwo. Na jednej szali pióro Maat. Druga, na serce zmarłego, jest pusta.","Bronze, Thebes, New Kingdom. On one pan, the feather of Maat. The other, for the heart of the dead, is empty."
+CURIO_SCALE_ANSWER,"Pusta szala opada, jakby leżało na niej serce, którego nie można zważyć. W podstawie odsuwa się kamienna płytka.","The empty pan sinks, as if the heart that cannot be weighed lay on it. In the base, a stone slab slides aside."
+PROMPT_READ_PLAQUE,Przeczytaj tablicę,Read the plaque
+PROMPT_READ_BOARD,Przeczytaj ogłoszenia,Read the notices
+REST_PLAQUE_HEADING,Eksponaty przywrócone do spoczynku,Exhibits returned to rest
+REST_PLAQUE_WINGS,Skrzydła w spokoju: %d z %d,Wings at rest: %d of %d
+REST_PLAQUE_CAPTION,Dyrekcja Muzeum Miejskiego,The City Museum Directorate
+REST_PLAQUE_TITLE,Przywrócone do spoczynku: %d,Returned to rest: %d
+REST_PLAQUE_TEXT,Skrzydła w spokoju: %d z %d. Licznik prowadzi Dyrekcja. Eksponaty zwrócone kolekcji w częściach liczą się jako zwrócone.,Wings at rest: %d of %d. The count is kept by the Directorate. Exhibits returned to the collection in pieces count as returned.
+CORK_CAPTION,Tablica dla personelu,Staff noticeboard
+CORK_TITLE,Noc %d,Night %d
+CORK_SCHEDULE,Grafik: H. na zwolnieniu (noga). Nocki bierze nowy. Powodzenia. — kierownik zmiany,Rota: H. on sick leave (leg). The new man takes the nights. Good luck. — shift manager
+CORK_MILK,"Kto wypija mleko z lodówki, niech je odkupi. Ekspres też wie. — B. Wierzbicka","Whoever drinks the milk in the fridge, buy more. The machine knows too. — B. Wierzbicka"
+CORK_MACHINE,Ekspresu po trzeciej NIE używać. Wyjąłem wtyczkę z gniazdka. Działa dalej. — R. Gil,Do NOT use the coffee machine after three. I pulled the plug. It still works. — R. Gil
+CORK_WATCH,Zginął zegarek po dziadku. Znalazcę proszę o zwrot. Napoleon niech się nie fatyguje. — St. Mazur,"Lost: my grandfather's watch. Finder, please return it. Napoleon need not bother. — St. Mazur"
+CORK_CURATOR,Dr Wróblewski na urlopie bezterminowym. Klucze do Czytelni są u nikogo. — Dyrekcja,Dr Wróblewski is on indefinite leave. The Reading Room keys are with no one. — The Directorate
+CORK_HENIEK,"Młody, noga swędzi, czyli się goi. Wracam niedługo. Nie pij specjału. — H.","Kid, the leg itches, so it's healing. Back soon. Don't drink the special. — H."
+CORK_COLOSSUS,Zlecenie nr 203 (Kolos) zamknięte. Nie przeze mnie. — R. Gil,Job order 203 (the Colossus) closed. Not by me. — R. Gil
+CORK_LAMASSU,Lamassu z dziedzińca wpisano do inwentarza jako „rozproszony”. — Dyrekcja,The courtyard lamassu has been entered in the inventory as “dispersed”. — The Directorate
+CORK_CENTAUR,W Galerii Partenonu znowu cicho. Pierwszy raz od lat słychać moje gołębie. — E. Turek,The Parthenon gallery is quiet again. For the first time in years I can hear my pigeons. — E. Turek
+CORK_PLANETARIUM,Planetarium stoi. Uprasza się go nie nakręcać. — dr E. Sztern,The Orrery has stopped. Kindly do not wind it. — Dr E. Sztern
+CORK_GENERAL,Generał skończył wartę. Herbata w herbaciarni dla wszystkich. — Okamura,The General has finished his watch. Tea in the tea house for everyone. — Okamura
+CORK_SERPENT,Nocne oprowadzanie odwołane. Wąż też. — H. Bielecka,The night tour is cancelled. So is the serpent. — H. Bielecka
+CORK_TREX,Krata w korytarzu północnym otwarta. Kto ją zamknie? — Dyrekcja,The grate in the north corridor is open. Who will shut it? — The Directorate
+SHIFT_LOG,Dziennik zmiany,Shift log
+SHIFT_WING_EGYPT,Egipt,Egypt
+SHIFT_WING_ASSYRIA,Asyria,Assyria
+SHIFT_WING_GREECE,Grecja,Greece
+SHIFT_WING_ENLIGHTENMENT,Oświecenie,Enlightenment
+SHIFT_WING_ASIA,Azja,Asia
+SHIFT_WING_AMERICAS,Ameryki,Americas
+SHIFT_NO_SIGNAL,brak sygnału,no signal
+SHIFT_AWAKE,czuwa,awake
+SHIFT_AT_REST,spokój,at rest
+SHIFT_RESTED,W spoczynku: %d,At rest: %d
+CCTV_CALM,Spokój,At rest

@@ -8,6 +8,8 @@ libvorbis; nothing else to install):
 build/audio_src/music/<name>.wav            -> assets/music/<name>.ogg
 build/audio_src/ambience/bed_<layer>.wav    -> assets/ambience/bed_<layer>.ogg
 build/audio_src/ambience/oneshots/<n>.wav   -> assets/ambience/oneshots/<n>.ogg
+build/audio_src/ambience/tails/<n>.wav      -> assets/ambience/tails/<n>.ogg
+    (the room tails of shots and blasts: stereo, 96 kbit/s, no loop)
 build/audio_src/voice/<speaker>/<key>.wav   -> assets/voice/<speaker>/<key>.ogg
     (mono 24 kHz, 64 kbit/s; "-- voice" after the script encodes only these)
 Each .ogg gets a fixed stream serial (ogg_serial.py: the encoder picks a
@@ -35,7 +37,7 @@ DST = ROOT / "assets"
 # (the music zones' four-stem loops, the guardians' themes, its stings) at
 # 128 kbit/s
 BITRATE = {("music", 2): 160000, ("music_floor1", 2): 128000, ("ambience", 2): 112000, ("ambience", 1): 80000,
-           ("oneshot", 1): 80000, ("voice", 1): 64000}
+           ("oneshot", 1): 80000, ("tail", 2): 96000, ("voice", 1): 64000}
 FLOOR1_ZONES = ("court", "egypt", "assyria", "greece", "enlightenment", "asia", "americas", "basement", "roof")
 FLOOR1_MUSIC = tuple(f"{layer}_{zone}" for zone in FLOOR1_ZONES for layer in ("explore", "combat")) + (
     "guardian_", "seal_sting", "gate_sting", "wing_sting")
@@ -72,6 +74,8 @@ def main():
             jobs.append((src, DST / "ambience" / (src.stem + ".ogg"), "ambience", True))
         for src in sorted((SRC / "ambience" / "oneshots").glob("*.wav")):
             jobs.append((src, DST / "ambience" / "oneshots" / (src.stem + ".ogg"), "oneshot", False))
+        for src in sorted((SRC / "ambience" / "tails").glob("*.wav")):
+            jobs.append((src, DST / "ambience" / "tails" / (src.stem + ".ogg"), "tail", False))
         if not jobs:
             print("nothing in build/audio_src: run gen_music.py and gen_ambience.py first")
     for src in sorted((SRC / "voice").glob("*/*.wav")):

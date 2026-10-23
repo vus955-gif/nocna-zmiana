@@ -621,4 +621,12 @@ func _build_voice_props() -> void:
 		add_child(Loudspeaker.create(_markers()[id]))
 	for id in _marker_ids(AUDIOGUIDE_PREFIX):
 		var station := StringName(String(id).trim_prefix(AUDIOGUIDE_PREFIX))
-		add_child(AudioguideStand.create(station, _markers()[id]))
+		var stand := AudioguideStand.create(station, _markers()[id])
+		# a solid thing on the floor the exhibits (and every way planned past
+		# it) go round: a navigation source of the level, as the Lamassu's
+		# plinth, the mummies' coffins and the Centaur's metope (the voice
+		# reaches a stand through its E, the tests through its group)
+		if level.has_method(&"add_walk_source") and level.get(&"navigation") != null:
+			level.call(&"add_walk_source", stand)
+		else:
+			add_child(stand)

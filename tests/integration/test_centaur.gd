@@ -103,6 +103,37 @@ func test_it_stands_in_its_metope_in_the_middle_of_the_gallery() -> void:
 	assert_lt(centaur.global_position.distance_to(post.origin), 0.1, "it stands still")
 
 
+## The slab stands in the middle of the gallery every night (solid level
+## geometry): the navmesh goes round it like round the Lamassu's plinth and
+## the ambush mummies' coffins. Found by the playthrough bot's runs of
+## 22.10: the navmesh ran through the metope, ways planned across the
+## gallery (the bot's, an exhibit's) walked into the stone.
+func test_its_metope_is_cut_out_of_the_navmesh() -> void:
+	GameState.new_game()
+	_museum()
+	await physics_frames(3)
+	var waited := 0
+	while museum.floor_level.navigation.is_baking() and waited < 600:
+		await physics_frames(1)
+		waited += 1
+	await physics_frames(3)
+	var centaur := _centaur()
+	assert_not_null(centaur)
+	if centaur == null:
+		return
+	var slab := centaur.metope
+	assert_not_null(slab)
+	for z: float in [-1.6, -0.2, 1.2]:
+		var middle := slab.global_transform * Vector3((CentaurMetope.FACE_X + CentaurMetope.BACK_X) * 0.5, 0.1, z)
+		var best := Vector3.INF
+		for region in museum.floor_level.navigation.regions:
+			var found := NavigationServer3D.region_get_closest_point(region.get_rid(), middle)
+			if best == Vector3.INF or found.distance_to(middle) < best.distance_to(middle):
+				best = found
+		var off := Vector2(best.x - middle.x, best.z - middle.z).length()
+		assert_gt(off, 0.5, "the navmesh keeps off the slab at %s (nearest %.2f m)" % [middle, off])
+
+
 func test_it_wakes_tears_free_and_announces_every_attack_in_time_never_leaving_the_gallery() -> void:
 	GameState.new_game()
 	_museum()

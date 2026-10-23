@@ -26,11 +26,23 @@ var encounters: FloorEncounters
 var world: WorldFeatures
 ## The court café behind the counter (plan 2026-10-10-kawiarnia-zmeczenie).
 var cafe: CafeCorner = null
+## The reactive environment and the tagged tools (plan 2026-10-21-srodowisko-walka).
+var env: EnvLayer = null
+## The museum's own story: labels, curios, the staff's trails, the
+## corkboard, the plaque in the court (plan 2026-10-21-opowiesc-muzeum).
+var story: MuseumStory = null
 var finale: FloorFinale
 ## The switchboard in the basement (null when its marker is missing).
 var switchboard: Switchboard = null
 ## The paper museum map (M; W6).
 var map: MuseumMap = null
+## Each wing's own mechanic (plan 2026-10-21-mechaniki-biomow).
+var biomes: BiomeMechanics = null
+## The night's escalation: uncanny events, foreshadowing, rooms that change
+## (plan 2026-10-21-eskalacja-nocy).
+var uncanny: UncannyDirector = null
+## The rooms' fight scenarios (plan 2026-10-22-projekt-starc).
+var scenarios: FloorScenarios = null
 
 ## Warnings given so far (each once per run of the game: a marker the
 ## zone builders have not placed yet must not flood the log every night).
@@ -62,9 +74,11 @@ func setup(for_museum: Museum) -> void:
 	add_child(encounters)
 	encounters.setup(museum, pickups)
 	world = WorldFeatures.install(level, museum)
+	env = EnvLayer.install(level, museum, self)
 	cafe = CafeCorner.new()
 	add_child(cafe)
 	cafe.setup(level, func() -> Player: return museum.player, museum.hud, func() -> float: return museum.watch.clock.elapsed if museum.watch != null else 0.0)
+	story = MuseumStory.install(self)
 	if world.cctv != null and museum.watch != null:
 		world.cctv.clock_seconds = func() -> float: return museum.watch.clock.elapsed
 	# the notes read so far, again from the pause menu; the camera view shut
@@ -73,6 +87,7 @@ func setup(for_museum: Museum) -> void:
 	museum.pause_menu.game = museum.game
 	world.pause_requested.connect(museum.pause_menu.open)
 	map = MuseumMap.install(self)
+	biomes = BiomeMechanics.install(self)
 	finale = FloorFinale.new()
 	add_child(finale)
 	finale.setup(self)
@@ -94,6 +109,12 @@ func setup(for_museum: Museum) -> void:
 	add_child(rooms)
 	rooms.check()   # the night's first room, announced at once (no card)
 	rooms.entered.connect(_on_room_entered)
+	uncanny = UncannyDirector.new()
+	add_child(uncanny)
+	uncanny.setup(self)
+	scenarios = FloorScenarios.new()
+	add_child(scenarios)
+	scenarios.setup(self)
 
 
 ## The marker's transform, or null (a warning once) when the layout has no

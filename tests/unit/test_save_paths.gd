@@ -6,7 +6,9 @@ extends TestCase
 func test_test_runs_never_use_the_real_save_dir() -> void:
 	assert_true(SavePaths.is_test_run())
 	var dir := SavePaths.dir().replace("\\", "/")
-	assert_true(dir.ends_with("tests/_out/saves"), dir)
+	# (a process of a parallel run, --shard=k, has its own folder saves_k)
+	assert_true(dir.ends_with("tests/_out/saves") or dir.get_file().begins_with("saves_"), dir)
+	assert_eq(dir, SavePaths.test_dir().replace("\\", "/"))
 	assert_true(SavePaths.save_file().begins_with(SavePaths.dir()))
 	assert_true(SavePaths.settings_file().begins_with(SavePaths.dir()))
 

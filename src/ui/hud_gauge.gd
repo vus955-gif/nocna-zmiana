@@ -63,7 +63,7 @@ func trail_value() -> float:
 func pulse() -> float:
 	if low_pulse <= 0.0 or value <= 0.0 or value >= low_pulse:
 		return 0.0
-	return 0.5 + 0.5 * sin(_pulse * TAU * 0.9)
+	return Flashing.pulse(0.5 + 0.5 * sin(_pulse * TAU * 0.9))
 
 
 func _process(delta: float) -> void:

@@ -82,3 +82,11 @@ signal secret_found(secret: StringName, tier: int, found: int)
 signal fatigue_rose(stage: int)
 ## The night's clock reached a full hour: [param hour] on its face (0 = midnight ... 6).
 signal hour_struck(hour: int)
+
+# --- the night's curve (plan 2026-10-21-eskalacja-nocy) ---
+## The night moved into [param phase] (NightEscalation.Phase: calm, uneasy,
+## witching, predawn); also announced when a night resumes.
+signal night_phase_changed(phase: int)
+## An uncanny event of the museum happened ([param id]: its UncannyCatalog
+## id) in or next to [param room].
+signal uncanny_event(id: StringName, room: StringName)

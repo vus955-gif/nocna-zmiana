@@ -90,7 +90,9 @@ func test_a_new_look_is_inspected_when_the_weapon_is_drawn() -> void:
 	await physics_frames(5)
 	assert_true(rig.inspect_pending(), "still waiting in the holster")
 	holder.select_id(&"shotgun")
-	assert_gt(rig.inspecting(), 1.0, "looked over at once")
+	# once it is up in the hands (WeaponSwitch), not under the frame
+	await physics_frames(roundi((ViewmodelMotion.holster_time(&"pistol") + ViewmodelMotion.draw_time(&"shotgun")) * 60.0))
+	assert_gt(rig.inspecting(), 1.0, "looked over as it comes up")
 	assert_false(rig.inspect_pending())
 	await physics_frames(roundi(ViewmodelRig.INSPECT_TIME * 60.0) + 5)
 	assert_eq(rig.inspecting(), 0.0, "and back to work")

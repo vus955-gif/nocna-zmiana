@@ -31,6 +31,8 @@ const MODELS: Array[String] = [
 	"asia_lantern_floor", "asia_case_tall", "asia_plinth", "asia_post_base", "asia_post_shaft", "asia_post_capital",
 	"asia_shoji_2m", "asia_lattice_window", "asia_dado_4m", "hall_pilaster_base", "hall_pilaster_shaft",
 	"hall_pilaster_capital",
+	# the garden's plants modelled in Blender (plan 2026-10-21-modele-blender.md)
+	"garden_pine", "garden_bamboo",
 ]
 ## The exhibits that stand in the open (the live Fu dogs and samurai
 ## armours, dormant until they wake) get a display mat under their slots: a
@@ -1137,11 +1139,10 @@ static func boxes_mesh(boxes: Array) -> ArrayMesh:
 	return mesh
 
 
-## The garden walls' and plants' materials (shared): &"footing" (stone
-## blocks), &"timber" (cedar), &"stone" (the windows' limestone), &"glass"
-## (dark, the moon in it), &"lit" (a window lit from inside), &"sash"
-## (painted bars), &"blind" (a lit window's blind), &"bark", &"needles",
-## &"culm", &"leaves".
+## The garden walls' materials (shared): &"footing" (stone blocks),
+## &"timber" (cedar), &"stone" (the windows' limestone), &"glass" (dark, the
+## moon in it), &"lit" (a window lit from inside), &"sash" (painted bars),
+## &"blind" (a lit window's blind).
 static func garden_material(key: StringName) -> Material:
 	if _garden_mats.has(key):
 		return _garden_mats[key]
@@ -1153,10 +1154,6 @@ static func garden_material(key: StringName) -> Material:
 			mat = ArtLibrary.arch_tile("timber", false, Color(0.82, 0.74, 0.68))
 		&"stone":
 			mat = ArtLibrary.arch_tile("limestone")
-		&"bark":
-			mat = ArtLibrary.arch_tile("timber", false, Color(0.72, 0.6, 0.55))
-		&"needles":
-			mat = ArtLibrary.arch_tile("grass_fake", false, Color(0.85, 1.0, 0.85))
 		_:
 			var plain := StandardMaterial3D.new()
 			plain.resource_name = "garden_" + String(key)
@@ -1179,11 +1176,6 @@ static func garden_material(key: StringName) -> Material:
 					plain.emission_enabled = true
 					plain.emission = Color(0.55, 0.33, 0.16)
 					plain.emission_energy_multiplier = 0.6
-				&"culm", &"leaves":
-					plain.vertex_color_use_as_albedo = true
-					plain.roughness = 0.7 if key == &"culm" else 0.85
-					if key == &"leaves":
-						plain.cull_mode = BaseMaterial3D.CULL_DISABLED
 			mat = plain
 	_garden_mats[key] = mat
 	return mat
@@ -1195,14 +1187,16 @@ static func garden_material(key: StringName) -> Material:
 ## ROOT_Y - out of every guard's reach, no collision), leaning out over the
 ## gravel away from the perch: bamboo groves [the wall-face point at the
 ## grove's middle (y 0), the face's normal into the garden, the grove's
-## length]; pines [the wall-face point, the normal into the garden].
+## length]; pines [the wall-face point, the normal into the garden]. Drawn
+## by the garden_bamboo (a 1.5 m stretch of grove, BAMBOO_MODULE) and
+## garden_pine models (plan docs/superpowers/plans/2026-10-21-modele-blender.md).
 const BAMBOO := [[Vector3(4.0, 0.0, -70.75), Vector3.RIGHT, 6.0], [Vector3(18.25, 0.0, -62.5), Vector3.FORWARD, 4.5],
 	[Vector3(30.0, 0.0, -66.25), Vector3.LEFT, 3.5]]
 const PINES := [[Vector3(30.0, 0.0, -73.25), Vector3.LEFT], [Vector3(19.75, 0.0, -86.0), Vector3.BACK]]
 const ROOT_Y := 3.15
-const PINE_SCALE := 1.25
-const CULM_GREEN := Color(0.26, 0.38, 0.13)
-const LEAF_GREEN := Color(0.18, 0.33, 0.11)
+const BAMBOO_MODULE := 1.5
+## The culms' foot line stands this far out of the wall face.
+const BAMBOO_OUT := 0.02
 
 
 static func _garden_plants(root: Node3D) -> void:
@@ -1213,7 +1207,7 @@ static func _garden_plants(root: Node3D) -> void:
 		var grove: Array = BAMBOO[i]
 		_bamboo(plants, grove[0], grove[1], float(grove[2]), 9173 + i * 31).name = "Bamboo_%d" % i
 	for i in PINES.size():
-		_pine(plants, PINES[i][0], PINES[i][1], 4421 + i * 17).name = "Pine_%d" % i
+		_pine(plants, PINES[i][0], PINES[i][1], i).name = "Pine_%d" % i
 
 
 ## The frame of a plant on the wall at [param at] (its foot), facing the
@@ -1223,201 +1217,35 @@ static func _plant_frame(at: Vector3, inward: Vector3) -> Transform3D:
 	return Transform3D(Basis(Vector3.UP.cross(z), Vector3.UP, z), at)
 
 
-## A bamboo grove [param length] m along the wall: culms rising from behind
-## the coping and leaning out over it (clear of the string course and the
-## pilasters), their nodes ringed, sprays of leaves on their upper halves.
+## A bamboo grove [param length] m along the wall: stretches of the
+## garden_bamboo model side by side (every other one mirrored, a little
+## taller or shorter), stretched together to the grove's length.
 static func _bamboo(parent: Node3D, at: Vector3, inward: Vector3, length: float, seed: int) -> Node3D:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
-	var culms := _Strokes.new()
-	var leaves := _Strokes.new()
-	var count := int(length * 5.0)
-	for i in count:
-		var x := (float(i) + rng.randf_range(0.15, 0.85)) / count * length - length * 0.5
-		var base := Vector3(x, ROOT_Y, rng.randf_range(-0.14, -0.08))
-		var height := rng.randf_range(4.6, 8.2)
-		var out := deg_to_rad(rng.randf_range(14.0, 20.0))
-		var side := deg_to_rad(rng.randf_range(-6.0, 6.0))
-		var radius := rng.randf_range(0.03, 0.046)
-		var shade := CULM_GREEN.lerp(Color(0.46, 0.46, 0.24), rng.randf_range(0.0, 0.5))
-		# three segments, the top one arching further out
-		var points: Array[Vector3] = [base]
-		var dir := Vector3(sin(side), cos(out), -sin(out)).normalized()
-		for k in 3:
-			var bend := deg_to_rad(4.0 * k)
-			var d := Vector3(dir.x, dir.y * cos(bend), dir.z - sin(bend)).normalized()
-			points.append(points[-1] + d * height / 3.0)
-		var node_at := rng.randf_range(0.0, 0.3)
-		var walked := 0.0
-		for k in 3:
-			var a: Vector3 = points[k]
-			var b: Vector3 = points[k + 1]
-			var r0 := radius * (1.0 - 0.18 * k)
-			var r1 := radius * (1.0 - 0.18 * (k + 1))
-			culms.tube(a, b, r0, r1, 6, shade)
-			var span := a.distance_to(b)
-			while node_at < walked + span:
-				var t := (node_at - walked) / span
-				var p := a.lerp(b, t)
-				var r := lerpf(r0, r1, t)
-				var up := (b - a).normalized()
-				culms.tube(p - up * 0.01, p + up * 0.01, r * 1.25, r * 1.25, 6, shade.darkened(0.25))
-				if node_at > height * 0.35:
-					# a twig out from the node, a spray at its end and one at the node
-					var yaw := rng.randf_range(0.0, TAU)
-					var twig := Vector3(cos(yaw), rng.randf_range(0.1, 0.45), -absf(sin(yaw)) - 0.2).normalized()
-					var tip := p + twig * rng.randf_range(0.25, 0.55)
-					culms.tube(p, tip, 0.008, 0.005, 4, shade)
-					_leaf_spray(leaves, rng, tip, twig)
-					_leaf_spray(leaves, rng, p, up)
-				node_at += rng.randf_range(0.3, 0.42)
-			walked += span
-		# a tuft at the tip
-		_leaf_spray(leaves, rng, points[-1], (points[-1] - points[-2]).normalized())
-		_leaf_spray(leaves, rng, points[-1], (points[-1] - points[-2]).normalized())
-	var frame := _plant_frame(at, inward)
 	var grove := _holder("Bamboo")
-	grove.transform = frame
+	grove.transform = _plant_frame(at, inward)
 	parent.add_child(grove)
-	_stroke_view(grove, "Culms", culms, garden_material(&"culm"))
-	_stroke_view(grove, "Leaves", leaves, garden_material(&"leaves"))
+	var count := maxi(1, int(round(length / BAMBOO_MODULE)))
+	var stretch := length / (count * BAMBOO_MODULE)
+	for i in count:
+		var x := -length * 0.5 + (i + 0.5) * BAMBOO_MODULE * stretch
+		var flip := -1.0 if i % 2 == 1 else 1.0
+		var scale := Vector3(stretch * flip, rng.randf_range(0.88, 1.06), 1.0)
+		ArtKit._add(grove, "garden_bamboo", Transform3D(Basis.from_scale(scale), Vector3(x, ROOT_Y, -BAMBOO_OUT)))
 	return grove
 
 
-## Four to seven narrow leaves fanning from a node at [param at] (on a culm
-## running [param up]), drooping, all out of the wall (z < 0).
-static func _leaf_spray(leaves: _Strokes, rng: RandomNumberGenerator, at: Vector3, up: Vector3) -> void:
-	var count := rng.randi_range(5, 9)
-	var heading := rng.randf_range(0.0, TAU)
-	for i in count:
-		var yaw := heading + rng.randf_range(-1.1, 1.1)
-		var flat := Vector3(cos(yaw), 0.0, -absf(sin(yaw)) - 0.15).normalized()
-		var dir := (flat + Vector3.DOWN * rng.randf_range(0.25, 0.8) + up * 0.15).normalized()
-		var length := rng.randf_range(0.3, 0.46)
-		var width := rng.randf_range(0.05, 0.075)
-		var shade := LEAF_GREEN.lerp(Color(0.36, 0.48, 0.18), rng.randf_range(0.0, 0.7))
-		var start := at + flat * rng.randf_range(0.02, 0.12)
-		leaves.leaf(start, dir, length, width, shade)
-
-
-## A pine leaning over the coping: its trunk rising from behind the tiles in
-## a slow S over the gravel, branches out to cloud-pruned pads of needles
-## (the topmost under the cornice, the lowest well over a guard's head).
-static func _pine(parent: Node3D, at: Vector3, inward: Vector3, seed: int) -> Node3D:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
-	var lean := rng.randf_range(-0.25, 0.25)
-	# drawn at 1:1, grown by PINE_SCALE about its root
-	var root := Vector3(0.0, ROOT_Y, -0.16)
-	var grow := func(p: Vector3) -> Vector3: return root + (p - root) * PINE_SCALE
-	var trunk: Array[Vector3] = [root, grow.call(Vector3(lean * 0.4, 4.0, -0.75)),
-		grow.call(Vector3(lean + 0.25, 4.75, -1.45)), grow.call(Vector3(lean + 0.05, 5.45, -2.05)), grow.call(Vector3(lean - 0.2, 6.1, -2.35))]
-	var wood := _Strokes.new()
-	for k in trunk.size() - 1:
-		wood.tube(trunk[k], trunk[k + 1], 0.19 - 0.035 * k, 0.19 - 0.035 * (k + 1), 8, Color.WHITE)
-	# pads: [the trunk point the branch leaves from, the pad's middle, its size]
-	var pads := [
-		[1, Vector3(lean - 1.0, 4.55, -1.15), Vector3(0.95, 0.3, 0.75)],
-		[2, Vector3(lean + 1.15, 4.95, -1.75), Vector3(1.0, 0.32, 0.8)],
-		[2, Vector3(lean - 0.75, 5.4, -2.5), Vector3(0.85, 0.28, 0.7)],
-		[3, Vector3(lean + 0.75, 5.95, -2.75), Vector3(0.8, 0.28, 0.65)],
-		[4, Vector3(lean - 0.25, 6.55, -2.45), Vector3(0.75, 0.3, 0.7)],
-	]
-	var needles := _Strokes.new()
-	for pad: Array in pads:
-		var from: Vector3 = trunk[int(pad[0])]
-		var middle: Vector3 = grow.call(pad[1])
-		var size: Vector3 = (pad[2] as Vector3) * PINE_SCALE
-		wood.tube(from, middle + Vector3.DOWN * size.y * 0.5, 0.065, 0.035, 6, Color.WHITE)
-		for k in 5:
-			var off := Vector3(rng.randf_range(-0.45, 0.45) * size.x, rng.randf_range(-0.05, 0.12), rng.randf_range(-0.4, 0.4) * size.z)
-			var s := size * Vector3(rng.randf_range(0.5, 0.78), rng.randf_range(0.8, 1.0), rng.randf_range(0.5, 0.78))
-			needles.blob(middle + off, s, Color.WHITE)
+## A cloud-pruned pine leaning over the coping (the garden_pine model): its
+## trunk rising from behind the tiles in a slow S over the gravel, its pads
+## the lowest well over a guard's head; the second one mirrored.
+static func _pine(parent: Node3D, at: Vector3, inward: Vector3, index: int) -> Node3D:
 	var tree := _holder("Pine")
 	tree.transform = _plant_frame(at, inward)
 	parent.add_child(tree)
-	_stroke_view(tree, "Trunk", wood, garden_material(&"bark"))
-	_stroke_view(tree, "Needles", needles, garden_material(&"needles"))
+	var flip := -1.0 if index % 2 == 1 else 1.0
+	ArtKit._add(tree, "garden_pine", Transform3D(Basis.from_scale(Vector3(flip, 1.0, 1.0)), Vector3(0.0, ROOT_Y, 0.0)))
 	return tree
-
-
-static func _stroke_view(parent: Node3D, label: String, strokes: _Strokes, material: Material) -> MeshInstance3D:
-	var view := MeshInstance3D.new()
-	view.name = label
-	view.mesh = strokes.mesh()
-	view.material_override = material
-	parent.add_child(view)
-	return view
-
-
-## Geometry of the plants gathered into one mesh: tubes (frusta without
-## caps), leaves (narrow diamonds, two-sided) and blobs (low ellipsoids),
-## each with a vertex colour.
-class _Strokes:
-	var vertices := PackedVector3Array()
-	var normals := PackedVector3Array()
-	var colors := PackedColorArray()
-	var indices := PackedInt32Array()
-
-	func tube(a: Vector3, b: Vector3, r0: float, r1: float, sides: int, color: Color) -> void:
-		var up := (b - a).normalized()
-		var side := up.cross(Vector3.FORWARD if absf(up.dot(Vector3.FORWARD)) < 0.9 else Vector3.RIGHT).normalized()
-		var other := up.cross(side)
-		var base := vertices.size()
-		for i in sides + 1:
-			var angle := TAU * i / sides
-			var radial := side * cos(angle) + other * sin(angle)
-			vertices.append(a + radial * r0)
-			vertices.append(b + radial * r1)
-			normals.append(radial)
-			normals.append(radial)
-			colors.append(color)
-			colors.append(color)
-		for i in sides:
-			var k := base + i * 2
-			indices.append_array([k, k + 1, k + 2, k + 2, k + 1, k + 3])
-
-	func leaf(start: Vector3, dir: Vector3, length: float, width: float, color: Color) -> void:
-		var across := dir.cross(Vector3.UP)
-		if across.length_squared() < 0.0001:
-			across = Vector3.RIGHT
-		across = across.normalized()
-		var normal := across.cross(dir).normalized()
-		var base := vertices.size()
-		vertices.append_array([start, start + dir * length * 0.35 + across * width * 0.5,
-			start + dir * length, start + dir * length * 0.35 - across * width * 0.5])
-		for i in 4:
-			normals.append(normal)
-			colors.append(color)
-		indices.append_array([base, base + 1, base + 2, base, base + 2, base + 3])
-
-	func blob(middle: Vector3, size: Vector3, color: Color) -> void:
-		var rings := 5
-		var sides := 9
-		var base := vertices.size()
-		for r in rings + 1:
-			var phi := PI * r / rings
-			for s in sides + 1:
-				var theta := TAU * s / sides
-				var n := Vector3(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta))
-				vertices.append(middle + n * size)
-				normals.append((n / size).normalized())
-				colors.append(color)
-		for r in rings:
-			for s in sides:
-				var k := base + r * (sides + 1) + s
-				indices.append_array([k, k + sides + 1, k + 1, k + 1, k + sides + 1, k + sides + 2])
-
-	func mesh() -> ArrayMesh:
-		var arrays := []
-		arrays.resize(Mesh.ARRAY_MAX)
-		arrays[Mesh.ARRAY_VERTEX] = vertices
-		arrays[Mesh.ARRAY_NORMAL] = normals
-		arrays[Mesh.ARRAY_COLOR] = colors
-		arrays[Mesh.ARRAY_INDEX] = indices
-		var out := ArrayMesh.new()
-		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-		return out
 
 
 # --- light recipe extras -------------------------------------------------------------

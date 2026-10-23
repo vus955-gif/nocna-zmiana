@@ -14,6 +14,11 @@ const LEVER_OFF := deg_to_rad(-40.0)
 const LEVER_TIME := 0.18
 ## How often (s) the lamps look at the game's fuse box.
 const POLL := 0.25
+## Group of the game's fuse boxes (FuseBox joins it): a cabinet with none in
+## front of it (three of Floor I's four) looks for one every 2 s, among
+## these only - the whole "level_kit" group, thousands of pieces, was 6-14 ms
+## every 2 s for the four cabinets together (plan 2026-10-21-wydajnosc-cpu).
+const BOX_GROUP := &"fuse_boxes"
 
 ## Smoked, unlit copies of the lamp materials (shared).
 static var _dark: Dictionary = {}
@@ -109,11 +114,12 @@ func _lamp(part: Node3D, lit: bool) -> void:
 		view.material_override = _dark[source]
 
 
-## The game's fuse box in front of this cabinet (within a metre), or null.
+## The game's fuse box in front of this cabinet (within a metre and a half),
+## or null.
 func _find_box() -> Node3D:
 	if not is_inside_tree():
 		return null
-	for node in get_tree().get_nodes_in_group(&"level_kit"):
+	for node in get_tree().get_nodes_in_group(BOX_GROUP):
 		var piece := node as Node3D
 		if piece != null and piece.get_meta(&"kit", &"") == &"fuse_box_front" and piece.global_position.distance_to(global_position) < 1.5:
 			return piece

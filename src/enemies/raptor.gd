@@ -265,6 +265,7 @@ func _rally_pack() -> void:
 		if mate.brain.is_hunting() or mate.brain.state == EnemyBrain.State.STUNNED:
 			continue
 		if mate.brain.state == EnemyBrain.State.DORMANT or mate.brain.state == EnemyBrain.State.PATROL:
+			mate.end_doze()   # (its sleep caught up before it is told to keep quiet)
 			mate.brain.quiet = true
 		mate.brain.alarm(brain.last_known)
 	if not has_driver or not hunting:

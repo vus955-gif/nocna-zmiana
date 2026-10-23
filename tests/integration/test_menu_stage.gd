@@ -20,6 +20,8 @@ func after_each() -> void:
 func _stage(art: bool = false) -> MenuStage:
 	stage = MenuStage.new()
 	stage.dressed = art
+	# (a cold first build in a fresh process, or on a busy PC, takes longer)
+	stage.build_budget_msec = roundi(MenuStage.BUILD_BUDGET_MSEC * time_slack())
 	add_child(stage)
 	var started := Time.get_ticks_msec()
 	var ok := stage.build()
@@ -57,7 +59,7 @@ func test_the_trex_sleeps_on_its_pedestal() -> void:
 func test_the_dressed_stage_culls_everything_outside_its_rooms() -> void:
 	MuseumFloorLevel.dress_default = true
 	_stage(true)
-	assert_lt(stage.build_msec, MenuStage.BUILD_BUDGET_MSEC, "within the budget")
+	assert_lt(stage.build_msec, MenuStage.BUILD_BUDGET_MSEC * time_slack(), "within the budget")
 	var culler := stage.level.culler
 	assert_not_null(culler, "the dressed level has its culler")
 	assert_eq(culler.only_rooms, MenuStage.MENU_ROOMS)
