@@ -46,7 +46,8 @@ env:
 
 jobs:
   linux:
-    name: ${{ inputs.suite }} suite (Linux)
+    # a fixed name: GitHub shows a skipped job's name unexpanded (every push skips this one)
+    name: Linux (optional, manual)
     if: github.event_name == 'workflow_dispatch' && inputs.linux
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.suite == 'full' && 90 || 30 }}

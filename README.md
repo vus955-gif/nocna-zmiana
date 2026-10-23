@@ -1,5 +1,7 @@
 # Nocna Zmiana — *Night Shift*
 
+[![tests](https://github.com/vus955-gif/nocna-zmiana/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/vus955-gif/nocna-zmiana/actions/workflows/tests.yml)
+
 A first-person **boomer shooter with roguelite progression**, set in a vast museum at night.
 You are the night watchman. Every night, from 23:00 to 6:00, the exhibits wake up and come for you —
 wax figures, wolves, suits of armour, mummies, flying books, portraits that climb out of their frames,
