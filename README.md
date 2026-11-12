@@ -112,7 +112,11 @@ bash tools/run_tests.sh --parallel       # all tests in several Godot processes 
 bash tools/run_tests.sh --quick          # the fast, high-signal subset (what CI runs)
 ```
 
-The scripts in `tools/` expect Godot in `tools/godot/` (see `tools/dev_env.sh`).
+The scripts in `tools/` (Windows, Git Bash) have the engine's path written in:
+`tools/godot/Godot_v4.7.2-stable_win64_console.exe`, as in step 2 above. Only `tools/run_tests.sh` takes another
+binary, through `GODOT_BIN=/path/to/godot` (that is how CI runs it; off Windows it also finds `godot` on the
+`PATH`). `tools/dev_env.sh`, which most of them source, does not look for Godot: it only moves Godot's user
+folders (`APPDATA`, `LOCALAPPDATA`) to `tools/godot/editor_data/`.
 
 `F3` in a dev build (or with Options → Developer tools) shows a performance overlay: frame time and graph, CPU time
 of the physics tick and of the idle callbacks, renderer CPU/GPU time, draw calls, triangles, lamps and shadows left
@@ -139,6 +143,39 @@ Nothing is hand-modelled or downloaded — everything is reproducible from scrip
 | Music & ambience | procedural DSP in Python/numpy (per-culture modes for each wing), encoded to Ogg | `tools/music/` |
 | Sound effects | synthesised in Python | `tools/sfx/` |
 | Voice | Kokoro-82M (ONNX) text-to-speech + own TD-PSOLA processing for the "System" voice | `tools/tts/` |
+
+### Regenerate content
+
+The generated files are committed, so the game runs without any of this. To build them again (Windows, Git Bash,
+Godot in `tools/godot/` — the build scripts reimport the project at the end):
+
+| What | Command | Needs |
+|---|---|---|
+| Textures, models, atlases | `bash tools/art/build_art.sh [model names…]` | Blender 5.1 |
+| Music, ambience, footsteps | `bash tools/build_audio.sh` (about an hour; `encode` or `check` runs only the later steps) | Blender 5.1 |
+| Sound effects | `python tools/sfx/gen_sfx.py [names…]` (`floor1` for Floor I's set) | Python 3; numpy for `floor1` (Blender's Python has it) |
+| Voice: one-time setup | `bash tools/tts/setup.sh /path/to/folder` | `uv`, the Kokoro model (below) |
+| Voice lines | `bash tools/tts/build_voice.sh` (changed lines only; `--all` for every line) | the setup, Blender 5.1 |
+
+**Blender 5.1** runs in the background (`blender -b`), and its bundled Python (with numpy) runs the texture and
+audio generators. The scripts expect it in `D:/Program Files/Blender Foundation/Blender 5.1/`; point them elsewhere
+with `BLENDER` and `BLENDER_PY`:
+
+```bash
+export BLENDER="C:/Program Files/Blender Foundation/Blender 5.1/blender.exe"
+export BLENDER_PY="C:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe"
+bash tools/art/build_art.sh
+```
+
+**The voice tools** live in `tools/tts/.venv` (Python 3.11, made with `uv`) and `tools/tts/models/`, both ignored by
+git. `setup.sh` does not download the model: it copies it, with a ready Python environment, from a folder you give it,
+which needs:
+- `.venv-tts/Lib/site-packages/` with `kokoro-onnx`, `onnxruntime`, `espeakng-loader`, `soundfile` and `numpy`;
+- `models/model_fp16.onnx` and `models/af_heart.bin` — the Kokoro-82M model and one voice from
+  [onnx-community/Kokoro-82M-v1.0-ONNX](https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX)
+  (`onnx/model_fp16.onnx`, `voices/af_heart.bin`).
+
+It then fetches the other candidate voices from the same Hugging Face repository (`download_voices.py`).
 
 ## Code tour
 
