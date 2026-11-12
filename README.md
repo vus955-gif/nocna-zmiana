@@ -159,7 +159,14 @@ the Floor I design `docs/superpowers/specs/`, and the step-by-step implementatio
 
 Designed and directed by **vus955**; implemented with **Claude Code** (Anthropic) — AI agents working from
 written specs and plans, test-first, each feature on its own branch, reviewed and merged by a coordinating
-agent. The commit history shows this process (commits are co-authored by Claude).
+agent. The public history is squashed into a few snapshot commits (co-authored by Claude), so it does not
+show the day-to-day work; the process is documented in the repository itself (in Polish, except the brief):
+
+- `docs/superpowers/specs/` — the design documents the plans were written from;
+- `docs/superpowers/plans/` — 71 implementation plans, one per stage or feature, most with their task lists,
+  the tests to write first and a "Stan prac" (work status) section kept up to date as the hand-off;
+- `tools/agents/brief.md` — the common brief every builder agent worked from: the hard rules, the test-first
+  workflow, how branches and the test suite are handled, the quality bar and the report format.
 
 ## License
 
