@@ -114,8 +114,11 @@ and writes a report per seed.
 bash tools/run_tests.sh                  # all tests, headless, --fixed-fps 60
 bash tools/run_tests.sh --filter=lamassu # a subset
 bash tools/run_tests.sh --parallel       # all tests in several Godot processes (about 4x faster)
-bash tools/run_tests.sh --quick          # the fast, high-signal subset (what CI runs)
+bash tools/run_tests.sh --quick          # the fast, high-signal subset (what CI runs on main and pull requests)
 ```
+
+CI (`.github/workflows/tests.yml`, Windows) runs the quick subset on every push to `main` and every pull request,
+and the full suite when a version tag (`v*`) is pushed — the gate of a release.
 
 The scripts in `tools/` (Windows, Git Bash) have the engine's path written in:
 `tools/godot/Godot_v4.7.2-stable_win64_console.exe`, as in step 2 above. Only `tools/run_tests.sh` takes another

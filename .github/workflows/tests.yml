@@ -1,11 +1,13 @@
-# Headless tests of the game (Godot 4.7.2). Prepared, not switched on: the file
-# does nothing until it is pushed to a GitHub repository.
+# Headless tests of the game (Godot 4.7.2).
 #
-# - Every push and pull request runs the QUICK subset (tests/quick_tests.txt:
-#   the unit tests and the key integration tests) on windows-latest, the same
-#   system the game is developed and exported on (standard hosted runners are
-#   free for public repositories, Windows included).
-# - "Run workflow" (workflow_dispatch) can run the FULL suite instead, and
+# - A push to main and every pull request run the QUICK subset
+#   (tests/quick_tests.txt: the unit tests and the key integration tests) on
+#   windows-latest, the same system the game is developed and exported on
+#   (standard hosted runners are free for public repositories, Windows included).
+# - A pushed version tag (v*) runs the FULL suite instead - the quick subset plus
+#   the slow guardian fights, whole nights and sweeps over the whole floor - as
+#   the gate of a release: push the tag, publish the release when this run is green.
+# - "Run workflow" (workflow_dispatch) can run either suite on any branch, and
 #   optionally the same on Linux as an extra check (never needed for a release).
 # - The engine is the official release from github.com/godotengine/godot
 #   (verified against the checksum published with it), the imported assets
@@ -18,11 +20,13 @@ name: tests
 
 on:
   push:
+    branches: [main]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
     inputs:
       suite:
-        description: "Which tests (full = all ~3200, much slower)"
+        description: "Which tests (quick = ~3090; full = all ~3430, much slower)"
         type: choice
         options: [quick, full]
         default: quick
@@ -43,6 +47,9 @@ env:
   # sha256 of the zips, from the release's asset list (gh api repos/godotengine/godot/releases/tags/4.7.2-stable)
   GODOT_LINUX_SHA256: cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4
   GODOT_WINDOWS_SHA256: 731980f9608d61333e5baf54a2ef17210acc7a538446c0cb9969f002aca1e953
+  # full for a pushed version tag (the release gate) and when "Run workflow" asks for it, otherwise quick
+  # (a job's name and timeout cannot read env: the Windows job repeats this choice)
+  SUITE: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) && 'full' || inputs.suite || 'quick' }}
 
 jobs:
   linux:
@@ -99,7 +106,6 @@ jobs:
       - name: Tests
         shell: bash
         env:
-          SUITE: ${{ inputs.suite || 'quick' }}
           # a hosted runner is slower than the developer's PC: budgets in wall-clock time x3 (TestCase.time_slack)
           NZ_TEST_SLACK: "3"
         run: |
@@ -129,9 +135,9 @@ jobs:
           retention-days: 14
 
   windows:
-    name: ${{ inputs.suite || 'quick' }} suite (Windows)
+    name: ${{ ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) && 'full' || inputs.suite || 'quick') }} suite (Windows)
     runs-on: windows-latest
-    timeout-minutes: ${{ inputs.suite == 'full' && 120 || 45 }}
+    timeout-minutes: ${{ ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.suite == 'full') && 120 || 45 }}
     steps:
       - uses: actions/checkout@v7
 
@@ -165,7 +171,6 @@ jobs:
       - name: Tests
         shell: bash
         env:
-          SUITE: ${{ inputs.suite || 'quick' }}
           # a hosted runner is slower than the developer's PC: budgets in wall-clock time x3 (TestCase.time_slack)
           NZ_TEST_SLACK: "3"
         run: |
