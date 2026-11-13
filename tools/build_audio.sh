@@ -11,10 +11,12 @@
 #                                       zone_<z> / guardian_<w> in parallel is faster)
 #   bash tools/build_audio.sh encode    steps 2-3 (intermediates exist)
 #   bash tools/build_audio.sh check     step 3 only
+# BLENDER=/path/to/blender and BLENDER_PY=/path/to/its/python override the
+# Blender 5.1 install below (its bundled Python with numpy renders the audio).
 cd "$(dirname "$0")/.." || exit 1
 . tools/dev_env.sh
-PY="D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe"
-BLENDER="D:/Program Files/Blender Foundation/Blender 5.1/blender.exe"
+PY="${BLENDER_PY:-D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe}"
+BLENDER="${BLENDER:-D:/Program Files/Blender Foundation/Blender 5.1/blender.exe}"
 GODOT="tools/godot/Godot_v4.7.2-stable_win64_console.exe"
 STEP="${1:-all}"
 if [ "$STEP" = "all" ]; then

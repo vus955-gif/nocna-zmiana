@@ -8,9 +8,11 @@
 # Usage: bash tools/art/build_art.sh [model names...]   (names limit step 2 and
 #        skip step 1 unless TEXTURES=1). FAST=1 skips ambient-occlusion rays,
 #        PREVIEW=0 skips the renders.
+#        BLENDER=/path/to/blender and BLENDER_PY=/path/to/its/python override the
+#        Blender 5.1 install below (its bundled Python with numpy runs steps 1 and 3).
 cd "$(dirname "$0")/../.." || exit 1
-BLENDER="D:/Program Files/Blender Foundation/Blender 5.1/blender.exe"
-PY="D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe"
+BLENDER="${BLENDER:-D:/Program Files/Blender Foundation/Blender 5.1/blender.exe}"
+PY="${BLENDER_PY:-D:/Program Files/Blender Foundation/Blender 5.1/5.1/python/bin/python.exe}"
 GODOT="tools/godot/Godot_v4.7.2-stable_win64_console.exe"
 FLAGS=()
 [ "${FAST:-0}" = "1" ] && FLAGS+=(--fast)
